@@ -1,0 +1,413 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{088af204-a586-4a1f-b212-5831910ffab8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\cpp">
+      <UniqueIdentifier>{f2b21e72-39b9-413d-b399-f2c90359a0bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\h">
+      <UniqueIdentifier>{99f66856-b52a-459e-876f-015728d32ab7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{6b54fc89-109b-499c-84bc-725285581172}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\DirectX">
+      <UniqueIdentifier>{01301a53-665b-4542-a928-13774fba8b79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\ErrorHandling">
+      <UniqueIdentifier>{070a7b7e-8781-4315-81b9-f61a959ed00a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\ErrorHandling\cpp">
+      <UniqueIdentifier>{b8980ccf-5bd9-4903-ad2e-2e1100f68e0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\ErrorHandling\h">
+      <UniqueIdentifier>{213845e3-58a5-487c-9385-9efadc65f837}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\DirectX\cpp">
+      <UniqueIdentifier>{5f0e3965-a518-4a9f-b2e4-31f9b9383dbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\DirectX\h">
+      <UniqueIdentifier>{fe073811-81f1-4bca-8ad3-1e7234e4c409}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{51a849a5-f550-484c-9246-7a1a291a011d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\cpp">
+      <UniqueIdentifier>{5c629981-7ff2-45ef-a05e-b00a5b5a399c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\h">
+      <UniqueIdentifier>{1110e851-1ae4-445c-836e-abd943a8beaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{febefea5-90b1-4a0d-b0dc-8a7422e34d81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{4e618055-183f-4c33-978b-93880841f8b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{9b70ebcf-f35f-4a20-a47d-fa26551817fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\cpp">
+      <UniqueIdentifier>{a0c5606c-3941-40af-9239-fbd83e6bc787}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\h">
+      <UniqueIdentifier>{34c0ee54-9ef3-460a-9cf8-bb075f83b739}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\cpp">
+      <UniqueIdentifier>{7bef35fe-85d0-4dc9-941a-a2bc37526c1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\h">
+      <UniqueIdentifier>{97c41345-aa66-46e7-a1a7-ff918eb83b8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\cpp">
+      <UniqueIdentifier>{8a597f53-bb46-40f0-9fb6-be8161c1363e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\h">
+      <UniqueIdentifier>{dcad901e-fec4-4419-a0b9-10879ea64f05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HID">
+      <UniqueIdentifier>{344fe5d8-6bc1-420c-9522-74579e3f84a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HID\cpp">
+      <UniqueIdentifier>{bf60c810-1b57-41c5-affd-8886c8c5ae56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HID\h">
+      <UniqueIdentifier>{20ecf0d8-c9c5-4567-8ccd-3b06c49c32f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Converter">
+      <UniqueIdentifier>{037557a4-f488-440f-ba54-29ef8f777c3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Converter\cpp">
+      <UniqueIdentifier>{59f728b2-7900-41c2-ae37-cb0abaa4b89c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Converter\h">
+      <UniqueIdentifier>{c333ce77-50e7-4fcd-9d9d-3da049af99c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry">
+      <UniqueIdentifier>{0b08cec3-99af-4541-bad4-23b71f1bd2d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\cpp">
+      <UniqueIdentifier>{49c43c9d-1ca9-437e-9f14-341e22812530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\h">
+      <UniqueIdentifier>{0e897b81-f1bf-4c80-9965-656e0dce09b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Classes">
+      <UniqueIdentifier>{f4f7d9bf-b7ac-4d56-8204-5670854795da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Classes\cpp">
+      <UniqueIdentifier>{19bef5b0-2f3d-4079-8585-2769ec0ccdc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Classes\h">
+      <UniqueIdentifier>{3959117d-945d-45cc-96f8-f58e7c9f9031}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{f79522eb-28ab-41ac-a647-b4f5df143147}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Graphics\BlendState.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\ComputeShader.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\ConstantBuffer.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\DepthStencilState.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\PixelShader.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\RasterizerState.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\SamplerState.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Shader.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\System.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\VertexShader.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\DX_BOOL2.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\DX_BOOL3.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\DX_BOOL4.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\DX_INT2.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\DX_INT3.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\DX_INT4.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\EnumWrappers.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\HLSLBuffer.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\ErrorHandling\Error.h">
+      <Filter>Utility\ErrorHandling\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\ErrorHandling\Result.h">
+      <Filter>Utility\ErrorHandling\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\ErrorHandling\HResult.h">
+      <Filter>Utility\ErrorHandling\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\ErrorHandling\HError.h">
+      <Filter>Utility\ErrorHandling\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\SwapChain.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\DeviceEx.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Texture2D.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Windows\Window.h">
+      <Filter>Windows\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HID\Keyboard.h">
+      <Filter>HID\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HID\Mouse.h">
+      <Filter>HID\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Converter\String.h">
+      <Filter>Utility\Converter\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Windows\Engine.h">
+      <Filter>Windows\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\ContextEx.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\RenderTarget.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\VertexBuffer.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\IndexBuffer.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Mesh.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Vertex.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Classes\Hierarchy.h">
+      <Filter>Utility\Classes\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Classes\Ring.h">
+      <Filter>Utility\Classes\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Classes.h">
+      <Filter>Utility\Classes\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\ErrorHandling.h">
+      <Filter>Utility\ErrorHandling\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Converter.h">
+      <Filter>Utility\Converter\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Useful.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\DirectX\Legacy.h">
+      <Filter>Utility\DirectX\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Isekai.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\CompositionEx.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Graphics\VertexShader.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\System.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\SamplerState.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\RasterizerState.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\DepthStencilState.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\ConstantBuffer.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\BlendState.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EngineEntry.cpp" />
+    <ClCompile Include="src\Utility\DirectX\DX_BOOL2.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\DX_BOOL3.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\DX_BOOL4.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\DX_INT2.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\DX_INT3.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\DX_INT4.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\EnumWrappers.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\HLSLBuffer.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\ErrorHandling\Error.cpp">
+      <Filter>Utility\ErrorHandling\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\ErrorHandling\Result.cpp">
+      <Filter>Utility\ErrorHandling\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\ErrorHandling\HResult.cpp">
+      <Filter>Utility\ErrorHandling\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\ErrorHandling\HError.cpp">
+      <Filter>Utility\ErrorHandling\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\PixelShader.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\ComputeShader.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\SwapChain.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\DeviceEx.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Texture2D.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HID\Keyboard.cpp">
+      <Filter>HID\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HID\Mouse.cpp">
+      <Filter>HID\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Windows\Window.cpp">
+      <Filter>Windows\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Converter\String.cpp">
+      <Filter>Utility\Converter\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Windows\Engine.cpp">
+      <Filter>Windows\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\ContextEx.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\RenderTarget.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\VertexBuffer.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\IndexBuffer.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Mesh.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\DirectX\Legacy.cpp">
+      <Filter>Utility\DirectX\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Vertex.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Isekai.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\CompositionEx.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Shaders\BasicBuffers.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\BasicFunctions.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\BasicStructs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\PerlinNoise.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\Shaders\Circle_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Default_CS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Default_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Default_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Gui_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Gui_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Null_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Shadow_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Texture_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Null_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+#pragma once
+#include "DirectX/DX_BOOL2.h"
+#include "DirectX/DX_BOOL3.h"
+#include "DirectX/DX_BOOL4.h"
+#include "DirectX/DX_INT2.h"
+#include "DirectX/DX_INT3.h"
+#include "DirectX/DX_INT4.h"
+#include "DirectX/EnumWrappers.h"
+#include "DirectX/HLSLBuffer.h"
+#include "DirectX/Legacy.h"
