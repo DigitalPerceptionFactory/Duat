@@ -12,6 +12,8 @@ namespace Duat::Graphics {
 		void Compile(System* pGFX, const std::filesystem::path& path, const std::string& vsModel = "vs_5_0",
 			const std::string& entryPoint = "main");
 		void Load(System* pGFX, const std::filesystem::path& path);
+		ID3D11InputLayout* GetInputLayout();
+		ID3D11InputLayout** GetInputLayoutAddressOf();
 	private:
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	};

@@ -240,9 +240,6 @@
     <ClInclude Include="src\Utility\DirectX\Legacy.h">
       <Filter>Utility\DirectX\h</Filter>
     </ClInclude>
-    <ClInclude Include="src\Geometry\Isekai.h">
-      <Filter>Geometry\h</Filter>
-    </ClInclude>
     <ClInclude Include="src\Graphics\CompositionEx.h">
       <Filter>Graphics\h</Filter>
     </ClInclude>
@@ -355,9 +352,6 @@
       <Filter>Utility\DirectX\cpp</Filter>
     </ClCompile>
     <ClCompile Include="src\Geometry\Vertex.cpp">
-      <Filter>Geometry\cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Geometry\Isekai.cpp">
       <Filter>Geometry\cpp</Filter>
     </ClCompile>
     <ClCompile Include="src\Graphics\CompositionEx.cpp">

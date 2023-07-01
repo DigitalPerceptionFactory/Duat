@@ -28,7 +28,7 @@ namespace Duat
 		m_gfx.Init(m_hWnd);
 
 		static Geometry::Mesh mesh;
-		mesh.Init();
+		mesh.TestInit();
 		m_gfx.AddDrawCall(&mesh, "Default", "Default", 
 			"Default", Topology::TriangleList, "Default", "Expensive");
 	}

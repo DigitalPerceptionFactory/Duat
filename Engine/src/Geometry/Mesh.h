@@ -7,7 +7,7 @@
 namespace Duat::Geometry {
 		
 	struct Mesh {
-		void Init();
+		void TestInit();
 		const std::vector<Vertex>& GetVertices() const;
 		const std::vector<unsigned int>& GetIndices() const;
 	private:

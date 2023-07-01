@@ -163,5 +163,15 @@ namespace Duat::Graphics {
 		m_hresult << pGFX->m_Device->CreateInputLayout(inputElementDescs.data(), (UINT)inputElementDescs.size(),
 			m_blob.Get()->GetBufferPointer(), m_blob.Get()->GetBufferSize(), m_inputLayout.GetAddressOf());
 	}
+
+	ID3D11InputLayout* VertexShader::GetInputLayout()
+	{
+		return m_inputLayout.Get();
+	}
+
+	ID3D11InputLayout** VertexShader::GetInputLayoutAddressOf()
+	{
+		return m_inputLayout.GetAddressOf();
+	}
 		
 }

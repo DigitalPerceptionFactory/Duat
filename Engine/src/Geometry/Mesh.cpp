@@ -2,7 +2,7 @@
 
 namespace Duat::Geometry {
 
-    void Mesh::Init()
+    void Mesh::TestInit()
     {
         Vertex a;
         a.position = { -1,-1,1, 1 };

@@ -42,7 +42,7 @@ namespace Duat::Graphics {
 	void System::Update()
 	{
 		for (auto& rt : m_RT) m_Context.ClearRTV(rt.second);
-		
+
 		SetDSS("Default");
 		for (auto& pass : m_drawCalls)
 		{
@@ -57,7 +57,7 @@ namespace Duat::Graphics {
 			}
 			for (auto& drawCall : pass.second)
 			{
-				auto& dc = drawCall.second;
+				auto& settings = drawCall.second;
 
 				// to be implemented
 				// m_Context->VSSetConstantBuffers();
@@ -65,12 +65,10 @@ namespace Duat::Graphics {
 				// m_Context->VSSetShaderResources();
 				// m_Context->PSSetShaderResources();
 
-				const UINT vsize = sizeof(Geometry::Vertex);
-				auto stride = dc.vb.GetStride();
-				static UINT fuck_you = 0;
-				m_Context->IASetVertexBuffers(0, 1, dc.vb.GetAddressOf(), &vsize, &fuck_you);
-				m_Context->IASetIndexBuffer(dc.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
-				m_Context->DrawIndexedInstanced((UINT)dc.ib.GetIndexCount(), (UINT)dc.instances, 0, 0, 0);
+				static UINT offset = 0;
+				m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
+				m_Context->IASetIndexBuffer(settings.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
+				m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
 			}
 		}
 				
@@ -83,30 +81,6 @@ namespace Duat::Graphics {
 
 	size_t System::AddDrawCall(Geometry::Mesh* mesh, const std::string& vs, const std::string& ps, const std::string& rt, const Topology& tp, const std::string& bs, const std::string& rs)
 	{
-		HLSL::Layout vbLayout("VertexBuffer");
-		const auto& vertices = mesh->GetVertices();
-		for (size_t i = 0; i < vertices.size(); ++i)
-		{
-			vbLayout["Vertex" + std::to_string(i)] = HLSL::Struct(
-				{
-					HLSL::Assign(vertices[i].position),
-					HLSL::Assign(vertices[i].texCoord),
-					HLSL::Assign(vertices[i].color),
-					HLSL::Assign(vertices[i].normal),
-				}
-			);
-
-			//vbLayout["Vertex" + std::to_string(i)]["Position"] = vertices[i].position;
-			//vbLayout["Vertex" + std::to_string(i)]["TexCoord"] = vertices[i].texCoord;
-			//vbLayout["Vertex" + std::to_string(i)]["Color"] = vertices[i].color;
-			//vbLayout["Vertex" + std::to_string(i)]["Normal"] = vertices[i].normal;
-		}
-
-		HLSL::Layout ibLayout("IndexBuffer");
-		const auto& indices = mesh->GetIndices();
-		for (size_t i = 0; i < indices.size(); ++i)
-			ibLayout[i] = (int)indices[i];
-
 		DrawCall dc;
 		dc.rt = rt;
 		dc.vs = vs;
@@ -114,13 +88,11 @@ namespace Duat::Graphics {
 		dc.bs = bs;
 		dc.rs = rs;
 		dc.tp = tp;
-		//dc.vb.Init(this, vbLayout);
-		//dc.ib.Init(this, ibLayout);
 		dc.vb.TestInit(this, (void*)mesh->GetVertices().data(), mesh->GetVertices().size());
 		dc.ib.TestInit(this, (void*)mesh->GetIndices().data(), mesh->GetIndices().size());
 		dc.id = uniqueDrawCallIndex;
-		m_drawCalls[dc.GetKey()][dc.id] = std::move(dc);
 
+		m_drawCalls[dc.GetKey()][dc.id] = std::move(dc);
 
 		++uniqueDrawCallIndex;
 		return uniqueDrawCallIndex - 1;
@@ -152,6 +124,9 @@ namespace Duat::Graphics {
 		}
 		else
 		{
+			if (std::filesystem::exists("Shaders") && std::filesystem::is_directory("Shaders")) {}
+			else std::filesystem::create_directory("Shaders");
+
 			for (const auto& entry : std::filesystem::directory_iterator("Shaders"))
 			{
 				if (entry.is_regular_file() && entry.path().extension() == ".cso")
@@ -183,6 +158,9 @@ namespace Duat::Graphics {
 		}
 		else
 		{
+			if (std::filesystem::exists("Textures") && std::filesystem::is_directory("Textures")) {}
+			else std::filesystem::create_directory("Textures");
+
 			for (const auto& entry : std::filesystem::directory_iterator("Textures"))
 			{
 				if (entry.is_regular_file() && entry.path().extension() == ".cso")
@@ -220,6 +198,7 @@ namespace Duat::Graphics {
 	void System::SetVS(const std::string& name)
 	{
 		m_Context->VSSetShader(m_VS[name].Get(), 0, 0);
+		m_Context->IASetInputLayout(m_VS[name].GetInputLayout());
 	}
 
 	void System::SetPS(const std::string& name)
