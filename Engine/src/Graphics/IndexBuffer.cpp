@@ -36,6 +36,7 @@ namespace Duat::Graphics {
 		ZeroMemory(&subData, sizeof(D3D11_SUBRESOURCE_DATA));
 		subData.pSysMem = GetBuffer();
 
+		m_indexCount = std::get<Utility::HLSL::Struct>(GetRoot().GetValue()).elements.size();;
 		m_hresult << pGFX->m_Device->CreateBuffer(&m_desc, &subData, ReleaseAndGetAddressOf());
 	}
 
@@ -51,13 +52,14 @@ namespace Duat::Graphics {
 		ZeroMemory(&subData, sizeof(D3D11_SUBRESOURCE_DATA));
 		subData.pSysMem = pBuffer;
 
-		m_indexCount = 3;
+		m_indexCount = bufferSize;
 		m_hresult << pGFX->m_Device->CreateBuffer(&m_desc, &subData, ReleaseAndGetAddressOf());
 	}
 
 	size_t IndexBuffer::GetIndexCount()
 	{
-		return std::get<Utility::HLSL::Struct>(GetRoot().GetValue()).elements.size();
+		return m_indexCount;
+		//return std::get<Utility::HLSL::Struct>(GetRoot().GetValue()).elements.size();
 	}
 
 	ID3D11Buffer* IndexBuffer::Get()

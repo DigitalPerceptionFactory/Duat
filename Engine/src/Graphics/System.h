@@ -16,6 +16,7 @@
 #include "ConstantBuffer.h"
 #include <Geometry/Mesh.h>
 #include "CompositionEx.h"
+#include "Camera.h"
 
 
 namespace Duat::Graphics {
@@ -42,17 +43,20 @@ namespace Duat::Graphics {
 		size_t AddDrawCall(Geometry::Mesh* mesh,
 			const std::string& vs = "Default",
 			const std::string& ps = "Default",
-			const std::string& rt = "Default",
+			const std::string& cam = "Default",
 			const Topology& tp = Topology::TriangleList,
 			const std::string& bs = "Default",
 			const std::string& rs = "Default"
 		);
 		void RemoveDrawCall(size_t uniqueDrawCallIndex);
+		void AddCamera(const std::string& cameraName, const std::string& rtName,
+			UINT topLeftX = 0, UINT topLeftY = 0, UINT width = 0, UINT height = 0);
 
 	private:
 		void InitShaders();
 		void InitTextures();
 		void InitStates();
+		void InitRenderTargets();
 
 		void SetRT(const std::string& name);
 		void SetVS(const std::string& name);
@@ -62,6 +66,10 @@ namespace Duat::Graphics {
 		void SetRS(const std::string& name);
 		void SetTP(const Topology& topology);
 		void SetDSS(const std::string& name);
+		void SetVP(const std::string& cameraName);
+		void SetVP(const D3D11_VIEWPORT& viewport);
+		void SetVP(const std::vector<D3D11_VIEWPORT>& viewports);
+		//void SetGlobalCB(const std::string& cameraName);
 
 		//void SetSS(const std::string& name);
 
@@ -82,6 +90,7 @@ namespace Duat::Graphics {
 			std::string ps = "Default";
 			std::string bs = "Default";
 			std::string rs = "Default";
+			std::string cam = "Default";
 			Topology tp = Topology::TriangleList;
 			VertexBuffer vb;
 			IndexBuffer ib;
@@ -101,6 +110,8 @@ namespace Duat::Graphics {
 		std::map<std::string, SamplerState>       m_SS;
 		std::map<std::string, DepthStencilState>  m_DSS;
 		std::map<std::string, RenderTarget>       m_RT;
+		std::map<std::string, ConstantBuffer>     m_CB;
+		std::map<std::string, Camera>             m_Cameras;
 	};
 
 }

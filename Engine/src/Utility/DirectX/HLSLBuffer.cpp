@@ -15,6 +15,21 @@
    HLSL_EVALUATE(Bool4)\
    HLSL_EVALUATE(Matrix)
 
+#define HLSL_EXPAND_PTR \
+   HLSL_EVALUATE(IntPtr)\
+   HLSL_EVALUATE(Int2Ptr)\
+   HLSL_EVALUATE(Int3Ptr)\
+   HLSL_EVALUATE(Int4Ptr)\
+   HLSL_EVALUATE(FloatPtr)\
+   HLSL_EVALUATE(Float2Ptr)\
+   HLSL_EVALUATE(Float3Ptr)\
+   HLSL_EVALUATE(Float4Ptr)\
+   HLSL_EVALUATE(BoolPtr)\
+   HLSL_EVALUATE(Bool2Ptr)\
+   HLSL_EVALUATE(Bool3Ptr)\
+   HLSL_EVALUATE(Bool4Ptr)\
+   HLSL_EVALUATE(MatrixPtr)
+
 namespace Duat::Utility::HLSL {
 
 #define ARRAY_END ((char)(Type::Invalid) + 1)
@@ -113,6 +128,7 @@ namespace Duat::Utility::HLSL {
 		if (type == Type::Struct) return Struct();
 		else if (type == Type::Array) return Array();
 		HLSL_EXPAND
+		HLSL_EXPAND_PTR
 		return Empty();
 #undef HLSL_EVALUATE
 	}
@@ -122,7 +138,8 @@ namespace Duat::Utility::HLSL {
 		if (std::holds_alternative<Struct>(value)) return Type::Struct;
 		else if (std::holds_alternative<Array>(value)) return Type::Array;
 		HLSL_EXPAND
-			return Type::Invalid;
+		HLSL_EXPAND_PTR
+		return Type::Invalid;
 #undef HLSL_EVALUATE
 	}
 
@@ -151,6 +168,7 @@ namespace Duat::Utility::HLSL {
 			out.push_back(ARRAY_END);
 		}
 		HLSL_EXPAND
+		HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 		return out;
 	}
@@ -245,6 +263,14 @@ namespace Duat::Utility::HLSL {
 	}
 	HLSL_EXPAND
 #undef HLSL_EVALUATE
+#define HLSL_EVALUATE(x) Assign::Assign(Meta<Type::x>::TrueType value, std::source_location loc) \
+	{ \
+		m_type = Type::x; \
+		m_value = value; \
+		m_loc = loc; \
+	}
+	HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
 
 	Assign::Assign(const HLSLDataType& value, std::source_location loc)
 	{
@@ -319,6 +345,15 @@ namespace Duat::Utility::HLSL {
 			}
 	HLSL_EXPAND
 #undef HLSL_EVALUATE
+#define HLSL_EVALUATE(x) \
+		Element::Element(const std::string& label, Meta<Type::x>::TrueType var) { \
+				m_type = Type::x; \
+				m_value = var; \
+				m_label = label; \
+			}
+		HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
+
 
 	Element::Element(const std::string& label, const Struct& var) 
 	{
@@ -484,3 +519,4 @@ namespace Duat::Utility::HLSL {
 
 }
 #undef HLSL_EXPAND
+#undef HLSL_EXPAND_PTR

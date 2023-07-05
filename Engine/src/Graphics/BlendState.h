@@ -11,15 +11,15 @@ namespace Duat::Graphics {
 		HRESULT Init(System& gfx,
 			bool blendEnable = true, Blend srcBlend = Blend::SrcAlpha, Blend destBlend = Blend::InvSrcAlpha,
 			BlendOp blendOp = BlendOp::Add,
-			Blend srcBlendAlpha = Blend::One, Blend destBlendAlpha = Blend::Zero,
+			Blend srcBlendAlpha = Blend::One, Blend destBlendAlpha = Blend::One,
 			BlendOp blendOpAlpha = BlendOp::Add,
-			ColorWriteMask mask = ColorWriteMask::EnableRGB);
+			ColorWriteMask mask = ColorWriteMask::EnableAll);
 		HRESULT Init(System* pGFX,
 			bool blendEnable = true, Blend srcBlend = Blend::SrcAlpha, Blend destBlend = Blend::InvSrcAlpha,
 			BlendOp blendOp = BlendOp::Add,
-			Blend srcBlendAlpha = Blend::One, Blend destBlendAlpha = Blend::Zero,
+			Blend srcBlendAlpha = Blend::One, Blend destBlendAlpha = Blend::One,
 			BlendOp blendOpAlpha = BlendOp::Add,
-			ColorWriteMask mask = ColorWriteMask::EnableRGB);
+			ColorWriteMask mask = ColorWriteMask::EnableAll);
 		HRESULT Update();
 
 		bool IsBlendEnabled();

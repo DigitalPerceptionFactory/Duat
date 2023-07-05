@@ -13,16 +13,20 @@ namespace Duat::Graphics {
 		m_swapChain.Present();
 	}
 
-	void ContextEx::ClearRTV(RenderTarget& rt)
+	void ContextEx::ClearRT(RenderTarget& rt)
 	{
 		(*this)->ClearRenderTargetView(rt.GetRTV(), m_clearColor);
+		(*this)->ClearDepthStencilView(rt.GetDSV(), 
+			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
-	void ContextEx::ClearRTV(RenderTarget& rt, DirectX::XMFLOAT4& color)
+	void ContextEx::ClearRT(RenderTarget& rt, DirectX::XMFLOAT4& color)
 	{
 		float clearColor[4];
 		std::memcpy(clearColor, &color, sizeof(float) * 4);
 		(*this)->ClearRenderTargetView(rt.GetRTV(), clearColor);
+		(*this)->ClearDepthStencilView(rt.GetDSV(),
+			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
 	void ContextEx::SetClearColor(float r, float g, float b, float a)

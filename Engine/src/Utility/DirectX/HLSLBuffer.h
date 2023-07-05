@@ -27,6 +27,21 @@
    HLSL_EVALUATE(Bool4)\
    HLSL_EVALUATE(Matrix)
 
+#define HLSL_EXPAND_PTR \
+   HLSL_EVALUATE(IntPtr)\
+   HLSL_EVALUATE(Int2Ptr)\
+   HLSL_EVALUATE(Int3Ptr)\
+   HLSL_EVALUATE(Int4Ptr)\
+   HLSL_EVALUATE(FloatPtr)\
+   HLSL_EVALUATE(Float2Ptr)\
+   HLSL_EVALUATE(Float3Ptr)\
+   HLSL_EVALUATE(Float4Ptr)\
+   HLSL_EVALUATE(BoolPtr)\
+   HLSL_EVALUATE(Bool2Ptr)\
+   HLSL_EVALUATE(Bool3Ptr)\
+   HLSL_EVALUATE(Bool4Ptr)\
+   HLSL_EVALUATE(MatrixPtr)
+
 #define ARRAY_END ((char)(Type::Invalid) + 1)
 #define STRUCT_END ((char)(Type::Invalid) + 2)
 
@@ -45,6 +60,7 @@ namespace Duat::Utility::HLSL {
 	enum class Type {
 #define HLSL_EVALUATE(x) x,
 		HLSL_EXPAND
+		HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 		Struct, Array, Empty, Error, Invalid
 	};
@@ -144,8 +160,87 @@ namespace Duat::Utility::HLSL {
 		static constexpr char signature[] = "a";
 	};
 
+	template<> struct Meta<Type::IntPtr> {
+		using TrueType = int*;
+		static constexpr size_t padding = 0;
+		static constexpr Type type = Type::IntPtr;
+		static constexpr char signature[] = "pi1";
+	};
+	template<> struct Meta<Type::Int2Ptr> {
+		using TrueType = DirectX::INT2*;
+		static constexpr size_t padding = 16 % sizeof(DirectX::INT2);
+		static constexpr Type type = Type::Int2Ptr;
+		static constexpr char signature[] = "pi2";
+	};
+	template<> struct Meta<Type::Int3Ptr> {
+		using TrueType = DirectX::INT3*;
+		static constexpr size_t padding = 16 % sizeof(DirectX::INT3);
+		static constexpr Type type = Type::Int3Ptr;
+		static constexpr char signature[] = "pi3";
+	};
+	template<> struct Meta<Type::Int4Ptr> {
+		using TrueType = DirectX::INT4*;
+		static constexpr size_t padding = 16 % sizeof(DirectX::INT4);
+		static constexpr Type type = Type::Int4Ptr;
+		static constexpr char signature[] = "pi4";
+	};
+	template<> struct Meta<Type::BoolPtr> {
+		using TrueType = bool*;
+		static constexpr size_t padding = 3;
+		static constexpr Type type = Type::BoolPtr;
+		static constexpr char signature[] = "pb1";
+	};
+	template<> struct Meta<Type::Bool2Ptr> {
+		using TrueType = DirectX::BOOL2*;
+		static constexpr size_t padding = 2;
+		static constexpr Type type = Type::Bool2Ptr;
+		static constexpr char signature[] = "pb2";
+	};
+	template<> struct Meta<Type::Bool3Ptr> {
+		using TrueType = DirectX::BOOL3*;
+		static constexpr size_t padding = 1;
+		static constexpr Type type = Type::Bool3Ptr;
+		static constexpr char signature[] = "pb3";
+	};
+	template<> struct Meta<Type::Bool4Ptr> {
+		using TrueType = DirectX::BOOL4*;
+		static constexpr size_t padding = 0;
+		static constexpr Type type = Type::Bool4Ptr;
+		static constexpr char signature[] = "pb4";
+	};
+	template<> struct Meta<Type::FloatPtr> {
+		using TrueType = float*;
+		static constexpr size_t padding = 0;
+		static constexpr Type type = Type::FloatPtr;
+		static constexpr char signature[] = "pf1";
+	};
+	template<> struct Meta<Type::Float2Ptr> {
+		using TrueType = DirectX::XMFLOAT2*;
+		static constexpr size_t padding = 16 % sizeof(DirectX::XMFLOAT2);
+		static constexpr Type type = Type::Float2Ptr;
+		static constexpr char signature[] = "pf2";
+	};
+	template<> struct Meta<Type::Float3Ptr> {
+		using TrueType = DirectX::XMFLOAT3*;
+		static constexpr size_t padding = 16 % sizeof(DirectX::XMFLOAT3);
+		static constexpr Type type = Type::Float3Ptr;
+		static constexpr char signature[] = "pf3";
+	};
+	template<> struct Meta<Type::Float4Ptr> {
+		using TrueType = DirectX::XMFLOAT4*;
+		static constexpr size_t padding = 16 % sizeof(DirectX::XMFLOAT4);
+		static constexpr Type type = Type::Float4Ptr;
+		static constexpr char signature[] = "pf4";
+	};
+	template<> struct Meta<Type::MatrixPtr> {
+		using TrueType = DirectX::XMMATRIX*;
+		static constexpr size_t padding = 16 % sizeof(DirectX::XMMATRIX);
+		static constexpr Type type = Type::MatrixPtr;
+		static constexpr char signature[] = "pm";
+	};
+
 #define HLSL_EVALUATE(x) Meta<Type::x>::TrueType,
-	typedef std::variant<HLSL_EXPAND Struct, Array, Empty, Error> HLSLDataType;
+	typedef std::variant<HLSL_EXPAND HLSL_EXPAND_PTR Struct, Array, Empty, Error> HLSLDataType;
 #undef HLSL_EVALUATE
 	
 	static std::string TypeToString(Type t)
@@ -154,6 +249,7 @@ namespace Duat::Utility::HLSL {
 		switch (t)
 		{
 			HLSL_EXPAND
+			HLSL_EXPAND_PTR
 		case Type::Struct: return "Struct";
 		case Type::Array: return "Array";
 		case Type::Empty: return "Empty";
@@ -231,6 +327,9 @@ namespace Duat::Utility::HLSL {
 #define HLSL_EVALUATE(x) Assign(const Meta<Type::x>::TrueType& value, std::source_location loc = std::source_location::current());
 		HLSL_EXPAND
 #undef HLSL_EVALUATE
+#define HLSL_EVALUATE(x) Assign(Meta<Type::x>::TrueType value, std::source_location loc = std::source_location::current());
+		HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
 		Assign(const HLSLDataType& value, std::source_location loc = std::source_location::current());
 		Assign(const Struct& value, std::source_location loc = std::source_location::current());
 		Assign(const Array& value, std::source_location loc = std::source_location::current());
@@ -271,6 +370,9 @@ namespace Duat::Utility::HLSL {
 #define HLSL_EVALUATE(x) Element(const std::string& label, const Meta<Type::x>::TrueType& var);
 		HLSL_EXPAND
 #undef HLSL_EVALUATE
+#define HLSL_EVALUATE(x) Element(const std::string& label, Meta<Type::x>::TrueType var);
+		HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
 
 		Element(const std::string& label, const Struct& var);
 		Element(const std::string& label, const Array& var);
@@ -304,27 +406,34 @@ namespace Duat::Utility::HLSL {
 	{
 		HLSLDataType value = e.GetValue();
 		Type type = e.GetType();
-#define HLSL_EVALUATE(x) \
-			if (type == Type::x) { \
-				auto& var = std::get<Meta<Type::x>::TrueType>(value); \
-				std::memcpy(&e.GetBuf()[e.GetOffset()], &var, sizeof(var)); \
-				return; }
-		HLSL_EXPAND
-#undef HLSL_EVALUATE
-			if (type == Type::Array)
-			{
-				Array& arr = std::get<Array>(value);
-				for (auto& a : arr.elements)
-					EmplaceRec(a);
-				return;
-			}
-		if (type == Type::Struct)
+		if (type == Type::Array)
+		{
+			Array& arr = std::get<Array>(value);
+			for (auto& a : arr.elements)
+				EmplaceRec(a);
+			return;
+		}
+		else if (type == Type::Struct)
 		{
 			Struct& str = std::get<Struct>(value);
 			for (auto& s : str.elements)
 				EmplaceRec(s);
 			return;
 		}
+#define HLSL_EVALUATE(x) \
+			else if (type == Type::x) { \
+				auto& var = std::get<Meta<Type::x>::TrueType>(value); \
+				std::memcpy(&e.GetBuf()[e.GetOffset()], &var, sizeof(var)); \
+				return; }
+		HLSL_EXPAND
+#undef HLSL_EVALUATE
+#define HLSL_EVALUATE(x) \
+			else if (type == Type::x) { \
+				auto var = *std::get<Meta<Type::x>::TrueType>(value); \
+				std::memcpy(&e.GetBuf()[e.GetOffset()], &var, sizeof(var)); \
+				return; }
+		HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
 	}
 
 	struct Layout {
@@ -360,6 +469,7 @@ namespace Duat::Utility::HLSL {
 			m_buffer.resize(buffer_size);
 			SetPtrRec(m_layout.root);
 			EmplaceRec(m_layout.root);
+			SetDynamicRec(m_layout.root);
 		}
 		Element& operator[](Label label) {
 			return m_layout[label];
@@ -373,32 +483,44 @@ namespace Duat::Utility::HLSL {
 		Element& GetRoot() {
 			return m_layout.GetRoot();
 		}
+		void Update() {
+			for (auto& e : m_dynamic)
+				EmplaceRec(e);
+		}
 	protected:
 		size_t CalcOffsetRec(size_t m_offset, Element& e) {
 			e.m_offset = m_offset;
+			if (e.m_type == Type::Array) {
+				Array& arr = std::get<Array>(e.m_value);
+				size_t arr_offset = 0;
+				for (auto& a : arr.elements)
+					arr_offset += CalcOffsetRec(m_offset + arr_offset, a);
+
+				return arr_offset + (16 - arr_offset % 16);
+			}
+			else if (e.m_type == Type::Struct) {
+				Struct& str = std::get<Struct>(e.m_value);
+				size_t str_offset = 0;
+				for (auto& s : str.elements)
+					str_offset += CalcOffsetRec(m_offset + str_offset, s);
+
+				return str_offset + (16 - str_offset % 16);
+			}
 #define HLSL_EVALUATE(x) \
-			if (e.m_type == Type::x) { \
+			else if (e.m_type == Type::x) { \
 				auto& var = std::get<Meta<Type::x>::TrueType>(e.m_value); \
 				return sizeof(var) + Meta<Type::x>::padding; \
 			}
 			HLSL_EXPAND
 #undef HLSL_EVALUATE
-				if (e.m_type == Type::Array) {
-					Array& arr = std::get<Array>(e.m_value);
-					size_t arr_offset = 0;
-					for (auto& a : arr.elements)
-						arr_offset += CalcOffsetRec(m_offset + arr_offset, a);
-					
-					return arr_offset + (16 - arr_offset % 16);
-				}
-			if (e.m_type == Type::Struct) {
-				Struct& str = std::get<Struct>(e.m_value);
-				size_t str_offset = 0;
-				for (auto& s : str.elements)
-					str_offset += CalcOffsetRec(m_offset + str_offset, s);
-				
-				return str_offset + (16 - str_offset % 16);
+#define HLSL_EVALUATE(x) \
+			else if (e.m_type == Type::x) { \
+				auto var = *std::get<Meta<Type::x>::TrueType>(e.m_value); \
+				return sizeof(var) + Meta<Type::x>::padding; \
 			}
+			HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
+				
 			return 0;
 		}
 		void SetPtrRec(Element& e) {
@@ -408,18 +530,35 @@ namespace Duat::Utility::HLSL {
 				Array& arr = std::get<Array>(e.m_value);
 				for (auto& a : arr.elements)
 					SetPtrRec(a);
-				return;
 			}
-			if (e.m_type == Type::Struct)
+			else if (e.m_type == Type::Struct)
 			{
 				Struct& str = std::get<Struct>(e.m_value);
 				for (auto& s : str.elements)
 					SetPtrRec(s);
-				return;
 			}
+		}
+		void SetDynamicRec(Element& e)
+		{
+			if (e.m_type == Type::Array)
+			{
+				Array& arr = std::get<Array>(e.m_value);
+				for (auto& a : arr.elements)
+					SetDynamicRec(a);
+			}
+			else if (e.m_type == Type::Struct)
+			{
+				Struct& str = std::get<Struct>(e.m_value);
+				for (auto& s : str.elements)
+					SetDynamicRec(s);
+			}
+#define HLSL_EVALUATE(x) else if (e.m_type == Type::x) { m_dynamic.push_back(e); }
+			HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
 		}
 
 		Layout m_layout;
+		std::vector<Element> m_dynamic;
 		std::vector<char> m_buffer;
 	};
 
@@ -427,5 +566,6 @@ namespace Duat::Utility::HLSL {
 
 }
 #undef HLSL_EXPAND
+#undef HLSL_EXPAND_PTR
 #undef ARRAY_END
 #undef STRUCT_END

@@ -53,6 +53,16 @@ namespace Duat::Graphics {
 		m_depthTexture.Init(pGFX, depth_desc);
 	}
 
+	UINT RenderTarget::GetWidth()
+	{
+		return m_texture.GetWidth();
+	}
+
+	UINT RenderTarget::GetHeight()
+	{
+		return m_texture.GetHeight();
+	}
+
 	ID3D11Texture2D* RenderTarget::GetTexture()
 	{
 		return m_texture.Get();

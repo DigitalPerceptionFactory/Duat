@@ -18,7 +18,7 @@ namespace Duat::Graphics {
 			m_Device.GetAdapter(),
 			D3D_DRIVER_TYPE_UNKNOWN,
 			nullptr,
-			D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+			D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG,
 			nullptr,
 			0,
 			D3D11_SDK_VERSION,
@@ -35,13 +35,14 @@ namespace Duat::Graphics {
 		InitShaders();
 		InitTextures();
 		InitStates();
-		m_RT["Default"].Init(this, m_Context.GetBackBuffer());
-		m_Context.SetClearColor( 0,0,0, 1.0f );
+		InitRenderTargets();
+
+		m_Context.SetClearColor( 0,0,0,0 );
 	}
 
 	void System::Update()
 	{
-		for (auto& rt : m_RT) m_Context.ClearRTV(rt.second);
+		for (auto& rt : m_RT) m_Context.ClearRT(rt.second);
 
 		SetDSS("Default");
 		for (auto& pass : m_drawCalls)
@@ -54,6 +55,7 @@ namespace Duat::Graphics {
 				SetBS(pass.second[0].bs);
 				SetRS(pass.second[0].rs);
 				SetTP(pass.second[0].tp);
+				SetVP(pass.second[0].cam);
 			}
 			for (auto& drawCall : pass.second)
 			{
@@ -79,17 +81,36 @@ namespace Duat::Graphics {
 	{
 	}
 
-	size_t System::AddDrawCall(Geometry::Mesh* mesh, const std::string& vs, const std::string& ps, const std::string& rt, const Topology& tp, const std::string& bs, const std::string& rs)
+	size_t System::AddDrawCall(Geometry::Mesh* mesh, const std::string& vs, const std::string& ps, const std::string& cam, const Topology& tp, const std::string& bs, const std::string& rs)
 	{
 		DrawCall dc;
-		dc.rt = rt;
+		dc.rt = m_Cameras[cam].GetRT();
+		dc.cam = cam;
 		dc.vs = vs;
 		dc.ps = ps;
 		dc.bs = bs;
 		dc.rs = rs;
 		dc.tp = tp;
-		dc.vb.TestInit(this, (void*)mesh->GetVertices().data(), mesh->GetVertices().size());
-		dc.ib.TestInit(this, (void*)mesh->GetIndices().data(), mesh->GetIndices().size());
+
+		HLSL::Layout vbLayout("VertexBuffer");
+		for (int i = 0; i < mesh->GetVertices().size(); ++i)
+		{
+			vbLayout[i] = HLSL::Struct(
+				{
+					HLSL::Assign(mesh->GetVertices()[i].position),
+					HLSL::Assign(mesh->GetVertices()[i].texCoord),
+					HLSL::Assign(mesh->GetVertices()[i].color),
+					HLSL::Assign(mesh->GetVertices()[i].normal)
+				}
+			);
+		}
+
+		HLSL::Layout ibLayout("IndexBuffer");
+		for (int i = 0; i < mesh->GetIndices().size(); ++i)
+			ibLayout[i] = (int)(mesh->GetIndices()[i]);
+
+		dc.vb.Init(this, vbLayout);
+		dc.ib.Init(this, ibLayout);
 		dc.id = uniqueDrawCallIndex;
 
 		m_drawCalls[dc.GetKey()][dc.id] = std::move(dc);
@@ -102,6 +123,18 @@ namespace Duat::Graphics {
 	{
 		for (auto& dc : m_drawCalls)
 			dc.second.erase(uniqueDrawCallIndex);
+	}
+
+	void System::AddCamera(const std::string& cameraName, const std::string& rtName, UINT topLeftX, UINT topLeftY, UINT width, UINT height)
+	{
+		if (m_RT.count(rtName) <= 0) {
+			m_result << "Render target \"" + rtName + "\" doesn't exist.";
+			return;
+		}
+
+		if (width == 0) width = m_RT[rtName].GetWidth();
+		if (height == 0) height = m_RT[rtName].GetHeight();
+		m_Cameras[cameraName].Init(rtName, topLeftX, topLeftY, width, height);
 	}
 
 	void System::InitShaders()
@@ -185,9 +218,15 @@ namespace Duat::Graphics {
 
 		// Blend States
 		m_BS["Default"].Init(this);
-
+		
 		// Sampler States
 		m_SS["Default"].Init(this);
+	}
+
+	void System::InitRenderTargets()
+	{
+		m_RT["Default"].Init(this, m_Context.GetBackBuffer());
+		AddCamera("Default", "Default");
 	}
 		
 	void System::SetRT(const std::string& name)
@@ -219,7 +258,6 @@ namespace Duat::Graphics {
 	void System::SetRS(const std::string& name)
 	{
 		m_Context->RSSetState(m_RS[name].Get());
-		m_Context->RSSetViewports(1, m_RS[name].GetViewport());
 	}
 
 	void System::SetTP(const Topology& topology)
@@ -231,10 +269,25 @@ namespace Duat::Graphics {
 	{
 		m_Context->OMSetDepthStencilState(m_DSS[name].Get(), 0);
 	}
+
+	void System::SetVP(const std::string& cameraName)
+	{
+		SetVP(m_Cameras[cameraName].GetViewports());
+	}
+
+	void System::SetVP(const D3D11_VIEWPORT& viewport)
+	{
+		m_Context->RSSetViewports(1, &viewport);
+	}
+
+	void System::SetVP(const std::vector<D3D11_VIEWPORT>& viewports)
+	{
+		m_Context->RSSetViewports(viewports.size(), &viewports[0]);
+	}
 		
 	std::string System::DrawCall::GetKey()
 	{
-		return rt + vs + ps + rs + bs + std::to_string((int)tp);
+		return rt + vs + ps + rs + bs + cam + std::to_string((int)tp);
 	}
 
 }

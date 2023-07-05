@@ -11,6 +11,8 @@ namespace Duat::Graphics {
 		void Init(System& gfx, ID3D11Texture2D* pTex2D);
 		void Init(System* pGFX, ID3D11Texture2D* pTex2D);
 
+		UINT GetWidth();
+		UINT GetHeight();
 		ID3D11Texture2D* GetTexture();
 		ID3D11Texture2D** GetTextureAddressOf();
 		ID3D11Texture2D* GetDepthTexture();

@@ -243,6 +243,9 @@
     <ClInclude Include="src\Graphics\CompositionEx.h">
       <Filter>Graphics\h</Filter>
     </ClInclude>
+    <ClInclude Include="src\Graphics\Camera.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graphics\VertexShader.cpp">
@@ -355,6 +358,9 @@
       <Filter>Geometry\cpp</Filter>
     </ClCompile>
     <ClCompile Include="src\Graphics\CompositionEx.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Camera.cpp">
       <Filter>Graphics\cpp</Filter>
     </ClCompile>
   </ItemGroup>
