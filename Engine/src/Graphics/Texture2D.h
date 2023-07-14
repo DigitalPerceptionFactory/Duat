@@ -26,17 +26,17 @@ namespace Duat::Graphics {
 
 		Texture2D& operator=(const Texture2D& rhs);
 
-		D3D11_TEXTURE2D_DESC GetDesc();
-		UINT GetWidth();
-		UINT GetHeight();
-		UINT GetMipLevels();
-		UINT GetArraySize();
-		DXGI_FORMAT GetFormat();
-		UINT GetSampleCount();
-		Usage GetUsage();
-		UINT GetBindFlags();
-		UINT GetCPUAccessFlags();
-		UINT GetMiscFlags();
+		D3D11_TEXTURE2D_DESC GetDesc() const;
+		UINT GetWidth() const;
+		UINT GetHeight() const;
+		UINT GetMipLevels() const;
+		UINT GetArraySize() const;
+		DXGI_FORMAT GetFormat() const;
+		UINT GetSampleCount() const;
+		Usage GetUsage() const;
+		UINT GetBindFlags() const;
+		UINT GetCPUAccessFlags() const;
+		UINT GetMiscFlags() const;
 		ID3D11Texture2D* Get();
 		ID3D11Texture2D** GetAddressOf();
 		ID3D11Texture2D** ReleaseAndGetAddressOf();

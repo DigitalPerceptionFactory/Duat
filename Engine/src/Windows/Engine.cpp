@@ -31,21 +31,22 @@ namespace Duat
 		mesh.TestInit();
 		m_gfx.AddDrawCall(&mesh, "Default", "Default", "Default",
 			Topology::TriangleList, "Default", "Expensive");
+
 	}
 
 	void Engine::Run()
 	{
-		//Time::Hourglass frameTime;
+		Time::Hourglass frameTime;
 		while (ProcessMessages())
 		{
 			if (m_keyboard.IsKeyDown(VK_ESCAPE)) exit(0);
-			//frameTime.Start();
+			frameTime.Start();
 						
 			m_gfx.Update();
-						
-			//frameTime.Stop();
-			//Time::DeltaTime = frameTime.GetDelta();
-			//Time::FPS = frameTime.GetTick();
+
+			frameTime.Stop();
+			Time::DeltaTime = frameTime.GetDelta();
+			Time::FPS = frameTime.GetTick();
 		}
 	}
 

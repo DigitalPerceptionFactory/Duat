@@ -51,13 +51,13 @@ namespace Duat::Utility::HLSL {
 		elements = std::move(rhs.elements);
 	}
 
-	Struct& Struct::operator=(const Struct& rhs) 
+	Struct& Struct::operator=(const Struct& rhs)
 	{
-		elements = rhs.elements; return *this; 
+		elements = rhs.elements; return *this;
 	}
 
-	Struct& Struct::operator=(Struct&& rhs) noexcept 
-	{ 
+	Struct& Struct::operator=(Struct&& rhs) noexcept
+	{
 		elements = std::move(rhs.elements); return *this;
 	}
 
@@ -87,28 +87,28 @@ namespace Duat::Utility::HLSL {
 	}
 
 	Array::Array(const Array& rhs)
-	{ 
-		elements = rhs.elements; 
+	{
+		elements = rhs.elements;
 	}
 
-	Array::Array(Array&& rhs) noexcept 
-	{ 
-		elements = std::move(rhs.elements); 
+	Array::Array(Array&& rhs) noexcept
+	{
+		elements = std::move(rhs.elements);
 	}
 
 	Array& Array::operator=(const Array& rhs)
 	{
-		elements = rhs.elements; return *this; 
+		elements = rhs.elements; return *this;
 	}
 
-	Array& Array::operator=(Array&& rhs) noexcept 
+	Array& Array::operator=(Array&& rhs) noexcept
 	{
-		elements = std::move(rhs.elements); return *this; 
+		elements = std::move(rhs.elements); return *this;
 	}
 
 	Type Array::GetArrayType() const
-	{ 
-		return elements.size() > 0 ? elements[0].m_type : Type::Invalid; 
+	{
+		return elements.size() > 0 ? elements[0].m_type : Type::Invalid;
 	}
 
 	std::string Array::GetArrayTypeString() const
@@ -121,15 +121,15 @@ namespace Duat::Utility::HLSL {
 		}
 		else return "";
 	}
-		
+
 	HLSLDataType InitializeHLSLDataType(Type type)
 	{
 #define HLSL_EVALUATE(x) else if(type == Type::x) { static Meta<Type::x>::TrueType var; return var; }
 		if (type == Type::Struct) return Struct();
 		else if (type == Type::Array) return Array();
 		HLSL_EXPAND
-		HLSL_EXPAND_PTR
-		return Empty();
+			HLSL_EXPAND_PTR
+			return Empty();
 #undef HLSL_EVALUATE
 	}
 
@@ -139,11 +139,11 @@ namespace Duat::Utility::HLSL {
 		else if (std::holds_alternative<Array>(value)) return Type::Array;
 		HLSL_EXPAND
 		HLSL_EXPAND_PTR
-		return Type::Invalid;
 #undef HLSL_EVALUATE
+		return Type::Invalid;
 	}
 
-	std::vector<char> GetSignatureRec(const HLSLDataType& value) 
+	std::vector<char> GetSignatureRec(const HLSLDataType& value)
 	{
 #define HLSL_EVALUATE(x) else if (std::holds_alternative<Meta<Type::x>::TrueType>(value)) { out.push_back((char)Type::x); }
 		std::vector<char> out;
@@ -168,12 +168,12 @@ namespace Duat::Utility::HLSL {
 			out.push_back(ARRAY_END);
 		}
 		HLSL_EXPAND
-		HLSL_EXPAND_PTR
+			HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
-		return out;
+			return out;
 	}
 
-	bool CompatibilityCheck(const HLSLDataType& a, const HLSLDataType& b, std::source_location loc, int index) 
+	bool CompatibilityCheck(const HLSLDataType& a, const HLSLDataType& b, std::source_location loc, int index)
 	{
 		auto a_sign = GetSignatureRec(a);
 		auto b_sign = GetSignatureRec(b);
@@ -235,7 +235,7 @@ namespace Duat::Utility::HLSL {
 		return compatible;
 	}
 
-	void AssignRec(Element& lhs, Assign rhs) 
+	void AssignRec(Element& lhs, Assign rhs)
 	{
 		if (rhs.GetType() == Type::Struct)
 		{
@@ -269,10 +269,10 @@ namespace Duat::Utility::HLSL {
 		m_value = value; \
 		m_loc = loc; \
 	}
-	HLSL_EXPAND_PTR
+		HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 
-	Assign::Assign(const HLSLDataType& value, std::source_location loc)
+		Assign::Assign(const HLSLDataType& value, std::source_location loc)
 	{
 		m_type = GetTypeFromValue(value);
 		m_value = value;
@@ -289,6 +289,13 @@ namespace Duat::Utility::HLSL {
 	Assign::Assign(const Array& value, std::source_location loc)
 	{
 		m_type = Type::Array;
+		m_value = value;
+		m_loc = loc;
+	}
+
+	Assign::Assign(const Function& value, std::source_location loc)
+	{
+		m_type = Type::Function;
 		m_value = value;
 		m_loc = loc;
 	}
@@ -318,15 +325,15 @@ namespace Duat::Utility::HLSL {
 		return m_value;
 	}
 
-	Label::Label(const std::string& label, std::source_location loc) : value(label), loc(std::move(loc)) 
+	Label::Label(const std::string& label, std::source_location loc) : value(label), loc(std::move(loc))
 	{
 	}
 
-	Label::Label(const char* label, std::source_location loc) : value(label), loc(std::move(loc)) 
+	Label::Label(const char* label, std::source_location loc) : value(label), loc(std::move(loc))
 	{
 	}
 
-	Index::Index(size_t index, std::source_location loc) : value(index), loc(std::move(loc)) 
+	Index::Index(size_t index, std::source_location loc) : value(index), loc(std::move(loc))
 	{
 	}
 
@@ -355,28 +362,21 @@ namespace Duat::Utility::HLSL {
 #undef HLSL_EVALUATE
 
 
-	Element::Element(const std::string& label, const Struct& var) 
+		Element::Element(const std::string& label, const Struct& var)
 	{
 		m_type = Type::Struct;
 		m_value = var;
 		m_label = label;
 	}
 
-	Element::Element(const std::string& label, const Array& var) 
+	Element::Element(const std::string& label, const Array& var)
 	{
 		m_type = Type::Array;
 		m_value = var;
 		m_label = label;
 	}
 
-	Element::Element(const std::string& label, const Error& err) 
-	{
-		m_type = Type::Error;
-		m_label = label;
-		m_value = err;
-	}
-
-	Element& Element::Rename(const std::string& label) 
+	Element& Element::Rename(const std::string& label)
 	{
 		m_label = label;
 		return *this;
@@ -400,7 +400,7 @@ namespace Duat::Utility::HLSL {
 		return *this;
 	}
 
-	Element& Element::operator[](Label label) 
+	Element& Element::operator[](Label label)
 	{
 		if (m_type == Type::Struct)
 		{
@@ -443,7 +443,7 @@ namespace Duat::Utility::HLSL {
 		return *this;
 	}
 
-	Element& Element::operator[](Index index) 
+	Element& Element::operator[](Index index)
 	{
 		if (m_type == Type::Struct)
 		{
@@ -489,32 +489,165 @@ namespace Duat::Utility::HLSL {
 
 	Type Element::GetType() const
 	{
-		return m_type; 
+		return m_type;
 	}
 
 	std::string Element::GetLabel() const
-	{ 
-		return m_label; 
+	{
+		return m_label;
 	}
 
 	HLSLDataType Element::GetValue()
-	{ 
+	{
 		return m_value;
 	}
 
 	const HLSLDataType& Element::GetValue() const
 	{
-		return m_value; 
+		return m_value;
 	}
 
 	char* Element::GetBuf()
-	{ 
-		return m_buf; 
+	{
+		return m_buf;
 	}
 
-	size_t Element::GetOffset() const 
-	{ 
-		return m_offset; 
+	size_t Element::GetOffset() const
+	{
+		return m_offset;
+	}
+
+	Function::Function()
+	{
+		m_function = []() { return Empty(); };
+		m_signature = new Buffer();
+		m_returnType = Type::Empty;
+	}
+
+	Function::Function(Layout& signature, const std::function<HLSLDataType(Buffer&)>& func)
+	{
+		m_function = func;
+		m_signature = new Buffer();
+		SetSignature(signature);
+		auto value = std::get<std::function<HLSLDataType(Buffer&)>>(m_function)(*m_signature);
+		m_returnType = GetTypeFromValue(value);
+	}
+
+	Function::Function(const std::function<HLSLDataType(void)>& func)
+	{
+		m_function = func;
+		m_signature = new Buffer();
+		auto value = std::get<std::function<HLSLDataType(void)>>(m_function)();
+		m_returnType = GetTypeFromValue(value);
+	}
+
+	Function::Function(const Function& other)
+	{
+		m_function = other.m_function;
+		m_returnType = other.m_returnType;
+		if (other.m_signature) m_signature = new Buffer(*other.m_signature);
+		else m_signature = nullptr;
+	}
+
+	Function& Function::operator=(const Function& other)
+	{
+		if (this != &other)
+		{
+			m_function = other.m_function;
+			m_returnType = other.m_returnType;
+			delete m_signature;
+			m_signature = nullptr;
+			if (other.m_signature) m_signature = new Buffer(*other.m_signature);
+		}
+		return *this;
+	}
+
+	Function::Function(Function&& other) noexcept
+	{
+		m_function = other.m_function;
+		m_returnType = other.m_returnType;
+		m_signature = other.m_signature;
+		other.m_signature = nullptr;
+	}
+
+	Function& Function::operator=(Function&& other) noexcept
+	{
+		if (this != &other)
+		{
+			m_function = other.m_function;
+			m_returnType = other.m_returnType;
+			delete m_signature;
+			m_signature = other.m_signature;
+			other.m_signature = nullptr;
+		}
+		return *this;
+	}
+
+	Function::~Function()
+	{
+		delete m_signature;
+	}
+
+	HLSLDataType Function::operator()() {
+		if (std::holds_alternative<std::function<HLSLDataType(Buffer&)>>(m_function))
+		{
+			m_signature->Update();
+			return std::get<std::function<HLSLDataType(Buffer&)>>(m_function)(*m_signature);
+		}
+		else if (std::holds_alternative<std::function<HLSLDataType(void)>>(m_function))
+		{
+			return std::get<std::function<HLSLDataType(void)>>(m_function)();
+		}
+		return Empty();
+	}
+
+	void Function::SetSignature(Layout& signature)
+	{
+		m_signature->Init(signature);
+	}
+
+	Type Function::GetReturnType() { return m_returnType; }
+
+	Buffer::Buffer(const Buffer& other)
+	{
+		m_layout = other.m_layout;
+		m_buffer = other.m_buffer;
+		m_pointers.resize(0);
+		m_functions.resize(0);
+		SetPtrRec(m_layout.root);
+		SetDynamicRec(m_layout.root);
+	}
+
+	Buffer& Buffer::operator=(const Buffer& other)
+	{
+		m_layout = other.m_layout;
+		m_buffer = other.m_buffer;
+		m_pointers.resize(0);
+		m_functions.resize(0);
+		SetPtrRec(m_layout.root);
+		SetDynamicRec(m_layout.root);
+		return *this;
+	}
+
+	Buffer::Buffer(Buffer&& other) noexcept
+	{
+		m_layout = std::move(other.m_layout);
+		m_buffer = std::move(other.m_buffer);
+		m_pointers.resize(0);
+		m_functions.resize(0);
+		SetPtrRec(m_layout.root);
+		SetDynamicRec(m_layout.root);
+	}
+
+	Buffer& Buffer::operator=(Buffer&& other) noexcept
+	{
+		m_layout = std::move(other.m_layout);
+		m_buffer = std::move(other.m_buffer);
+		m_pointers.resize(0);
+		m_functions.resize(0);
+		SetPtrRec(m_layout.root);
+		SetDynamicRec(m_layout.root);
+		return *this;
 	}
 
 }

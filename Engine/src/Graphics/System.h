@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <Utility/Classes.h>
 #include "DeviceEx.h"
 #include "ContextEx.h"
 #include "VertexShader.h"
@@ -35,6 +36,7 @@ namespace Duat::Graphics {
 		friend BlendState;
 		friend RenderTarget;
 		friend CompositionEx;
+		friend Camera;
 
 		void Init(HWND handle);
 		void Update();
@@ -49,27 +51,42 @@ namespace Duat::Graphics {
 			const std::string& rs = "Default"
 		);
 		void RemoveDrawCall(size_t uniqueDrawCallIndex);
-		void AddCamera(const std::string& cameraName, const std::string& rtName,
-			UINT topLeftX = 0, UINT topLeftY = 0, UINT width = 0, UINT height = 0);
+		void AddCamera(const std::string& name, Camera* pCamera);
+		void RemoveCamera(const std::string& name);
+		void AddBuffer(const std::string& name, Utility::HLSL::Layout layout);
+
+		const RenderTarget& GetRT(const std::string& name);
 
 	private:
 		void InitShaders();
 		void InitTextures();
 		void InitStates();
 		void InitRenderTargets();
+		void InitBuffers();
 
+		struct DrawCall;
 		void SetRT(const std::string& name);
+		void SetRT(const DrawCall& settings);
 		void SetVS(const std::string& name);
+		void SetVS(const DrawCall& settings);
 		void SetPS(const std::string& name);
+		void SetPS(const DrawCall& settings);
 		void SetCS(const std::string& name);
+		void SetCS(const DrawCall& settings);
 		void SetBS(const std::string& name);
+		void SetBS(const DrawCall& settings);
 		void SetRS(const std::string& name);
+		void SetRS(const DrawCall& settings);
 		void SetTP(const Topology& topology);
+		void SetTP(const DrawCall& settings);
 		void SetDSS(const std::string& name);
 		void SetVP(const std::string& cameraName);
+		void SetVP(const DrawCall& settings);
 		void SetVP(const D3D11_VIEWPORT& viewport);
 		void SetVP(const std::vector<D3D11_VIEWPORT>& viewports);
-		//void SetGlobalCB(const std::string& cameraName);
+		void SetCB(const std::string& name);
+		void SetCB(const DrawCall& settings);
+		void SetDefaultCB(const DrawCall& settings);
 
 		//void SetSS(const std::string& name);
 
@@ -111,7 +128,7 @@ namespace Duat::Graphics {
 		std::map<std::string, DepthStencilState>  m_DSS;
 		std::map<std::string, RenderTarget>       m_RT;
 		std::map<std::string, ConstantBuffer>     m_CB;
-		std::map<std::string, Camera>             m_Cameras;
+		std::map<std::string, Camera*>            m_Cameras;
 	};
 
 }

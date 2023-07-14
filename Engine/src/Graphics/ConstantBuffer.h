@@ -9,23 +9,21 @@ namespace Duat::Graphics {
 
 	struct System;
 	struct ConstantBuffer : public Utility::HLSL::Buffer {
-		ConstantBuffer(System& gfx, const Utility::HLSL::Layout& layout,
-			Usage usage = Usage::Default, Access cpuAccess = Access::None);
-		ConstantBuffer(System* pGFX, const Utility::HLSL::Layout& layout,
-			Usage usage = Usage::Default, Access cpuAccess = Access::None);
-		void Init(System& gfx, const Utility::HLSL::Layout& layout,
-			Usage usage = Usage::Default, Access cpuAccess = Access::None);
-		void Init(System* pGFX, const Utility::HLSL::Layout& layout,
-			Usage usage = Usage::Default, Access cpuAccess = Access::None);
+		ConstantBuffer() = default;
+		ConstantBuffer(System& gfx, const Utility::HLSL::Layout& layout);
+		ConstantBuffer(System* pGFX, const Utility::HLSL::Layout& layout);
+		void Init(System& gfx, const Utility::HLSL::Layout& layout);
+		void Init(System* pGFX, const Utility::HLSL::Layout& layout);
 	
+		void Update();
+
 		ID3D11Buffer* Get();
 		ID3D11Buffer** GetAddressOf();
 		ID3D11Buffer** ReleaseAndGetAddressOf();
 
-		bool IsDynamic() const;
 	private:
+		System* m_pGFX;
 		Utility::HResult m_hresult;
-		bool is_dynamic;
 		D3D11_BUFFER_DESC m_desc;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_pConstantBuffer;
 	};

@@ -36,6 +36,12 @@ namespace Duat::Graphics {
 		InitTextures();
 		InitStates();
 		InitRenderTargets();
+		InitBuffers();
+
+		static Camera defaultCamera;
+		defaultCamera.Init("Default");
+		defaultCamera.SyncWithRT(this);
+		AddCamera("Default", &defaultCamera);
 
 		m_Context.SetClearColor( 0,0,0,0 );
 	}
@@ -49,17 +55,19 @@ namespace Duat::Graphics {
 		{
 			if (pass.second.size() != 0) 
 			{
-				SetRT(pass.second[0].rt);
-				SetVS(pass.second[0].vs);
-				SetPS(pass.second[0].ps);
-				SetBS(pass.second[0].bs);
-				SetRS(pass.second[0].rs);
-				SetTP(pass.second[0].tp);
-				SetVP(pass.second[0].cam);
+				auto& settings = pass.second[0];
+				SetRT(settings);
+				SetVS(settings);
+				SetPS(settings);
+				SetBS(settings);
+				SetRS(settings);
+				SetTP(settings);
+				SetVP(settings);
 			}
 			for (auto& drawCall : pass.second)
 			{
 				auto& settings = drawCall.second;
+				SetDefaultCB(settings);
 
 				// to be implemented
 				// m_Context->VSSetConstantBuffers();
@@ -84,12 +92,25 @@ namespace Duat::Graphics {
 	size_t System::AddDrawCall(Geometry::Mesh* mesh, const std::string& vs, const std::string& ps, const std::string& cam, const Topology& tp, const std::string& bs, const std::string& rs)
 	{
 		DrawCall dc;
-		dc.rt = m_Cameras[cam].GetRT();
-		dc.cam = cam;
-		dc.vs = vs;
-		dc.ps = ps;
-		dc.bs = bs;
-		dc.rs = rs;
+		if (m_Cameras.count(cam) > 0)
+		{
+			dc.rt = m_Cameras[cam]->GetRT();
+			dc.cam = cam;
+		}
+		else m_result << "Camera \"" + cam + "\" doesn't exist.";
+
+		if (m_VS.count(vs) > 0) dc.vs = vs;
+		else m_result << "VertexShader \"" + vs + "\" doesn't exist.";
+
+		if (m_PS.count(ps) > 0) dc.ps = ps;
+		else m_result << "PixelShader \"" + ps + "\" doesn't exist.";
+
+		if (m_BS.count(bs) > 0) dc.bs = bs;
+		else m_result << "BlendState \"" + bs + "\" doesn't exist.";
+
+		if (m_RS.count(rs) > 0) dc.rs = rs;
+		else m_result << "RasterizerState \"" + rs + "\" doesn't exist.";
+
 		dc.tp = tp;
 
 		HLSL::Layout vbLayout("VertexBuffer");
@@ -125,16 +146,44 @@ namespace Duat::Graphics {
 			dc.second.erase(uniqueDrawCallIndex);
 	}
 
-	void System::AddCamera(const std::string& cameraName, const std::string& rtName, UINT topLeftX, UINT topLeftY, UINT width, UINT height)
+	void System::AddCamera(const std::string& name, Camera* pCamera)
 	{
-		if (m_RT.count(rtName) <= 0) {
-			m_result << "Render target \"" + rtName + "\" doesn't exist.";
+		if (pCamera == nullptr)
+		{
+			m_result << "Camera pointer is nullptr";
+			return;
+		}
+		if (m_Cameras.count(name) > 0) {
+			m_result << "Camera with name \"" + name + "\" already exists.";
+			return;
+		}
+		if (m_RT.count(pCamera->GetRT()) <= 0) {
+			m_result << "Render target \"" + pCamera->GetRT() + "\" doesn't exist.";
 			return;
 		}
 
-		if (width == 0) width = m_RT[rtName].GetWidth();
-		if (height == 0) height = m_RT[rtName].GetHeight();
-		m_Cameras[cameraName].Init(rtName, topLeftX, topLeftY, width, height);
+		m_Cameras[name] = pCamera;
+	}
+
+	void System::RemoveCamera(const std::string& name)
+	{
+		m_Cameras.erase(name);
+		for (auto& pass : m_drawCalls)
+			if (pass.second.size() > 0 && pass.second[0].cam == name) m_drawCalls.erase(pass.first);
+	}
+
+	void System::AddBuffer(const std::string& name, Utility::HLSL::Layout layout)
+	{
+		m_CB[name].Init(this, layout);
+	}
+
+	const RenderTarget& System::GetRT(const std::string& name)
+	{
+		if (m_RT.count(name) > 0) return m_RT[name];
+		else m_result << "RenderTarget \"" + name + "\" doesn't exist.";
+		
+		static RenderTarget nullReference;
+		return nullReference;
 	}
 
 	void System::InitShaders()
@@ -226,12 +275,28 @@ namespace Duat::Graphics {
 	void System::InitRenderTargets()
 	{
 		m_RT["Default"].Init(this, m_Context.GetBackBuffer());
-		AddCamera("Default", "Default");
+	}
+
+	void System::InitBuffers()
+	{
+		Utility::HLSL::Layout layout;
+		layout["DeltaTime"] = HLSL::Function([](){ return (float)Time::DeltaTime; });
+		layout["IsClockwise"] = false;
+		layout["ModelMatrix"] = XMMatrixIdentity();
+		layout["ViewMatrix"] = XMMatrixIdentity();
+		layout["ProjectionMatrix"] = XMMatrixIdentity();
+
+		m_CB["Default"].Init(this, layout);
 	}
 		
 	void System::SetRT(const std::string& name)
 	{
 		m_Context->OMSetRenderTargets(1, m_RT[name].GetRTVAddressOf(), m_RT[name].GetDSV());
+	}
+
+	void System::SetRT(const DrawCall& settings)
+	{
+		SetRT(settings.rt);
 	}
 
 	void System::SetVS(const std::string& name)
@@ -240,9 +305,19 @@ namespace Duat::Graphics {
 		m_Context->IASetInputLayout(m_VS[name].GetInputLayout());
 	}
 
+	void System::SetVS(const DrawCall& settings)
+	{
+		SetVS(settings.vs);
+	}
+
 	void System::SetPS(const std::string& name)
 	{
 		m_Context->PSSetShader(m_PS[name].Get(), 0, 0);
+	}
+
+	void System::SetPS(const DrawCall& settings)
+	{
+		SetPS(settings.ps);
 	}
 
 	void System::SetCS(const std::string& name)
@@ -250,9 +325,19 @@ namespace Duat::Graphics {
 		m_Context->CSSetShader(m_CS[name].Get(), 0, 0);
 	}
 
+	void System::SetCS(const DrawCall& settings)
+	{
+		m_result << "Not implemented yet.";
+	}
+
 	void System::SetBS(const std::string& name)
 	{
 		m_Context->OMSetBlendState(m_BS[name].Get(), NULL, 0xFFFFFFFF);
+	}
+
+	void System::SetBS(const DrawCall& settings)
+	{
+		SetBS(settings.bs);
 	}
 
 	void System::SetRS(const std::string& name)
@@ -260,9 +345,19 @@ namespace Duat::Graphics {
 		m_Context->RSSetState(m_RS[name].Get());
 	}
 
+	void System::SetRS(const DrawCall& settings)
+	{
+		SetRS(settings.rs);
+	}
+
 	void System::SetTP(const Topology& topology)
 	{
 		m_Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY(topology));
+	}
+
+	void System::SetTP(const DrawCall& settings)
+	{
+		SetTP(settings.tp);
 	}
 
 	void System::SetDSS(const std::string& name)
@@ -272,7 +367,12 @@ namespace Duat::Graphics {
 
 	void System::SetVP(const std::string& cameraName)
 	{
-		SetVP(m_Cameras[cameraName].GetViewports());
+		SetVP(m_Cameras[cameraName]->GetViewports());
+	}
+
+	void System::SetVP(const DrawCall& settings)
+	{
+		SetVP(settings.cam);
 	}
 
 	void System::SetVP(const D3D11_VIEWPORT& viewport)
@@ -283,6 +383,27 @@ namespace Duat::Graphics {
 	void System::SetVP(const std::vector<D3D11_VIEWPORT>& viewports)
 	{
 		m_Context->RSSetViewports(viewports.size(), &viewports[0]);
+	}
+
+	void System::SetCB(const std::string& name)
+	{
+		m_result << "Not implemented yet.";
+	}
+
+	void System::SetCB(const DrawCall& settings)
+	{
+		m_result << "Not implemented yet.";
+	}
+
+	void System::SetDefaultCB(const DrawCall& settings)
+	{
+		m_CB["Default"]["IsClockwise"] = m_RS[settings.rs].IsClockwise();
+		//m_CB["Default"]["ModelMatrix"] = ;
+		m_CB["Default"]["ViewMatrix"] = m_Cameras[settings.cam]->GetViewMatrix();
+		m_CB["Default"]["ProjectionMatrix"] = m_Cameras[settings.cam]->GetProjectionMatrix();
+		m_CB["Default"].Update();
+		m_Context->VSSetConstantBuffers(0, 1, m_CB["Default"].GetAddressOf());
+		m_Context->PSSetConstantBuffers(0, 1, m_CB["Default"].GetAddressOf());
 	}
 		
 	std::string System::DrawCall::GetKey()

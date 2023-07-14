@@ -25,22 +25,10 @@ namespace Duat
 	private:
 		LRESULT     WindowProcEx(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) override;
 
+		HINSTANCE   m_hInstance;
 		Utility::Result  m_result;
 		Utility::HResult m_hresult;
 		Graphics::System m_gfx;
-
-		//Discord::Bot* bot;
-		void DiscordBotStuff();
-
-		//void Test();
-		//void Anki(std::map<std::tuple<int,int>,std::string>& anki_map);
-
-		HINSTANCE   m_hInstance;
-		//DAFClient	m_client;
-		//DAFServer   m_server;
-		bool        isServer;
-		std::string emergency;
-		//Game::Camera* cam;
 	};
 
 }

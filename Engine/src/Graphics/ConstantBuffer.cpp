@@ -4,39 +4,49 @@
 
 namespace Duat::Graphics {
 
-	ConstantBuffer::ConstantBuffer(System& gfx, const Utility::HLSL::Layout& layout, Usage usage, Access cpuAccess)
+	ConstantBuffer::ConstantBuffer(System& gfx, const Utility::HLSL::Layout& layout)
 	{
-		Init(gfx, layout, usage, cpuAccess);
+		Init(gfx, layout);
 	}
 
-	ConstantBuffer::ConstantBuffer(System* pGFX, const Utility::HLSL::Layout& layout, Usage usage, Access cpuAccess)
+	ConstantBuffer::ConstantBuffer(System* pGFX, const Utility::HLSL::Layout& layout)
 	{
-		Init(pGFX, layout, usage, cpuAccess);
+		Init(pGFX, layout);
 	}
 
-	void ConstantBuffer::Init(System& gfx, const Utility::HLSL::Layout& layout, Usage usage, Access cpuAccess)
+	void ConstantBuffer::Init(System& gfx, const Utility::HLSL::Layout& layout)
 	{
-		Init(&gfx, layout, usage, cpuAccess);
+		Init(&gfx, layout);
 	}
 
-	void ConstantBuffer::Init(System* pGFX, const Utility::HLSL::Layout& layout, Usage usage, Access cpuAccess)
+	void ConstantBuffer::Init(System* pGFX, const Utility::HLSL::Layout& layout)
 	{
+		m_pGFX = pGFX;
 		Utility::HLSL::Buffer::Init(layout);
-
-		if (usage == Usage::Dynamic) is_dynamic = true;
-		else is_dynamic = false;
 
 		ZeroMemory(&m_desc, sizeof(D3D11_BUFFER_DESC));
 		m_desc.ByteWidth = (UINT)GetBufferSize();
-		m_desc.Usage = D3D11_USAGE(usage);
+		m_desc.Usage = IsDynamic() ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 		m_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		m_desc.CPUAccessFlags = (UINT)cpuAccess;
+		m_desc.CPUAccessFlags = IsDynamic() ? D3D11_CPU_ACCESS_WRITE : 0;
 
 		D3D11_SUBRESOURCE_DATA subData;
 		ZeroMemory(&subData, sizeof(D3D11_SUBRESOURCE_DATA));
 		subData.pSysMem = GetBuffer();
 
 		m_hresult << pGFX->m_Device->CreateBuffer(&m_desc, &subData, ReleaseAndGetAddressOf());
+	}
+
+	void ConstantBuffer::Update()
+	{
+		if (IsDynamic())
+		{
+			Utility::HLSL::Buffer::Update();
+			D3D11_MAPPED_SUBRESOURCE mapped;
+			m_hresult << m_pGFX->m_Context->Map(Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+			std::memcpy(mapped.pData, GetBuffer(), GetBufferSize());
+			m_pGFX->m_Context->Unmap(Get(), 0);
+		}
 	}
 
 	ID3D11Buffer* ConstantBuffer::Get()
@@ -52,11 +62,6 @@ namespace Duat::Graphics {
 	ID3D11Buffer** ConstantBuffer::ReleaseAndGetAddressOf()
 	{
 		return m_pConstantBuffer.ReleaseAndGetAddressOf();
-	}
-
-	bool ConstantBuffer::IsDynamic() const
-	{
-		return is_dynamic;
 	}
 
 }

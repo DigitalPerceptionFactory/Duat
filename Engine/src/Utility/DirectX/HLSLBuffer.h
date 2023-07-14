@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include <functional>
+#include <memory>
 #include <DirectXMath.h>
 #include "DX_INT2.h"
 #include "DX_INT3.h"
@@ -50,6 +52,7 @@ namespace Duat::Utility::HLSL {
 	struct Element;
 	struct Struct;
 	struct Array;
+	struct Function;
 	struct Assign;
 	struct Index;
 	struct Label;
@@ -62,7 +65,7 @@ namespace Duat::Utility::HLSL {
 		HLSL_EXPAND
 		HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
-		Struct, Array, Empty, Error, Invalid
+		Struct, Array, Function, Empty, Invalid
 	};
 
 	template<Type T>
@@ -101,19 +104,19 @@ namespace Duat::Utility::HLSL {
 	};
 	template<> struct Meta<Type::Bool2> {
 		using TrueType = DirectX::BOOL2;
-		static constexpr size_t padding = 2;
+		static constexpr size_t padding = 6;
 		static constexpr Type type = Type::Bool2;
 		static constexpr char signature[] = "b2";
 	};
 	template<> struct Meta<Type::Bool3> {
 		using TrueType = DirectX::BOOL3;
-		static constexpr size_t padding = 1;
+		static constexpr size_t padding = 9;
 		static constexpr Type type = Type::Bool3;
 		static constexpr char signature[] = "b3";
 	};
 	template<> struct Meta<Type::Bool4> {
 		using TrueType = DirectX::BOOL4;
-		static constexpr size_t padding = 0;
+		static constexpr size_t padding = 12;
 		static constexpr Type type = Type::Bool4;
 		static constexpr char signature[] = "b4";
 	};
@@ -158,6 +161,12 @@ namespace Duat::Utility::HLSL {
 		static constexpr size_t padding = 0;
 		static constexpr Type type = Type::Array;
 		static constexpr char signature[] = "a";
+	};
+	template<> struct Meta<Type::Function> {
+		using TrueType = Function;
+		static constexpr size_t padding = 0;
+		static constexpr Type type = Type::Function;
+		static constexpr char signature[] = "x";
 	};
 
 	template<> struct Meta<Type::IntPtr> {
@@ -240,9 +249,38 @@ namespace Duat::Utility::HLSL {
 	};
 
 #define HLSL_EVALUATE(x) Meta<Type::x>::TrueType,
-	typedef std::variant<HLSL_EXPAND HLSL_EXPAND_PTR Struct, Array, Empty, Error> HLSLDataType;
+	typedef std::variant<HLSL_EXPAND HLSL_EXPAND_PTR Struct, Array, Function, Empty> HLSLDataType;
 #undef HLSL_EVALUATE
-	
+
+	static size_t GetSizeOf(Type t)
+	{
+#define HLSL_EVALUATE(x) case Type::x: return sizeof(Meta<Type::x>::TrueType);
+		switch (t)
+		{
+			HLSL_EXPAND
+		}
+#undef HLSL_EVALUATE
+#define HLSL_EVALUATE(x) case Type::x: { static Meta<Type::x>::TrueType var = nullptr; return sizeof(*var); }
+		switch (t)
+		{
+			HLSL_EXPAND_PTR
+		}
+#undef HLSL_EVALUATE
+		Result res;
+		res << "You were trying to calculate size of not supported data type.";
+	}
+	static size_t GetPadding(Type t)
+	{
+#define HLSL_EVALUATE(x) case Type::x: return Meta<Type::x>::padding;
+		switch (t)
+		{
+			HLSL_EXPAND
+			HLSL_EXPAND_PTR
+		}
+		Result res;
+		res << "You were trying to calculate padding of not supported data type.";
+#undef HLSL_EVALUATE
+	}
 	static std::string TypeToString(Type t)
 	{
 #define HLSL_EVALUATE(x) case Type::x: return #x;
@@ -252,8 +290,8 @@ namespace Duat::Utility::HLSL {
 			HLSL_EXPAND_PTR
 		case Type::Struct: return "Struct";
 		case Type::Array: return "Array";
+		case Type::Function: return "Function";
 		case Type::Empty: return "Empty";
-		case Type::Error: return "Error";
 		case Type::Invalid: return "Invalid";
 		}
 		return "TypeToStringFAILED";
@@ -317,8 +355,27 @@ namespace Duat::Utility::HLSL {
 		std::vector<Element> elements;
 	};
 		
-	
-	
+	struct Function {
+		Function();
+		Function(Layout& signature, const std::function<HLSLDataType(Buffer&)>& func);
+		Function(const std::function<HLSLDataType(void)>& func);
+		Function(const Function& other);
+		Function& operator=(const Function& other);
+		Function(Function&& other) noexcept;
+		Function& operator=(Function&& other) noexcept;
+		~Function();
+
+		HLSLDataType operator()();
+		void SetSignature(Layout& signature);
+		Type GetReturnType();
+	private:
+		std::variant<
+			std::function<HLSLDataType(Buffer&)>,
+			std::function<HLSLDataType(void)>
+		> m_function;
+		Buffer* m_signature;
+		Type m_returnType;
+	};
 
 	struct Assign {
 		friend Array; friend Struct; friend Element;
@@ -333,6 +390,7 @@ namespace Duat::Utility::HLSL {
 		Assign(const HLSLDataType& value, std::source_location loc = std::source_location::current());
 		Assign(const Struct& value, std::source_location loc = std::source_location::current());
 		Assign(const Array& value, std::source_location loc = std::source_location::current());
+		Assign(const Function& value, std::source_location loc = std::source_location::current());
 
 		std::string GetLabel() const;
 		Type GetType() const;
@@ -374,9 +432,24 @@ namespace Duat::Utility::HLSL {
 		HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 
+		// conversion operators
+#define HLSL_EVALUATE(x) explicit operator Meta<Type::x>::TrueType() \
+		{ \
+			if (m_type != Type::x) \
+			{ \
+				m_result << "It is impossible to obtain " + TypeToString(Type::x) + \
+					" because the element is of type " + TypeToString(m_type) + "."; \
+				static Meta<Type::x>::TrueType nullValue; \
+				return nullValue; \
+			} \
+			return std::get<Meta<Type::x>::TrueType>(m_value); \
+		}
+		HLSL_EXPAND
+		HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
+
 		Element(const std::string& label, const Struct& var);
 		Element(const std::string& label, const Array& var);
-		Element(const std::string& label, const Error& err);
 
 		// Assignment Operators
 		Element& Rename(const std::string& label);
@@ -402,11 +475,80 @@ namespace Duat::Utility::HLSL {
 		size_t m_offset = 0;
 	};
 
+	static void EmplaceVariant(void* dest, HLSLDataType var)
+	{
+		std::visit([&](const auto& value) {
+			Result result;
+			using ValueType = std::decay_t<decltype(value)>;
+			if constexpr (std::is_same_v<ValueType, Array>)
+			{
+				result << "You can't call EmplaceVariant on Array.";
+			}
+			else if constexpr (std::is_same_v<ValueType, Struct>)
+			{
+				result << "You can't call EmplaceVariant on Struct.";
+			}
+			else if constexpr (std::is_same_v<ValueType, Function>)
+			{
+				result << "You can't call EmplaceVariant on Function.";
+			}
+			else if constexpr (std::is_same_v<ValueType, bool>)
+			{
+				std::memcpy(dest, &value, sizeof(bool));
+			}
+			else if constexpr (std::is_same_v<ValueType, DirectX::BOOL2>)
+			{
+				char* p = (char*)dest;
+				std::memcpy(p, &value.x, sizeof(bool));
+				std::memcpy(p + 4, &value.y, sizeof(bool));
+			}
+			else if constexpr (std::is_same_v<ValueType, DirectX::BOOL3>)
+			{
+				char* p = (char*)dest;
+				std::memcpy(p, &value.x, sizeof(bool));
+				std::memcpy(p + 4, &value.y, sizeof(bool));
+				std::memcpy(p + 8, &value.z, sizeof(bool));
+			}
+			else if constexpr (std::is_same_v<ValueType, DirectX::BOOL4>)
+			{
+				char* p = (char*)dest;
+				std::memcpy(p, &value.x, sizeof(bool));
+				std::memcpy(p + 4, &value.y, sizeof(bool));
+				std::memcpy(p + 8, &value.z, sizeof(bool));
+				std::memcpy(p + 12, &value.w, sizeof(bool));
+			}
+#define HLSL_EVALUATE(x) \
+			else if constexpr (std::is_same_v<ValueType, Meta<Type::x>::TrueType>) \
+			{ \
+				std::memcpy(dest, &value, sizeof(Meta<Type::x>::TrueType)); \
+			}
+			HLSL_EXPAND
+#undef HLSL_EVALUATE
+#define HLSL_EVALUATE(x) \
+			else if constexpr (std::is_same_v<ValueType, Meta<Type::x>::TrueType>) \
+			{ \
+				auto refValue = *value; \
+				std::memcpy(dest, &refValue, sizeof(refValue)); \
+			}
+			HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
+			else
+			{
+				result << "You probably called EmplaceVariant on Empty or Invalid type.";
+			}
+			}, var);
+	}
+
 	static void EmplaceRec(Element& e)
 	{
 		HLSLDataType value = e.GetValue();
 		Type type = e.GetType();
-		if (type == Type::Array)
+
+		if (type == Type::Empty || type == Type::Invalid)
+		{
+			return;
+		}
+		else if (type == Type::Array)
 		{
 			Array& arr = std::get<Array>(value);
 			for (auto& a : arr.elements)
@@ -420,20 +562,15 @@ namespace Duat::Utility::HLSL {
 				EmplaceRec(s);
 			return;
 		}
-#define HLSL_EVALUATE(x) \
-			else if (type == Type::x) { \
-				auto& var = std::get<Meta<Type::x>::TrueType>(value); \
-				std::memcpy(&e.GetBuf()[e.GetOffset()], &var, sizeof(var)); \
-				return; }
-		HLSL_EXPAND
-#undef HLSL_EVALUATE
-#define HLSL_EVALUATE(x) \
-			else if (type == Type::x) { \
-				auto var = *std::get<Meta<Type::x>::TrueType>(value); \
-				std::memcpy(&e.GetBuf()[e.GetOffset()], &var, sizeof(var)); \
-				return; }
-		HLSL_EXPAND_PTR
-#undef HLSL_EVALUATE
+		else if (type == Type::Function)
+		{
+			Function& func = std::get<Function>(value);
+			EmplaceVariant(&e.GetBuf()[e.GetOffset()], func());
+		}
+		else
+		{
+			EmplaceVariant(&e.GetBuf()[e.GetOffset()], value);
+		}
 	}
 
 	struct Layout {
@@ -463,12 +600,19 @@ namespace Duat::Utility::HLSL {
 		Buffer(const Layout& layout) {
 			Init(layout);
 		}
+		Buffer(const Buffer& other);
+		Buffer&  operator=(const Buffer& other);
+		Buffer(Buffer&& other) noexcept;
+		Buffer& operator=(Buffer&& other) noexcept;
+
 		void Init(const Layout& layout) {
 			m_layout = layout;
 			size_t buffer_size = CalcOffsetRec(0, m_layout.root);
 			m_buffer.resize(buffer_size);
 			SetPtrRec(m_layout.root);
 			EmplaceRec(m_layout.root);
+			m_pointers.resize(0);
+			m_functions.resize(0);
 			SetDynamicRec(m_layout.root);
 		}
 		Element& operator[](Label label) {
@@ -484,8 +628,13 @@ namespace Duat::Utility::HLSL {
 			return m_layout.GetRoot();
 		}
 		void Update() {
-			for (auto& e : m_dynamic)
-				EmplaceRec(e);
+			for (auto& e : m_pointers)
+				EmplaceRec(*e);
+			for (auto& e : m_functions)
+				EmplaceRec(*e);
+		}
+		bool IsDynamic() {
+			return m_pointers.size() || m_functions.size();
 		}
 	protected:
 		size_t CalcOffsetRec(size_t m_offset, Element& e) {
@@ -505,6 +654,10 @@ namespace Duat::Utility::HLSL {
 					str_offset += CalcOffsetRec(m_offset + str_offset, s);
 
 				return str_offset + (16 - str_offset % 16);
+			}
+			else if (e.m_type == Type::Function) {
+				auto& func = std::get<Function>(e.m_value);
+				return GetSizeOf(func.GetReturnType()) + GetPadding(func.GetReturnType());
 			}
 #define HLSL_EVALUATE(x) \
 			else if (e.m_type == Type::x) { \
@@ -552,14 +705,19 @@ namespace Duat::Utility::HLSL {
 				for (auto& s : str.elements)
 					SetDynamicRec(s);
 			}
-#define HLSL_EVALUATE(x) else if (e.m_type == Type::x) { m_dynamic.push_back(e); }
+			else if (e.m_type == Type::Function)
+			{
+				m_functions.push_back(&e);
+			}
+#define HLSL_EVALUATE(x) else if (e.m_type == Type::x) { m_pointers.push_back(&e); }
 			HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 		}
 
 		Layout m_layout;
-		std::vector<Element> m_dynamic;
 		std::vector<char> m_buffer;
+		std::vector<Element*> m_pointers;
+		std::vector<Element*> m_functions;
 	};
 
 	

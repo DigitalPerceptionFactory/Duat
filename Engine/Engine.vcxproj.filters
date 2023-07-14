@@ -246,6 +246,9 @@
     <ClInclude Include="src\Graphics\Camera.h">
       <Filter>Graphics\h</Filter>
     </ClInclude>
+    <ClInclude Include="src\Utility\Classes\Time.h">
+      <Filter>Utility\Classes\h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graphics\VertexShader.cpp">
@@ -362,6 +365,9 @@
     </ClCompile>
     <ClCompile Include="src\Graphics\Camera.cpp">
       <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Classes\Time.cpp">
+      <Filter>Utility\Classes\cpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

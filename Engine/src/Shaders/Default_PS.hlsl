@@ -9,7 +9,10 @@ float4 main(Input i, uint id : SV_InstanceID, uint pid : SV_PrimitiveID) : SV_TA
     float3 ambient = float3(0.1618, 0.1618, 0.1618);
     float3 final = i.color.rgb * ambient;
     
-    return float4(1, 1, 1, .2f);
+    if(DPF::myInt3.x == true)
+        return float4(1, 1, 1, 0.2f);
+    else
+        return float4(1, 0, 0, 0.5f);
     
     float4 position = i.shadow;
     position.xyz /= position.w;

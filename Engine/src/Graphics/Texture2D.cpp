@@ -138,57 +138,57 @@ namespace Duat::Graphics
 		return *this;
 	}
 
-	D3D11_TEXTURE2D_DESC Texture2D::GetDesc()
+	D3D11_TEXTURE2D_DESC Texture2D::GetDesc() const
 	{
 		return m_desc;
 	}
 
-	UINT Texture2D::GetWidth()
+	UINT Texture2D::GetWidth() const
 	{
 		return m_desc.Width;
 	}
 
-	UINT Texture2D::GetHeight()
+	UINT Texture2D::GetHeight() const
 	{
 		return m_desc.Height;
 	}
 
-	UINT Texture2D::GetMipLevels()
+	UINT Texture2D::GetMipLevels() const
 	{
 		return m_desc.MipLevels;
 	}
 
-	UINT Texture2D::GetArraySize()
+	UINT Texture2D::GetArraySize() const
 	{
 		return m_desc.ArraySize;
 	}
 
-	DXGI_FORMAT Texture2D::GetFormat()
+	DXGI_FORMAT Texture2D::GetFormat() const
 	{
 		return m_desc.Format;
 	}
 
-	UINT Texture2D::GetSampleCount()
+	UINT Texture2D::GetSampleCount() const
 	{
 		return m_desc.SampleDesc.Count;
 	}
 
-	Usage Texture2D::GetUsage()
+	Usage Texture2D::GetUsage() const
 	{
 		return Usage(m_desc.Usage);
 	}
 
-	UINT Texture2D::GetBindFlags()
+	UINT Texture2D::GetBindFlags() const
 	{
 		return m_desc.BindFlags;
 	}
 
-	UINT Texture2D::GetCPUAccessFlags()
+	UINT Texture2D::GetCPUAccessFlags() const
 	{
 		return m_desc.CPUAccessFlags;
 	}
 
-	UINT Texture2D::GetMiscFlags()
+	UINT Texture2D::GetMiscFlags() const
 	{
 		return m_desc.MiscFlags;
 	}

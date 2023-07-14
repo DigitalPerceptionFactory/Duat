@@ -6,6 +6,7 @@ namespace DPF
     cbuffer DefaultBuffer : register(b0)
     {
         float deltaTime;
+        bool3 myInt3;
         bool isClockwise;
         int lightsCount;
     };

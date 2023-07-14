@@ -198,6 +198,7 @@
     <ClInclude Include="src\Utility\Classes.h" />
     <ClInclude Include="src\Utility\Classes\Hierarchy.h" />
     <ClInclude Include="src\Utility\Classes\Ring.h" />
+    <ClInclude Include="src\Utility\Classes\Time.h" />
     <ClInclude Include="src\Utility\Converter.h" />
     <ClInclude Include="src\Utility\Converter\String.h" />
     <ClInclude Include="src\Utility\DirectX.h" />
@@ -242,6 +243,7 @@
     <ClCompile Include="src\Graphics\VertexShader.cpp" />
     <ClCompile Include="src\HID\Keyboard.cpp" />
     <ClCompile Include="src\HID\Mouse.cpp" />
+    <ClCompile Include="src\Utility\Classes\Time.cpp" />
     <ClCompile Include="src\Utility\Converter\String.cpp" />
     <ClCompile Include="src\Utility\DirectX\DX_BOOL2.cpp" />
     <ClCompile Include="src\Utility\DirectX\DX_BOOL3.cpp" />
