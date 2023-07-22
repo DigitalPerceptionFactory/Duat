@@ -1,18 +1,23 @@
-#define PIXEL_SHADER
-#include "BasicBuffers.hlsli"
+#include "DefaultBuffer.hlsli"
 #include "BasicFunctions.hlsli"
 
+struct Input
+{
+    float4 position : SV_POSITION;
+    float4 uv : TEXCOORD;
+    float4 color : COLOR;
+    float4 normal : NORMAL;
+    float4 shadow : SHADOW;
+    float4 eye : EYE;
+};
 
-float4 main(Input i, uint id : SV_InstanceID, uint pid : SV_PrimitiveID) : SV_TARGET
+float4 main(Input i) : SV_TARGET
 {
     // doesn't really matter coz of being reassigned lower
     float3 ambient = float3(0.1618, 0.1618, 0.1618);
     float3 final = i.color.rgb * ambient;
     
-    if(DPF::myInt3.x == true)
-        return float4(1, 1, 1, 0.2f);
-    else
-        return float4(1, 0, 0, 0.5f);
+    //return float4(1, 1, 1, 0.2f);
     
     float4 position = i.shadow;
     position.xyz /= position.w;
@@ -23,9 +28,10 @@ float4 main(Input i, uint id : SV_InstanceID, uint pid : SV_PrimitiveID) : SV_TA
         
     //if (IsLit(i.shadow, shadowMap, shadowSampler))
     
-    i.uv.x -= (int) (i.uv.x);
-    i.uv.y -= (int) (i.uv.y);
+    //i.uv.x -= (int) (i.uv.x);
+    //i.uv.y -= (int) (i.uv.y);
     
+    // grey square grid effect
     if (i.uv.x < 0.5 && i.uv.y > 0.5)
         final = float3(0.236, 0.236, 0.236);
     else if(i.uv.x > 0.5 && i.uv.y > 0.5)
@@ -35,32 +41,22 @@ float4 main(Input i, uint id : SV_InstanceID, uint pid : SV_PrimitiveID) : SV_TA
     else if(i.uv.x > 0.5 && i.uv.y < 0.5)
         final = float3(0.236, 0.236, 0.236);
     
-    final = float3(0.236, 0.236, 0.236);
-    final *= ambient;
+
+    final = float3(0.3, 0.3, 0.3);
     if (true)
     {
-        for (int it = 0; it < DPF::lightsCount; ++it)
+        for (int it = 0; it < m_lightCount; ++it)
         {
-            if (DPF::lights[it].type == 0) // directional
-            {
-                final +=
+            final +=
 			(
-			   DPF::lights[it].color
-			   * max(dot(normalize(i.normal.rgb), normalize(DPF::lights[it].position.rgb)), 0)
-			) * DPF::lights[it].intensity;
-                
-                //final += Specular(2,5, i.normal, -lights[it].position, i.eye);
-            }
-            else if (DPF::lights[it].type == 1) // point
-            {
-                return float4(1, 0, 0, 1);
-            }
-            else if (DPF::lights[it].type == 2) // spot
-            {
-                return float4(1, 0, 0, 1);
-            }
+			   m_lights[it].color
+			   * max(dot(normalize(i.normal.rgb), normalize(m_lights[it].position.rgb)), 0)
+			) * m_lights[it].intensity;
         }
     }
     
-    return TransparentWindowBiasCorrection(float4(final.rgb, 1.0f));
+    final.r = i.uv.x;
+    final.g = i.uv.x;
+    final.b = i.uv.x;
+    return float4(final ,1);
 }

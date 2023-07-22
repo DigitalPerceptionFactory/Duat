@@ -39,9 +39,11 @@ namespace Duat::Graphics {
 		InitBuffers();
 
 		static Camera defaultCamera;
-		defaultCamera.Init("Default");
-		defaultCamera.SyncWithRT(this);
+		defaultCamera.Init(this, "Default");
+		defaultCamera.SetPosition({ 0, 0, -1 });
 		AddCamera("Default", &defaultCamera);
+		
+		HID::Focus = &defaultCamera;
 
 		m_Context.SetClearColor( 0,0,0,0 );
 	}
@@ -114,16 +116,30 @@ namespace Duat::Graphics {
 		dc.tp = tp;
 
 		HLSL::Layout vbLayout("VertexBuffer");
+		vbLayout["Position"] = XMFLOAT4();
+		vbLayout["TexCoord"] = XMFLOAT4();
+		vbLayout["Color"] = XMFLOAT4();
+		vbLayout["Normal"] = XMFLOAT4();
+		vbLayout["Shadow"] = XMFLOAT4();
+		vbLayout.Replicate(mesh->GetVertices().size());
+
 		for (int i = 0; i < mesh->GetVertices().size(); ++i)
 		{
-			vbLayout[i] = HLSL::Struct(
+			vbLayout[i]["Position"] = mesh->GetVertices()[i].position;
+			vbLayout[i]["TexCoord"] = mesh->GetVertices()[i].texCoord;
+			vbLayout[i]["Color"] = mesh->GetVertices()[i].color;
+			vbLayout[i]["Normal"] = mesh->GetVertices()[i].normal;
+
+			/*vbLayout[i]["Pos"] = HLSL::Struct(
 				{
 					HLSL::Assign(mesh->GetVertices()[i].position),
 					HLSL::Assign(mesh->GetVertices()[i].texCoord),
 					HLSL::Assign(mesh->GetVertices()[i].color),
-					HLSL::Assign(mesh->GetVertices()[i].normal)
+					HLSL::Assign(mesh->GetVertices()[i].normal),
+					HLSL::Assign(XMFLOAT4()),
+					HLSL::Assign(XMFLOAT4())
 				}
-			);
+			);*/
 		}
 
 		HLSL::Layout ibLayout("IndexBuffer");
@@ -157,11 +173,7 @@ namespace Duat::Graphics {
 			m_result << "Camera with name \"" + name + "\" already exists.";
 			return;
 		}
-		if (m_RT.count(pCamera->GetRT()) <= 0) {
-			m_result << "Render target \"" + pCamera->GetRT() + "\" doesn't exist.";
-			return;
-		}
-
+		
 		m_Cameras[name] = pCamera;
 	}
 
@@ -279,14 +291,29 @@ namespace Duat::Graphics {
 
 	void System::InitBuffers()
 	{
-		Utility::HLSL::Layout layout;
+		HLSL::Layout layout;
 		layout["DeltaTime"] = HLSL::Function([](){ return (float)Time::DeltaTime; });
 		layout["IsClockwise"] = false;
-		layout["ModelMatrix"] = XMMatrixIdentity();
+		layout["InstanceCount"] = 1;
+		layout["LightCount"] = 1;
 		layout["ViewMatrix"] = XMMatrixIdentity();
 		layout["ProjectionMatrix"] = XMMatrixIdentity();
+		m_CB["Default"].Init(this, layout, 1);
 
-		m_CB["Default"].Init(this, layout);
+		layout.Reset();
+		layout["ModelMatrix"] = XMMatrixIdentity();
+		layout.Replicate(100);
+		m_SB["Default"].Init(this, layout, 1);
+
+		layout.Reset();
+		layout["Position"] = XMFLOAT3(10, 10, 10);
+		layout["Intensity"] = 1.0f;
+		layout["Direction"] = XMFLOAT3(-1,-1,-1);
+		layout["Color"] = XMFLOAT3(1,1,1);
+		layout["ViewMatrix"] = XMMatrixIdentity();
+		layout["ProjectionMatrix"] = XMMatrixIdentity();
+		layout.Replicate(1);
+		m_SB["Light"].Init(this, layout, 1);
 	}
 		
 	void System::SetRT(const std::string& name)
@@ -398,12 +425,20 @@ namespace Duat::Graphics {
 	void System::SetDefaultCB(const DrawCall& settings)
 	{
 		m_CB["Default"]["IsClockwise"] = m_RS[settings.rs].IsClockwise();
-		//m_CB["Default"]["ModelMatrix"] = ;
+		m_CB["Default"]["InstanceCount"] = (int)settings.instances;
 		m_CB["Default"]["ViewMatrix"] = m_Cameras[settings.cam]->GetViewMatrix();
 		m_CB["Default"]["ProjectionMatrix"] = m_Cameras[settings.cam]->GetProjectionMatrix();
 		m_CB["Default"].Update();
 		m_Context->VSSetConstantBuffers(0, 1, m_CB["Default"].GetAddressOf());
 		m_Context->PSSetConstantBuffers(0, 1, m_CB["Default"].GetAddressOf());
+
+		m_SB["Default"][HLSL::Index(0)]["ModelMatrix"] = XMMatrixIdentity();
+		m_SB["Default"].Update();
+		m_Context->VSSetShaderResources(0, 1, m_SB["Default"].GetSRVAddressOf());
+		m_Context->PSSetShaderResources(0, 1, m_SB["Default"].GetSRVAddressOf());
+
+		m_Context->VSSetShaderResources(1, 1, m_SB["Light"].GetSRVAddressOf());
+		m_Context->PSSetShaderResources(1, 1, m_SB["Light"].GetSRVAddressOf());
 	}
 		
 	std::string System::DrawCall::GetKey()

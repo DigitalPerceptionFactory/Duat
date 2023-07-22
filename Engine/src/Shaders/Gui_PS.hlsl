@@ -1,6 +1,7 @@
 #define PIXEL_SHADER
-#include "BasicBuffers.hlsli"
+#include "DefaultBuffer.hlsli"
 #include "BasicFunctions.hlsli"
+
 
 struct GUI_Buffer
 {

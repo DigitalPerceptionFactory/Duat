@@ -2,39 +2,86 @@
 #include "System.h"
 
 
-namespace Duat::Graphics {
+using namespace DirectX;
 
-    void Camera::Init(const std::string& rtName, UINT topLeftX, UINT topLeftY, UINT width, UINT height)
+namespace Duat::Graphics {
+        
+    void Camera::Init(System& gfx, const std::string& rtName, UINT topLeftX, UINT topLeftY, UINT width, UINT height, float fovAngleY, float nearZ, float farZ)
     {
-        m_RT = rtName;
+        Init(&gfx, rtName, topLeftX, topLeftY, width, height, fovAngleY, nearZ, farZ);
+    }
+
+    void Camera::Init(System* pGFX, const std::string& rtName, UINT topLeftX, UINT topLeftY, UINT width, UINT height, float fovAngleY, float nearZ, float farZ)
+    {
+        if (pGFX->m_RT.count(rtName) > 0)
+            m_RT = rtName;
+        else
+        {
+            Utility::Result result;
+            result << "RenderTarget \"" + rtName + "\" doesn't exist.";
+            return;
+        }
+
         D3D11_VIEWPORT vp;
         vp.TopLeftX = topLeftX;
         vp.TopLeftY = topLeftY;
-        vp.Width = width;
-        vp.Height = height;
+        vp.Width = width > 0 ? width : pGFX->m_RT[rtName].GetWidth();
+        vp.Height = height > 0 ? height : pGFX->m_RT[rtName].GetHeight();;
         vp.MinDepth = 0.0f;
         vp.MaxDepth = 1.0f;
-
         m_viewports.push_back(vp);
+
+        m_pojectionMatrix = XMMatrixPerspectiveFovLH(
+            XMConvertToRadians(fovAngleY), (float)vp.Width / (float)vp.Height, nearZ, farZ
+        );
+
+        UpdateViewMatrix();
     }
 
-    void Camera::SyncWithRT(System& gfx)
+    void Camera::Interact(Keyboard& kbd, Mouse& mouse)
     {
-        SyncWithRT(&gfx);
-    }
+        if (kbd.IsKeyDown('S'))
+            TranslateZ(-m_moveSpeed * (float)Time::DeltaTime);
+        if (kbd.IsKeyDown('W'))
+            TranslateZ(m_moveSpeed * (float)Time::DeltaTime);
+        if (kbd.IsKeyDown('Q'))
+            TranslateX(-m_moveSpeed * (float)Time::DeltaTime);
+        if (kbd.IsKeyDown('E')) 
+            TranslateX(m_moveSpeed * (float)Time::DeltaTime);
+        if (kbd.IsKeyDown(VK_SPACE))
+            TranslateY(m_moveSpeed * (float)Time::DeltaTime);
+        if (kbd.IsKeyDown('Z'))
+            TranslateY(-m_moveSpeed * (float)Time::DeltaTime);
 
-    void Camera::SyncWithRT(System* pGFX)
-    {
-        for (auto& vp : m_viewports)
+        if (mouse.IsRightDown())
         {
-            if (vp.Width == 0) vp.Width = pGFX->GetRT(m_RT).GetWidth();
-            if (vp.Height == 0) vp.Height = pGFX->GetRT(m_RT).GetHeight();
+            if (kbd.IsKeyDown('A'))
+                RotateX(-m_rotationSpeed * (float)Time::DeltaTime);
+            if (kbd.IsKeyDown('D'))
+                RotateX(m_rotationSpeed * (float)Time::DeltaTime);
+
+            RotateY(mouse.GetRawX() * m_rotationSpeed * (float)Time::DeltaTime);
+            RotateX(mouse.GetRawY() * m_rotationSpeed * (float)Time::DeltaTime);
         }
+        else
+        {
+            if (kbd.IsKeyDown('A'))
+                RotateY(-20 * m_rotationSpeed * (float)Time::DeltaTime);
+            if (kbd.IsKeyDown('D'))
+                RotateY(20 * m_rotationSpeed * (float)Time::DeltaTime);
+        }
+
+        UpdateViewMatrix();
     }
 
     void Camera::SetRT(const std::string& name)
     {
         m_RT = name;
+    }
+
+    void Camera::SetFocus(DirectX::XMFLOAT3* pFocus)
+    {
+        m_focus = pFocus;
     }
 
     std::string Camera::GetRT()
@@ -55,6 +102,31 @@ namespace Duat::Graphics {
     DirectX::XMMATRIX Camera::GetProjectionMatrix()
     {
         return m_pojectionMatrix;
+    }
+
+    DirectX::XMMATRIX Camera::GetMVP(const DirectX::XMMATRIX& modelMatrix)
+    {
+        return GetProjectionMatrix() * GetViewMatrix() *modelMatrix;
+    }
+
+    void Camera::SetProjectionMatrix(float fovAngleY, float aspectRatio, float nearZ, float farZ)
+    {
+        m_pojectionMatrix = XMMatrixPerspectiveFovLH(
+            XMConvertToRadians(fovAngleY), aspectRatio, nearZ, farZ
+        );
+    }
+
+    void Camera::UpdateViewMatrix()
+    {
+        if (m_focus != nullptr) {
+            m_viewMatrix = XMMatrixLookAtLH(GetPosition(), *m_focus, { 0,1,0 });
+        }
+        else {
+            XMFLOAT3 forward = { 0,0,1 };
+            m_viewMatrix = XMMatrixLookAtLH(GetPosition(),
+                GetPosition() + XMFloat3Transform(forward, GetRotationMatrix()), 
+                {0,1,0});
+        }
     }
 
 }

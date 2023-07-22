@@ -68,6 +68,20 @@ namespace Duat::Utility::HLSL {
 		Struct, Array, Function, Empty, Invalid
 	};
 
+	constexpr size_t GetPadding(size_t varSize, size_t stride);
+	template<typename T>
+	constexpr size_t GetPadding(size_t stride)
+	{
+		size_t varSize = std::is_pointer<T>::value 
+			?
+			sizeof(std::remove_pointer<T>::type)
+			: 
+			sizeof(T);
+
+		size_t remainder = varSize % stride;
+		return remainder == 0 ? 0 : stride - remainder;
+	}
+
 	template<Type T>
 	struct Meta {
 		static constexpr Type type = Type::Invalid;
@@ -80,43 +94,43 @@ namespace Duat::Utility::HLSL {
 	};
 	template<> struct Meta<Type::Int2> {
 		using TrueType = DirectX::INT2;
-		static constexpr size_t padding = 16 % sizeof(TrueType);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Int2;
 		static constexpr char signature[] = "i2";
 	};
 	template<> struct Meta<Type::Int3> {
 		using TrueType = DirectX::INT3;
-		static constexpr size_t padding = 16 % sizeof(TrueType);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Int3;
 		static constexpr char signature[] = "i3";
 	};
 	template<> struct Meta<Type::Int4> {
 		using TrueType = DirectX::INT4;
-		static constexpr size_t padding = 16 % sizeof(TrueType);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Int4;
 		static constexpr char signature[] = "i4";
 	};
 	template<> struct Meta<Type::Bool> {
 		using TrueType = bool;
-		static constexpr size_t padding = 3;
+		static constexpr size_t padding = GetPadding<TrueType>(4);
 		static constexpr Type type = Type::Bool;
 		static constexpr char signature[] = "b1";
 	};
 	template<> struct Meta<Type::Bool2> {
 		using TrueType = DirectX::BOOL2;
-		static constexpr size_t padding = 6;
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Bool2;
 		static constexpr char signature[] = "b2";
 	};
 	template<> struct Meta<Type::Bool3> {
 		using TrueType = DirectX::BOOL3;
-		static constexpr size_t padding = 9;
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Bool3;
 		static constexpr char signature[] = "b3";
 	};
 	template<> struct Meta<Type::Bool4> {
 		using TrueType = DirectX::BOOL4;
-		static constexpr size_t padding = 12;
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Bool4;
 		static constexpr char signature[] = "b4";
 	};
@@ -128,25 +142,25 @@ namespace Duat::Utility::HLSL {
 	};
 	template<> struct Meta<Type::Float2> {
 		using TrueType = DirectX::XMFLOAT2;
-		static constexpr size_t padding = 16 % sizeof(TrueType);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Float2;
 		static constexpr char signature[] = "f2";
 	};
 	template<> struct Meta<Type::Float3> {
 		using TrueType = DirectX::XMFLOAT3;
-		static constexpr size_t padding = 16 % sizeof(TrueType);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Float3;
 		static constexpr char signature[] = "f3";
 	};
 	template<> struct Meta<Type::Float4> {
 		using TrueType = DirectX::XMFLOAT4;
-		static constexpr size_t padding = 16 % sizeof(TrueType);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Float4;
 		static constexpr char signature[] = "f4";
 	};
 	template<> struct Meta<Type::Matrix> {
 		using TrueType = DirectX::XMMATRIX;
-		static constexpr size_t padding = 16 % sizeof(TrueType);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Matrix;
 		static constexpr char signature[] = "m";
 	};
@@ -177,43 +191,43 @@ namespace Duat::Utility::HLSL {
 	};
 	template<> struct Meta<Type::Int2Ptr> {
 		using TrueType = DirectX::INT2*;
-		static constexpr size_t padding = 16 % sizeof(DirectX::INT2);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Int2Ptr;
 		static constexpr char signature[] = "pi2";
 	};
 	template<> struct Meta<Type::Int3Ptr> {
 		using TrueType = DirectX::INT3*;
-		static constexpr size_t padding = 16 % sizeof(DirectX::INT3);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Int3Ptr;
 		static constexpr char signature[] = "pi3";
 	};
 	template<> struct Meta<Type::Int4Ptr> {
 		using TrueType = DirectX::INT4*;
-		static constexpr size_t padding = 16 % sizeof(DirectX::INT4);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Int4Ptr;
 		static constexpr char signature[] = "pi4";
 	};
 	template<> struct Meta<Type::BoolPtr> {
 		using TrueType = bool*;
-		static constexpr size_t padding = 3;
+		static constexpr size_t padding = GetPadding<TrueType>(4);
 		static constexpr Type type = Type::BoolPtr;
 		static constexpr char signature[] = "pb1";
 	};
 	template<> struct Meta<Type::Bool2Ptr> {
 		using TrueType = DirectX::BOOL2*;
-		static constexpr size_t padding = 2;
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Bool2Ptr;
 		static constexpr char signature[] = "pb2";
 	};
 	template<> struct Meta<Type::Bool3Ptr> {
 		using TrueType = DirectX::BOOL3*;
-		static constexpr size_t padding = 1;
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Bool3Ptr;
 		static constexpr char signature[] = "pb3";
 	};
 	template<> struct Meta<Type::Bool4Ptr> {
 		using TrueType = DirectX::BOOL4*;
-		static constexpr size_t padding = 0;
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Bool4Ptr;
 		static constexpr char signature[] = "pb4";
 	};
@@ -225,25 +239,25 @@ namespace Duat::Utility::HLSL {
 	};
 	template<> struct Meta<Type::Float2Ptr> {
 		using TrueType = DirectX::XMFLOAT2*;
-		static constexpr size_t padding = 16 % sizeof(DirectX::XMFLOAT2);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Float2Ptr;
 		static constexpr char signature[] = "pf2";
 	};
 	template<> struct Meta<Type::Float3Ptr> {
 		using TrueType = DirectX::XMFLOAT3*;
-		static constexpr size_t padding = 16 % sizeof(DirectX::XMFLOAT3);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Float3Ptr;
 		static constexpr char signature[] = "pf3";
 	};
 	template<> struct Meta<Type::Float4Ptr> {
 		using TrueType = DirectX::XMFLOAT4*;
-		static constexpr size_t padding = 16 % sizeof(DirectX::XMFLOAT4);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::Float4Ptr;
 		static constexpr char signature[] = "pf4";
 	};
 	template<> struct Meta<Type::MatrixPtr> {
 		using TrueType = DirectX::XMMATRIX*;
-		static constexpr size_t padding = 16 % sizeof(DirectX::XMMATRIX);
+		static constexpr size_t padding = GetPadding<TrueType>(16);
 		static constexpr Type type = Type::MatrixPtr;
 		static constexpr char signature[] = "pm";
 	};
@@ -260,7 +274,7 @@ namespace Duat::Utility::HLSL {
 			HLSL_EXPAND
 		}
 #undef HLSL_EVALUATE
-#define HLSL_EVALUATE(x) case Type::x: { static Meta<Type::x>::TrueType var = nullptr; return sizeof(*var); }
+#define HLSL_EVALUATE(x) case Type::x: return sizeof(std::remove_pointer<Meta<Type::x>::TrueType>::type);
 		switch (t)
 		{
 			HLSL_EXPAND_PTR
@@ -344,6 +358,8 @@ namespace Duat::Utility::HLSL {
 	struct Array {
 		Array() = default;
 		Array(const std::vector<Assign>& rhs);
+		Array(size_t elementCount, const Struct& elementTemplate);
+		Array(size_t elementCount, const Element& elementTemplate);
 		Array(const Array& rhs);
 		Array(Array&& rhs) noexcept;
 		Array& operator=(const Array& rhs);
@@ -581,6 +597,12 @@ namespace Duat::Utility::HLSL {
 		Layout(const std::string& root_name) {
 			root = Element(root_name, Struct());
 		}
+		Element& operator=(const Assign& rhs) {
+			root = rhs;
+		}
+		Element& operator=(Element&& rhs) {
+			root = std::move(rhs);
+		}
 		Element& operator[](Label label) {
 			return root[label];
 		}
@@ -589,6 +611,20 @@ namespace Duat::Utility::HLSL {
 		}
 		Element& GetRoot() {
 			return root;
+		}
+		const Element& GetRootRef() const {
+			return root;
+		}
+		Type GetRootType() const {
+			return root.m_type;
+		}
+		void Reset() {
+			root = Element(root.GetLabel(), Type::Struct);
+		}
+		void Replicate(size_t count) {
+			Element temp = root;
+			temp.Rename("");
+			root = Array(count, temp);
 		}
 	private:
 		Element root;
@@ -615,6 +651,9 @@ namespace Duat::Utility::HLSL {
 			m_functions.resize(0);
 			SetDynamicRec(m_layout.root);
 		}
+		Element& operator[](Index index) {
+			return m_layout[index];
+		}
 		Element& operator[](Label label) {
 			return m_layout[label];
 		}
@@ -627,6 +666,29 @@ namespace Duat::Utility::HLSL {
 		Element& GetRoot() {
 			return m_layout.GetRoot();
 		}
+		Type GetRootType() const {
+			return m_layout.GetRootType();
+		}
+		size_t GetArrayStride() {
+			if (m_layout.GetRootType() == Type::Array)
+			{
+				const Array& arr = std::get<Array>(GetRoot().m_value);
+				if (arr.elements.size() > 1) return arr.elements[1].GetOffset();
+				else if (arr.elements.size() > 0) return m_buffer.size();
+			}
+			Result result;
+			result << "Array is empty.";
+			return 0;
+		}
+		size_t GetElementCount() const {
+			if (m_layout.GetRootType() == Type::Struct) {
+				return std::get<Struct>(m_layout.GetRootRef().m_value).elements.size();
+			}
+			else if (m_layout.GetRootType() == Type::Array) {
+				return std::get<Array>(m_layout.GetRootRef().m_value).elements.size();
+			}
+			else return 1;
+		}
 		void Update() {
 			for (auto& e : m_pointers)
 				EmplaceRec(*e);
@@ -637,40 +699,46 @@ namespace Duat::Utility::HLSL {
 			return m_pointers.size() || m_functions.size();
 		}
 	protected:
-		size_t CalcOffsetRec(size_t m_offset, Element& e) {
-			e.m_offset = m_offset;
+		size_t CalcOffsetRec(size_t offset, Element& e) {
+			e.m_offset = offset;
 			if (e.m_type == Type::Array) {
 				Array& arr = std::get<Array>(e.m_value);
 				size_t arr_offset = 0;
 				for (auto& a : arr.elements)
-					arr_offset += CalcOffsetRec(m_offset + arr_offset, a);
+					arr_offset += CalcOffsetRec(offset + arr_offset, a);
 
-				return arr_offset + (16 - arr_offset % 16);
+				return arr_offset;
 			}
 			else if (e.m_type == Type::Struct) {
+				offset += GetPadding(offset, 16);
 				Struct& str = std::get<Struct>(e.m_value);
 				size_t str_offset = 0;
 				for (auto& s : str.elements)
-					str_offset += CalcOffsetRec(m_offset + str_offset, s);
+					str_offset += CalcOffsetRec(offset + str_offset, s);
 
-				return str_offset + (16 - str_offset % 16);
+				return str_offset;
 			}
 			else if (e.m_type == Type::Function) {
 				auto& func = std::get<Function>(e.m_value);
-				return GetSizeOf(func.GetReturnType()) + GetPadding(func.GetReturnType());
+				size_t typeSize = GetSizeOf(func.GetReturnType());
+				if ((offset % 16) + typeSize > 16) {
+					size_t padding = GetPadding(offset, 16);
+					e.m_offset += padding;
+					return typeSize + padding;
+				}
+				return typeSize;
 			}
 #define HLSL_EVALUATE(x) \
 			else if (e.m_type == Type::x) { \
-				auto& var = std::get<Meta<Type::x>::TrueType>(e.m_value); \
-				return sizeof(var) + Meta<Type::x>::padding; \
+				size_t typeSize = GetSizeOf(e.m_type); \
+				if ((offset % 16) + typeSize > 16) { \
+					size_t padding = GetPadding(offset, 16); \
+					e.m_offset += GetPadding(offset, 16); \
+                    return typeSize + padding; \
+				} \
+				return typeSize; \
 			}
 			HLSL_EXPAND
-#undef HLSL_EVALUATE
-#define HLSL_EVALUATE(x) \
-			else if (e.m_type == Type::x) { \
-				auto var = *std::get<Meta<Type::x>::TrueType>(e.m_value); \
-				return sizeof(var) + Meta<Type::x>::padding; \
-			}
 			HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 				

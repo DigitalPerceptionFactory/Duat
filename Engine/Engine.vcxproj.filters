@@ -76,15 +76,6 @@
     <Filter Include="HID\h">
       <UniqueIdentifier>{20ecf0d8-c9c5-4567-8ccd-3b06c49c32f4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utility\Converter">
-      <UniqueIdentifier>{037557a4-f488-440f-ba54-29ef8f777c3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\Converter\cpp">
-      <UniqueIdentifier>{59f728b2-7900-41c2-ae37-cb0abaa4b89c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\Converter\h">
-      <UniqueIdentifier>{c333ce77-50e7-4fcd-9d9d-3da049af99c5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Geometry">
       <UniqueIdentifier>{0b08cec3-99af-4541-bad4-23b71f1bd2d1}</UniqueIdentifier>
     </Filter>
@@ -105,6 +96,15 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{f79522eb-28ab-41ac-a647-b4f5df143147}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Format">
+      <UniqueIdentifier>{037557a4-f488-440f-ba54-29ef8f777c3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Format\cpp">
+      <UniqueIdentifier>{59f728b2-7900-41c2-ae37-cb0abaa4b89c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Format\h">
+      <UniqueIdentifier>{c333ce77-50e7-4fcd-9d9d-3da049af99c5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -192,9 +192,6 @@
     <ClInclude Include="src\HID\Mouse.h">
       <Filter>HID\h</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\Converter\String.h">
-      <Filter>Utility\Converter\h</Filter>
-    </ClInclude>
     <ClInclude Include="src\Windows\Engine.h">
       <Filter>Windows\h</Filter>
     </ClInclude>
@@ -231,8 +228,8 @@
     <ClInclude Include="src\Utility\DirectX.h">
       <Filter>Utility\DirectX\h</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utility\Converter.h">
-      <Filter>Utility\Converter\h</Filter>
+    <ClInclude Include="src\Utility\Format.h">
+      <Filter>Utility\Format\h</Filter>
     </ClInclude>
     <ClInclude Include="src\Geometry\Useful.h">
       <Filter>Geometry\h</Filter>
@@ -248,6 +245,30 @@
     </ClInclude>
     <ClInclude Include="src\Utility\Classes\Time.h">
       <Filter>Utility\Classes\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\SmartMesh.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\SmartVertex.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Format\Duat3D.h">
+      <Filter>Utility\Format\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Format\Loader.h">
+      <Filter>Utility\Format\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Format\String.h">
+      <Filter>Utility\Format\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HID\HID.h">
+      <Filter>HID\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Transform.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\StructuredBuffer.h">
+      <Filter>Graphics\h</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -333,9 +354,6 @@
     <ClCompile Include="src\Windows\Window.cpp">
       <Filter>Windows\cpp</Filter>
     </ClCompile>
-    <ClCompile Include="src\Utility\Converter\String.cpp">
-      <Filter>Utility\Converter\cpp</Filter>
-    </ClCompile>
     <ClCompile Include="src\Windows\Engine.cpp">
       <Filter>Windows\cpp</Filter>
     </ClCompile>
@@ -369,9 +387,33 @@
     <ClCompile Include="src\Utility\Classes\Time.cpp">
       <Filter>Utility\Classes\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="src\Geometry\SmartMesh.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\SmartVertex.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Format\Duat3D.cpp">
+      <Filter>Utility\Format\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Format\Loader.cpp">
+      <Filter>Utility\Format\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Format\String.cpp">
+      <Filter>Utility\Format\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HID\HID.cpp">
+      <Filter>HID\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Transform.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\StructuredBuffer.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\BasicBuffers.hlsli">
+    <None Include="src\Shaders\DefaultBuffer.hlsli">
       <Filter>Shaders</Filter>
     </None>
     <None Include="src\Shaders\BasicFunctions.hlsli">

@@ -1,5 +1,5 @@
 #define PIXEL_SHADER
-#include "BasicBuffers.hlsli"
+#include "DefaultBuffer.hlsli"
 #include "BasicFunctions.hlsli"
 
 Texture2D tex : register(t3);
@@ -8,6 +8,7 @@ SamplerState state : register(s1);
 
 float4 main(Input i, uint id : SV_InstanceID) : SV_TARGET
 {
+    return float4(1,1,1,1);
     i.uv.y = 1 - i.uv.y;
     float4 normalVector = i.normal;
     
@@ -22,7 +23,7 @@ float4 main(Input i, uint id : SV_InstanceID) : SV_TARGET
     
     final *= ambient;
     
-    for (int it = 1; it < DPF::lights[0].type; ++it)
+    /*for (int it = 1; it < DPF::lights[0].type; ++it)
     {
         if (DPF::lights[it].type == 0) // directional
         {
@@ -42,7 +43,7 @@ float4 main(Input i, uint id : SV_InstanceID) : SV_TARGET
             return float4(1, 1, 1, 1);
         }
 
-    }
+    }*/
     return TransparentWindowBiasCorrection(float4(final.rgb, 1));
     
     float3 texColor = tex.Sample(state, float2(i.uv.x, i.uv.y)).rgb;

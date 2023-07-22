@@ -4,6 +4,8 @@
 #include <future>
 #include "Window.h"
 #include <Graphics/System.h>
+#include <Geometry/SmartMesh.h>
+#include <HID/HID.h>
 
 
 namespace Duat

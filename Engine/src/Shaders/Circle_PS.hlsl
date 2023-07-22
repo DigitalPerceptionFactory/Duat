@@ -1,5 +1,5 @@
 #define PIXEL_SHADER
-#include "BasicBuffers.hlsli"
+#include "DefaultBuffer.hlsli"
 
 
 float4 main(Input i) : SV_TARGET

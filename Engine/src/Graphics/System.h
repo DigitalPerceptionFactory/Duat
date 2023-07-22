@@ -15,6 +15,7 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "ConstantBuffer.h"
+#include "StructuredBuffer.h"
 #include <Geometry/Mesh.h>
 #include "CompositionEx.h"
 #include "Camera.h"
@@ -30,6 +31,7 @@ namespace Duat::Graphics {
 		friend VertexBuffer;
 		friend IndexBuffer;
 		friend ConstantBuffer;
+		friend StructuredBuffer;
 		friend SamplerState;
 		friend RasterizerState;
 		friend DepthStencilState;
@@ -128,6 +130,7 @@ namespace Duat::Graphics {
 		std::map<std::string, DepthStencilState>  m_DSS;
 		std::map<std::string, RenderTarget>       m_RT;
 		std::map<std::string, ConstantBuffer>     m_CB;
+		std::map<std::string, StructuredBuffer>   m_SB;
 		std::map<std::string, Camera*>            m_Cameras;
 	};
 

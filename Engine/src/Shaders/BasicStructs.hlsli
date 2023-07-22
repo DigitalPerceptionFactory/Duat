@@ -1,14 +1,19 @@
+
+struct InstanceData
+{
+    matrix modelMatrix;
+};
+
 struct Light
 {
-    matrix view;
-    matrix projection;
-    float4 position;
-    float4 direction;
-    float4 color;
+    float3 position;
     float intensity;
-    int type;
+    float3 direction;
     float pad0;
+    float3 color;
     float pad1;
+    matrix viewMatrix;
+    matrix projectionMatrix;
 };
 
 

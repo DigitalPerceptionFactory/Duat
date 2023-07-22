@@ -7,7 +7,7 @@
 #include <HID/Keyboard.h>
 #include <Utility/ErrorHandling/Result.h>
 #include <Utility/ErrorHandling/HResult.h>
-#include <Utility/Converter/String.h>
+#include <Utility/Format/String.h>
 #include <dwmapi.h>
 
 

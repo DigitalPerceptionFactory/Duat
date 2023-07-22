@@ -28,7 +28,26 @@ namespace Duat
 		m_gfx.Init(m_hWnd);
 
 		static Geometry::Mesh mesh;
-		mesh.TestInit();
+		mesh.CubeInit();
+
+		Geometry::SmartMesh sm;
+		int a = sm.CreateAndGo("a");
+		sm.CreateCurve([](float lerp) -> DirectX::XMFLOAT3
+			{
+				return { 2*lerp - 1.0f, -0.5f, 0.0f };
+			}
+		);
+		sm.Step(-1);
+		int b = sm.CreateAndGo("b");
+		sm.CreateCurve([](float lerp) -> DirectX::XMFLOAT3
+			{
+				return { 2*lerp - 1.0f, 0.5f, 0.0f };
+			}
+		);
+		Geometry::Fibre fa(sm, a);
+		Geometry::Fibre fb(sm, b);
+		sm.AddPatch(Geometry::Patch(fa, fb));
+		//mesh = sm.GetMesh();
 		m_gfx.AddDrawCall(&mesh, "Default", "Default", "Default",
 			Topology::TriangleList, "Default", "Expensive");
 
@@ -42,6 +61,7 @@ namespace Duat
 			if (m_keyboard.IsKeyDown(VK_ESCAPE)) exit(0);
 			frameTime.Start();
 						
+			HID::Focus->Interact(m_keyboard, m_mouse);
 			m_gfx.Update();
 
 			frameTime.Stop();

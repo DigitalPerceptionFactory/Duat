@@ -86,6 +86,18 @@ namespace Duat::Utility::HLSL {
 		}
 	}
 
+	Array::Array(size_t elementCount, const Struct& elementTemplate)
+	{
+		Element temp;
+		temp = elementTemplate;
+		elements.resize(elementCount, temp);
+	}
+
+	Array::Array(size_t elementCount, const Element& elementTemplate)
+	{
+		elements.resize(elementCount, elementTemplate);
+	}
+
 	Array::Array(const Array& rhs)
 	{
 		elements = rhs.elements;
@@ -120,6 +132,12 @@ namespace Duat::Utility::HLSL {
 			else return SignatureToString(sign);
 		}
 		else return "";
+	}
+
+	constexpr size_t GetPadding(size_t varSize, size_t stride)
+	{
+		size_t remainder = varSize % stride;
+		return remainder == 0 ? 0 : stride - remainder;
 	}
 
 	HLSLDataType InitializeHLSLDataType(Type type)
