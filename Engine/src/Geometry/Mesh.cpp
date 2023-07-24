@@ -7,37 +7,37 @@ namespace Duat::Geometry {
 	void Mesh::TestInit()
 	{
 		Vertex a;
-		a.position = { -1,-1,0, 1 };
+		a.position = { -1,-1,0 };
 		a.texCoord.x = 0;
 		a.texCoord.y = 0;
 		a.color = { 1,0,0, 1 };
 
 		Vertex b;
-		b.position = { 0,1,0, 1 };
+		b.position = { 0,1,0 };
 		b.texCoord.x = 0.5f;
 		b.texCoord.y = 1;
 		b.color = { 1,0,0, 1 };
 
 		Vertex c;
-		c.position = { 1,-1,0,1 };
+		c.position = { 1,-1,0 };
 		c.texCoord.x = 1;
 		c.texCoord.y = 0;
 		c.color = { 1,0,0, 1 };
 
 		Vertex d;
-		d.position = { -1,1,0, 1 };
+		d.position = { -1,1,0 };
 		d.texCoord.x = 0;
 		d.texCoord.y = 0;
 		d.color = { 1,0,0, 1 };
 
 		Vertex e;
-		e.position = { 1,1,0, 1 };
+		e.position = { 1,1,0 };
 		e.texCoord.x = 0.5f;
 		e.texCoord.y = 1;
 		e.color = { 1,0,0, 1 };
 
 		Vertex f;
-		f.position = { 0,-1,0, 1 };
+		f.position = { 0,-1,0 };
 		f.texCoord.x = 1;
 		f.texCoord.y = 0;
 		f.color = { 1,0,0, 1 };
@@ -56,23 +56,23 @@ namespace Duat::Geometry {
 	{
 		m_vertices.resize(8);
 
-		m_vertices[0].position = { -1, 1,-1, 1 };
-		m_vertices[1].position = { 1, 1,-1, 1 };
-		m_vertices[2].position = { -1, -1,-1, 1 };
-		m_vertices[3].position = { 1, -1,-1, 1 };
-		m_vertices[4].position = { -1, 1,1, 1 };
-		m_vertices[5].position = { 1, 1,1, 1 };
-		m_vertices[6].position = { -1, -1,1, 1 };
-		m_vertices[7].position = { 1, -1,1, 1 };
+		m_vertices[0].position = { -1, 1, -1, };
+		m_vertices[1].position = { 1, 1, -1, };
+		m_vertices[2].position = { -1, -1, -1, };
+		m_vertices[3].position = { 1, -1, -1, };
+		m_vertices[4].position = { -1, 1, 1, };
+		m_vertices[5].position = { 1, 1, 1, };
+		m_vertices[6].position = { -1, -1, 1, };
+		m_vertices[7].position = { 1, -1, 1, };
 
-		m_vertices[0].texCoord = { 0, 1, 0, 0 };
-		m_vertices[1].texCoord = { 1, 1, 0, 0 };
-		m_vertices[2].texCoord = { 0, 0, 0, 0 };
-		m_vertices[3].texCoord = { 1, 0, 0, 0 };
-		m_vertices[4].texCoord = { 0, 1, 0, 0 };
-		m_vertices[5].texCoord = { 1, 1, 0, 0 };
-		m_vertices[6].texCoord = { 0, 0, 0, 0 };
-		m_vertices[7].texCoord = { 1, 0, 0, 0 };
+		m_vertices[0].texCoord = { 0, 1 };
+		m_vertices[1].texCoord = { 1, 1 };
+		m_vertices[2].texCoord = { 0, 0 };
+		m_vertices[3].texCoord = { 1, 0 };
+		m_vertices[4].texCoord = { 0, 1 };
+		m_vertices[5].texCoord = { 1, 1 };
+		m_vertices[6].texCoord = { 0, 0 };
+		m_vertices[7].texCoord = { 1, 0 };
 
 		for (auto& vtx : m_vertices) vtx.color = { 0.4,0.6,0.8,1 };
 
@@ -91,7 +91,7 @@ namespace Duat::Geometry {
 			2,7,3
 		};
 
-		Math::CalculateNormals(m_vertices, m_indices);
+		UpdateNormals();
 	}
 
 	void Mesh::SetVertices(const std::vector<Vertex>& vertices)
@@ -102,6 +102,27 @@ namespace Duat::Geometry {
 	void Mesh::SetIndices(const std::vector<unsigned int>& indices)
 	{
 		m_indices = indices;
+	}
+
+	void Mesh::AppendVertices(const std::vector<Vertex>& vertices)
+	{
+		m_vertices.insert(m_vertices.end(), vertices.begin(), vertices.end());
+	}
+
+	void Mesh::AppendIndices(const std::vector<unsigned int>& indices)
+	{
+		m_indices.insert(m_indices.end(), indices.begin(), indices.end());
+	}
+
+	void Mesh::SwapTriangleIndexOrder()
+	{
+		for (int i = 0; i < m_indices.size(); i += 3)
+			std::swap(m_indices[i], m_indices[i + 2]);
+	}
+
+	void Mesh::UpdateNormals()
+	{
+		Math::CalculateNormals(m_vertices, m_indices);
 	}
 
 	const std::vector<Vertex>& Mesh::GetVertices() const

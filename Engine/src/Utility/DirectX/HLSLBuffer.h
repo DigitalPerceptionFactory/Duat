@@ -268,6 +268,11 @@ namespace Duat::Utility::HLSL {
 
 	static size_t GetSizeOf(Type t)
 	{
+		if (t == Type::Bool || t == Type::BoolPtr) return 4;
+		else if (t == Type::Bool2 || t == Type::Bool2Ptr) return 8;
+		else if (t == Type::Bool3 || t == Type::Bool3Ptr) return 12;
+		else if (t == Type::Bool4 || t == Type::Bool4Ptr) return 16;
+
 #define HLSL_EVALUATE(x) case Type::x: return sizeof(Meta<Type::x>::TrueType);
 		switch (t)
 		{
@@ -281,8 +286,9 @@ namespace Duat::Utility::HLSL {
 		}
 #undef HLSL_EVALUATE
 		Result res;
-		res << "You were trying to calculate size of not supported data type.";
+		res << "You were trying to calculate size of unsupported data type.";
 	}
+
 	static size_t GetPadding(Type t)
 	{
 #define HLSL_EVALUATE(x) case Type::x: return Meta<Type::x>::padding;
@@ -680,7 +686,7 @@ namespace Duat::Utility::HLSL {
 			result << "Array is empty.";
 			return 0;
 		}
-		size_t GetElementCount() const {
+		size_t GetRootElementCount() const {
 			if (m_layout.GetRootType() == Type::Struct) {
 				return std::get<Struct>(m_layout.GetRootRef().m_value).elements.size();
 			}

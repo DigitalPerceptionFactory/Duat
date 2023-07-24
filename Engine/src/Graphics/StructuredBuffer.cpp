@@ -51,7 +51,7 @@ namespace Duat::Graphics {
 		m_srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 		m_srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
 		m_srvDesc.BufferEx.FirstElement = 0;
-		m_srvDesc.BufferEx.NumElements = HLSL::Buffer::GetElementCount();
+		m_srvDesc.BufferEx.NumElements = GetRootElementCount();
 
 		m_hresult << pGFX->m_Device->CreateShaderResourceView(m_pBuffer.Get(), &m_srvDesc, m_SRV.GetAddressOf());
 	}

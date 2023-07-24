@@ -5,6 +5,7 @@
 #include "Window.h"
 #include <Graphics/System.h>
 #include <Geometry/SmartMesh.h>
+#include <Geometry/Solid26.h>
 #include <HID/HID.h>
 
 

@@ -1352,7 +1352,7 @@ namespace Duat::Math {
 	void CalculateNormals(std::vector<Geometry::Vertex>& vertices, std::vector<unsigned int>& indices)
 	{
 		XMFLOAT3 centroid = Centroid(vertices);
-		XMFLOAT4 zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+		XMFLOAT3 zero = { 0.0f, 0.0f, 0.0f };
 		for (auto& v : vertices)
 			v.normal = zero;
 
@@ -1361,32 +1361,32 @@ namespace Duat::Math {
 			int index0 = indices[j];
 			int index1 = indices[j + 1];
 			int index2 = indices[j + 2];
-			XMFLOAT4 v1 = (vertices[index1].position - centroid) - (vertices[index0].position - centroid);
-			XMFLOAT4 v2 = (vertices[index2].position - centroid) - (vertices[index1].position - centroid);
-			XMVECTOR cross = XMVector3Cross(XMLoadFloat4(&v1), XMLoadFloat4(&v2));
+			XMFLOAT3 v1 = (vertices[index1].position - centroid) - (vertices[index0].position - centroid);
+			XMFLOAT3 v2 = (vertices[index2].position - centroid) - (vertices[index1].position - centroid);
+			XMVECTOR cross = XMVector3Cross(XMLoadFloat3(&v1), XMLoadFloat3(&v2));
 
 			size_t at = index0;
-			if (vertices[at].normal == zero) XMStoreFloat4(&vertices[at].normal, XMVector3Normalize(cross));
+			if (vertices[at].normal == zero) XMStoreFloat3(&vertices[at].normal, XMVector3Normalize(cross));
 			else {
-				XMStoreFloat4(
+				XMStoreFloat3(
 					&vertices[at].normal,
-					XMVector3Normalize(XMVectorAdd(XMVector3Normalize(cross), XMLoadFloat4(&vertices[at].normal)))
+					XMVector3Normalize(XMVectorAdd(XMVector3Normalize(cross), XMLoadFloat3(&vertices[at].normal)))
 				);
 			}
 			at = index1;
-			if (vertices[at].normal == zero) XMStoreFloat4(&vertices[at].normal, XMVector3Normalize(cross));
+			if (vertices[at].normal == zero) XMStoreFloat3(&vertices[at].normal, XMVector3Normalize(cross));
 			else {
-				XMStoreFloat4(
+				XMStoreFloat3(
 					&vertices[at].normal,
-					XMVector3Normalize(XMVectorAdd(XMVector3Normalize(cross), XMLoadFloat4(&vertices[at].normal)))
+					XMVector3Normalize(XMVectorAdd(XMVector3Normalize(cross), XMLoadFloat3(&vertices[at].normal)))
 				);
 			}
 			at = index2;
-			if (vertices[at].normal == zero) XMStoreFloat4(&vertices[at].normal, XMVector3Normalize(cross));
+			if (vertices[at].normal == zero) XMStoreFloat3(&vertices[at].normal, XMVector3Normalize(cross));
 			else {
-				XMStoreFloat4(
+				XMStoreFloat3(
 					&vertices[at].normal,
-					XMVector3Normalize(XMVectorAdd(XMVector3Normalize(cross), XMLoadFloat4(&vertices[at].normal)))
+					XMVector3Normalize(XMVectorAdd(XMVector3Normalize(cross), XMLoadFloat3(&vertices[at].normal)))
 				);
 			}
 		}

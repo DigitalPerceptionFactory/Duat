@@ -48,6 +48,7 @@ namespace Duat
 		Geometry::Fibre fb(sm, b);
 		sm.AddPatch(Geometry::Patch(fa, fb));
 		//mesh = sm.GetMesh();
+		mesh = Geometry::Dodecahedron();
 		m_gfx.AddDrawCall(&mesh, "Default", "Default", "Default",
 			Topology::TriangleList, "Default", "Expensive");
 

@@ -13,10 +13,10 @@ namespace Duat::Geometry {
 		Vertex(DirectX::XMVECTOR pos);
 		Vertex(const DirectX::XMFLOAT3& pos);
 
-		DirectX::XMFLOAT4 position;
-		DirectX::XMFLOAT4 texCoord;
+		DirectX::XMFLOAT3 position;
+		DirectX::XMFLOAT2 texCoord;
 		DirectX::XMFLOAT4 color;
-		DirectX::XMFLOAT4 normal;
+		DirectX::XMFLOAT3 normal;
 	};
 
 }

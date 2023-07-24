@@ -171,6 +171,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Geometry\Solid26.h" />
     <ClInclude Include="src\Geometry\SmartMesh.h" />
     <ClInclude Include="src\Geometry\SmartVertex.h" />
     <ClInclude Include="src\Geometry\Transform.h" />
@@ -231,6 +232,7 @@
     <ClCompile Include="src\Geometry\SmartMesh.cpp" />
     <ClCompile Include="src\Geometry\Mesh.cpp" />
     <ClCompile Include="src\Geometry\SmartVertex.cpp" />
+    <ClCompile Include="src\Geometry\Solid26.cpp" />
     <ClCompile Include="src\Geometry\Transform.cpp" />
     <ClCompile Include="src\Geometry\Vertex.cpp" />
     <ClCompile Include="src\Graphics\BlendState.cpp" />

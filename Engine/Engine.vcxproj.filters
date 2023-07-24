@@ -270,6 +270,9 @@
     <ClInclude Include="src\Graphics\StructuredBuffer.h">
       <Filter>Graphics\h</Filter>
     </ClInclude>
+    <ClInclude Include="src\Geometry\Solid26.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graphics\VertexShader.cpp">
@@ -410,6 +413,9 @@
     </ClCompile>
     <ClCompile Include="src\Graphics\StructuredBuffer.cpp">
       <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Solid26.cpp">
+      <Filter>Geometry\cpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

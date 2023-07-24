@@ -28,7 +28,7 @@ Output main(Input i, uint id : SV_InstanceID)
     Output o;
     o.position = mul(mvp, i.position);
     o.color = i.color;
-    o.normal = ComputeNormal(i.normal, m_instanceData[0].modelMatrix, m_isClockwise);
+    o.normal = ComputeNormal(i.normal, m_instanceData[0].modelMatrix, !m_isClockwise);
     o.uv = i.uv;
     return o;
 

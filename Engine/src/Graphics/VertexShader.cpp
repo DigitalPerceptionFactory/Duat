@@ -43,7 +43,7 @@ namespace Duat::Graphics {
 			D3D11_INPUT_ELEMENT_DESC inputDesc;
 			inputDesc.SemanticName = paramDesc.SemanticName;
 			inputDesc.SemanticIndex = paramDesc.SemanticIndex;
-			inputDesc.InputSlot = paramDesc.Register;
+			inputDesc.InputSlot = 0;
 			inputDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 			inputDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 			inputDesc.InstanceDataStepRate = 0;

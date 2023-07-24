@@ -41,8 +41,7 @@ float4 main(Input i) : SV_TARGET
     else if(i.uv.x > 0.5 && i.uv.y < 0.5)
         final = float3(0.236, 0.236, 0.236);
     
-
-    final = float3(0.3, 0.3, 0.3);
+    final = float3(0.1, 0.1, 0.1);
     if (true)
     {
         for (int it = 0; it < m_lightCount; ++it)
@@ -54,9 +53,6 @@ float4 main(Input i) : SV_TARGET
 			) * m_lights[it].intensity;
         }
     }
-    
-    final.r = i.uv.x;
-    final.g = i.uv.x;
-    final.b = i.uv.x;
+
     return float4(final ,1);
 }

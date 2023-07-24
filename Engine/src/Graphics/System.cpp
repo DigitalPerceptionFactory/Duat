@@ -40,7 +40,7 @@ namespace Duat::Graphics {
 
 		static Camera defaultCamera;
 		defaultCamera.Init(this, "Default");
-		defaultCamera.SetPosition({ 0, 0, -1 });
+		defaultCamera.SetPosition({ 0, 0, -5 });
 		AddCamera("Default", &defaultCamera);
 		
 		HID::Focus = &defaultCamera;
@@ -116,10 +116,10 @@ namespace Duat::Graphics {
 		dc.tp = tp;
 
 		HLSL::Layout vbLayout("VertexBuffer");
-		vbLayout["Position"] = XMFLOAT4();
-		vbLayout["TexCoord"] = XMFLOAT4();
-		vbLayout["Color"] = XMFLOAT4();
-		vbLayout["Normal"] = XMFLOAT4();
+		vbLayout["Position"];
+		vbLayout["TexCoord"];
+		vbLayout["Color"];
+		vbLayout["Normal"];
 		vbLayout["Shadow"] = XMFLOAT4();
 		vbLayout.Replicate(mesh->GetVertices().size());
 
@@ -129,17 +129,6 @@ namespace Duat::Graphics {
 			vbLayout[i]["TexCoord"] = mesh->GetVertices()[i].texCoord;
 			vbLayout[i]["Color"] = mesh->GetVertices()[i].color;
 			vbLayout[i]["Normal"] = mesh->GetVertices()[i].normal;
-
-			/*vbLayout[i]["Pos"] = HLSL::Struct(
-				{
-					HLSL::Assign(mesh->GetVertices()[i].position),
-					HLSL::Assign(mesh->GetVertices()[i].texCoord),
-					HLSL::Assign(mesh->GetVertices()[i].color),
-					HLSL::Assign(mesh->GetVertices()[i].normal),
-					HLSL::Assign(XMFLOAT4()),
-					HLSL::Assign(XMFLOAT4())
-				}
-			);*/
 		}
 
 		HLSL::Layout ibLayout("IndexBuffer");
@@ -306,8 +295,8 @@ namespace Duat::Graphics {
 		m_SB["Default"].Init(this, layout, 1);
 
 		layout.Reset();
-		layout["Position"] = XMFLOAT3(10, 10, 10);
-		layout["Intensity"] = 1.0f;
+		layout["Position"] = XMFLOAT3(-3, -5, -15);
+		layout["Intensity"] = 0.3f;
 		layout["Direction"] = XMFLOAT3(-1,-1,-1);
 		layout["Color"] = XMFLOAT3(1,1,1);
 		layout["ViewMatrix"] = XMMatrixIdentity();
@@ -426,6 +415,7 @@ namespace Duat::Graphics {
 	{
 		m_CB["Default"]["IsClockwise"] = m_RS[settings.rs].IsClockwise();
 		m_CB["Default"]["InstanceCount"] = (int)settings.instances;
+		m_CB["Default"]["LightCount"] = (int)m_SB["Light"].GetRootElementCount();
 		m_CB["Default"]["ViewMatrix"] = m_Cameras[settings.cam]->GetViewMatrix();
 		m_CB["Default"]["ProjectionMatrix"] = m_Cameras[settings.cam]->GetProjectionMatrix();
 		m_CB["Default"].Update();
