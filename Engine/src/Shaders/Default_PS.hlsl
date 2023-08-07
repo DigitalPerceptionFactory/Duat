@@ -1,15 +1,7 @@
+#define PIXEL_SHADER
 #include "DefaultBuffer.hlsli"
 #include "BasicFunctions.hlsli"
 
-struct Input
-{
-    float4 position : SV_POSITION;
-    float4 uv : TEXCOORD;
-    float4 color : COLOR;
-    float4 normal : NORMAL;
-    float4 shadow : SHADOW;
-    float4 eye : EYE;
-};
 
 float4 main(Input i) : SV_TARGET
 {

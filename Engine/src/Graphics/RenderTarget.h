@@ -5,27 +5,28 @@
 namespace Duat::Graphics {
 		
 	struct System;
+	struct Camera;
 	struct RenderTarget {
+		friend System;
+		friend Camera;
+
 		void Init(System& gfx, const std::filesystem::path& path);
 		void Init(System* pGFX, const std::filesystem::path& path);
 		void Init(System& gfx, ID3D11Texture2D* pTex2D);
 		void Init(System* pGFX, ID3D11Texture2D* pTex2D);
+		void Init(System& gfx, size_t width, size_t height, DXGI_FORMAT pixelFormat, DXGI_FORMAT depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
+		void Init(System* pGFX, size_t width, size_t height, DXGI_FORMAT pixelFormat, DXGI_FORMAT depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
+		void Init(const Texture2D& rt, const Texture2D& depth);
 
 		UINT GetWidth() const;
 		UINT GetHeight() const;
-		ID3D11Texture2D* GetTexture();
-		ID3D11Texture2D** GetTextureAddressOf();
-		ID3D11Texture2D* GetDepthTexture();
-		ID3D11Texture2D** GetDepthTextureAddressOf();
-		ID3D11ShaderResourceView* GetSRV();
-		ID3D11ShaderResourceView** GetSRVAddressOf();
-		ID3D11RenderTargetView*  GetRTV();
-		ID3D11RenderTargetView** GetRTVAddressOf();
-		ID3D11DepthStencilView*  GetDSV();
-		ID3D11DepthStencilView** GetDSVAddressOf();
+		Texture2D& GetTarget();
+		Texture2D& GetDepth();
+			
 	private:
-		Texture2D m_texture;
+		Texture2D m_targetTexture;
 		Texture2D m_depthTexture;
+		std::vector<Camera*> m_cameras;
 	};
 
 }

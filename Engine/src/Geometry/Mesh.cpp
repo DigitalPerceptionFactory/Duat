@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Solid26.h"
 #include <Utility/DirectX/Legacy.h>
 
 
@@ -6,50 +7,34 @@ namespace Duat::Geometry {
 
 	void Mesh::TestInit()
 	{
-		Vertex a;
-		a.position = { -1,-1,0 };
-		a.texCoord.x = 0;
-		a.texCoord.y = 0;
-		a.color = { 1,0,0, 1 };
+		*this = Dodecahedron();
 
-		Vertex b;
-		b.position = { 0,1,0 };
-		b.texCoord.x = 0.5f;
-		b.texCoord.y = 1;
-		b.color = { 1,0,0, 1 };
+		std::vector<Vertex> vertices(12);
+		vertices[0].position = { -2,2,2 };
+		vertices[1].position = { 2,2,2 };
+		vertices[2].position = { -2,-2,2 };
+		vertices[3].position = { 2,-2,2 };
 
-		Vertex c;
-		c.position = { 1,-1,0 };
-		c.texCoord.x = 1;
-		c.texCoord.y = 0;
-		c.color = { 1,0,0, 1 };
+		vertices[4].position = { 2,2,2 };
+		vertices[5].position = { 2,2,-2 };
+		vertices[6].position = { 2,-2,2 };
+		vertices[7].position = { 2,-2,-2 };
 
-		Vertex d;
-		d.position = { -1,1,0 };
-		d.texCoord.x = 0;
-		d.texCoord.y = 0;
-		d.color = { 1,0,0, 1 };
+		vertices[8].position = { -2,-2,2 };
+		vertices[9].position = { 2,-2,2 };
+		vertices[10].position = { -2,-2,-2 };
+		vertices[11].position = { 2,-2,-2 };
 
-		Vertex e;
-		e.position = { 1,1,0 };
-		e.texCoord.x = 0.5f;
-		e.texCoord.y = 1;
-		e.color = { 1,0,0, 1 };
+		std::vector<unsigned int> indices = {
+			0,1,2, 2,1,3,
+			4,5,6,6,5,7,
+			8,9,10,10,9,11
+		};
+		for (auto& idx : indices) idx += m_vertices.size();
 
-		Vertex f;
-		f.position = { 0,-1,0 };
-		f.texCoord.x = 1;
-		f.texCoord.y = 0;
-		f.color = { 1,0,0, 1 };
-
-		m_vertices.push_back(a);
-		m_vertices.push_back(b);
-		m_vertices.push_back(c);
-		m_vertices.push_back(d);
-		m_vertices.push_back(e);
-		m_vertices.push_back(f);
-
-		m_indices = { 0,1,2,3,4,5 };
+		AppendVertices(vertices);
+		AppendIndices(indices);
+		UpdateNormals();
 	}
 
 	void Mesh::CubeInit()

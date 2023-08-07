@@ -26,9 +26,13 @@ namespace Duat
 	void Engine::StartUp()
 	{
 		m_gfx.Init(m_hWnd);
-
+		static Graphics::Light light;
+		light.Init(m_gfx, 90);
+		light.SetPosition(0, 0, -3);
+		m_gfx.AddLight("Sun", &light);
+				
 		static Geometry::Mesh mesh;
-		mesh.CubeInit();
+		mesh.TestInit();
 
 		Geometry::SmartMesh sm;
 		int a = sm.CreateAndGo("a");
@@ -48,7 +52,6 @@ namespace Duat
 		Geometry::Fibre fb(sm, b);
 		sm.AddPatch(Geometry::Patch(fa, fb));
 		//mesh = sm.GetMesh();
-		mesh = Geometry::Dodecahedron();
 		m_gfx.AddDrawCall(&mesh, "Default", "Default", "Default",
 			Topology::TriangleList, "Default", "Expensive");
 
@@ -62,7 +65,7 @@ namespace Duat
 			if (m_keyboard.IsKeyDown(VK_ESCAPE)) exit(0);
 			frameTime.Start();
 						
-			HID::Focus->Interact(m_keyboard, m_mouse);
+			HID::Selection->Interact(m_keyboard, m_mouse);
 			m_gfx.Update();
 
 			frameTime.Stop();

@@ -3,7 +3,7 @@
 
 
 namespace Duat::Graphics {
-
+        
     HRESULT RasterizerState::Init(System& gfx, bool isClockwise, Fill fill, Cull cull, float width, float height, float normalizedWidth, float normalizedHeight, float minDepth, float maxDepth, DirectX::XMFLOAT2 ndcPosition)
     {
         return Init(&gfx, isClockwise, fill, cull, width, height, normalizedWidth, normalizedHeight, minDepth, maxDepth, ndcPosition);

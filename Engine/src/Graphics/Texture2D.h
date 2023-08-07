@@ -21,10 +21,15 @@ namespace Duat::Graphics {
 		void Init(System* pGFX, const std::filesystem::path& path);
 		void Init(System& gfx, ID3D11Texture2D* pTex2D);
 		void Init(System* pGFX, ID3D11Texture2D* pTex2D);
-		void Init(System& gfx, D3D11_TEXTURE2D_DESC desc);
-		void Init(System* pGFX, D3D11_TEXTURE2D_DESC desc);
+		void Init(System& gfx, D3D11_TEXTURE2D_DESC desc, DXGI_FORMAT srvFormat = DXGI_FORMAT_UNKNOWN,
+			DXGI_FORMAT dsvFormat= DXGI_FORMAT_UNKNOWN, DXGI_FORMAT rtvFormat = DXGI_FORMAT_UNKNOWN);
+		void Init(System* pGFX, D3D11_TEXTURE2D_DESC desc, DXGI_FORMAT srvFormat = DXGI_FORMAT_UNKNOWN,
+			DXGI_FORMAT dsvFormat = DXGI_FORMAT_UNKNOWN, DXGI_FORMAT rtvFormat = DXGI_FORMAT_UNKNOWN);
 
 		Texture2D& operator=(const Texture2D& rhs);
+
+		void Save(const std::filesystem::path& path) const;
+		void SaveDepth(const std::filesystem::path& path) const;
 
 		D3D11_TEXTURE2D_DESC GetDesc() const;
 		UINT GetWidth() const;
@@ -63,10 +68,13 @@ namespace Duat::Graphics {
 		void UpdateTexture();
 
 		System* m_pGFX;
-		Utility::HResult m_hresult;
+		mutable Utility::HResult m_hresult;
 		DirectX::ScratchImage m_image;
 		D3D11_TEXTURE2D_DESC m_desc;
-		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture;
+		DXGI_FORMAT m_srvFormat = DXGI_FORMAT_UNKNOWN;
+		DXGI_FORMAT m_dsvFormat = DXGI_FORMAT_UNKNOWN;
+		DXGI_FORMAT m_rtvFormat = DXGI_FORMAT_UNKNOWN;
+		mutable Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_SRV;
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RTV;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DSV;

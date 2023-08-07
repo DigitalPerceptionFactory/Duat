@@ -1,29 +1,14 @@
+#define VERTEX_SHADER
 #include "DefaultBuffer.hlsli"
 #include "BasicFunctions.hlsli"
-
-struct Input
-{
-    float4 position : POSITION;
-    float4 uv : TEXCOORD;
-    float4 color : COLOR;
-    float4 normal : NORMAL;
-    float4 shadow : SHADOW;
-};
-
-struct Output
-{
-    float4 position : SV_POSITION;
-    float4 uv : TEXCOORD;
-    float4 color : COLOR;
-    float4 normal : NORMAL;
-    float4 shadow : SHADOW;
-    float4 eye : EYE;
-};
 
 Output main(Input i, uint id : SV_InstanceID)
 {
     i.position.w = 1;
-    matrix mvp = mul(m_projectionMatrix, mul(m_instanceData[0].modelMatrix, m_viewMatrix));
+    matrix mvp = mul(
+        m_cameras[m_cameraIndex].projectionMatrix,
+        mul(m_instanceData[id].modelMatrix, m_cameras[m_cameraIndex].viewMatrix)
+    );
 
     Output o;
     o.position = mul(mvp, i.position);

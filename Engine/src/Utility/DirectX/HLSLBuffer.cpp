@@ -71,6 +71,8 @@ namespace Duat::Utility::HLSL {
 		if (rhs[0].m_label != "") elements[0].m_label = rhs[0].m_label;
 		elements[0].m_value = rhs[0].m_value;
 		elements[0].m_type = rhs[0].m_type;
+		arrayType = elements[0].m_type;
+		arrayTypeSignature = GetSignatureRec(elements[0].m_value);
 		for (int i = 1; i < rhs.size(); ++i)
 		{
 			if (CompatibilityCheck(elements[0].m_value, rhs[i].m_value, rhs[i].m_loc, i))
@@ -81,7 +83,7 @@ namespace Duat::Utility::HLSL {
 			}
 			else
 			{
-				elements[i] = Element();
+				elements[i] = Element(std::to_string(i), arrayType);
 			}
 		}
 	}
@@ -90,41 +92,55 @@ namespace Duat::Utility::HLSL {
 	{
 		Element temp;
 		temp = elementTemplate;
+		arrayType = Type::Struct;
+		arrayTypeSignature = GetSignatureRec(temp.m_value);
 		elements.resize(elementCount, temp);
 	}
 
 	Array::Array(size_t elementCount, const Element& elementTemplate)
 	{
+		arrayType = elementTemplate.m_type;
+		arrayTypeSignature = GetSignatureRec(elementTemplate.m_value);
 		elements.resize(elementCount, elementTemplate);
 	}
 
 	Array::Array(const Array& rhs)
 	{
+		arrayType = rhs.arrayType;
+		arrayTypeSignature = rhs.arrayTypeSignature;
 		elements = rhs.elements;
 	}
 
 	Array::Array(Array&& rhs) noexcept
 	{
+		arrayType = std::move(rhs.arrayType);
+		arrayTypeSignature = std::move(rhs.arrayTypeSignature);
 		elements = std::move(rhs.elements);
 	}
 
 	Array& Array::operator=(const Array& rhs)
 	{
+		arrayType = rhs.arrayType;
+		arrayTypeSignature = rhs.arrayTypeSignature;
 		elements = rhs.elements; return *this;
 	}
 
 	Array& Array::operator=(Array&& rhs) noexcept
 	{
+		arrayType = std::move(rhs.arrayType);
+		arrayTypeSignature = std::move(rhs.arrayTypeSignature);
 		elements = std::move(rhs.elements); return *this;
 	}
 
 	Type Array::GetArrayType() const
 	{
-		return elements.size() > 0 ? elements[0].m_type : Type::Invalid;
+		return arrayType;
+		//return elements.size() > 0 ? elements[0].m_type : Type::Invalid;
 	}
 
 	std::string Array::GetArrayTypeString() const
 	{
+		return SignatureToString(arrayTypeSignature);
 		if (elements.size() > 0)
 		{
 			auto sign = GetSignatureRec(elements[0].m_value);
@@ -146,8 +162,8 @@ namespace Duat::Utility::HLSL {
 		if (type == Type::Struct) return Struct();
 		else if (type == Type::Array) return Array();
 		HLSL_EXPAND
-			HLSL_EXPAND_PTR
-			return Empty();
+		HLSL_EXPAND_PTR
+		return Empty();
 #undef HLSL_EVALUATE
 	}
 
@@ -156,9 +172,9 @@ namespace Duat::Utility::HLSL {
 		if (std::holds_alternative<Struct>(value)) return Type::Struct;
 		else if (std::holds_alternative<Array>(value)) return Type::Array;
 		HLSL_EXPAND
-		HLSL_EXPAND_PTR
+			HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
-		return Type::Invalid;
+			return Type::Invalid;
 	}
 
 	std::vector<char> GetSignatureRec(const HLSLDataType& value)
@@ -362,6 +378,30 @@ namespace Duat::Utility::HLSL {
 		m_value = InitializeHLSLDataType(type);
 	}
 
+	Element::operator Array()
+	{
+		if (m_type != Type::Array)
+		{
+			m_result << "It is impossible to obtain Array because the element is of type " +
+				TypeToString(m_type) + ".";
+			static Array nullValue;
+			return nullValue;
+		}
+		return std::get<Array>(m_value);
+	}
+
+	Element::operator Struct()
+	{
+		if (m_type != Type::Struct)
+		{
+			m_result << "It is impossible to obtain Struct because the element is of type " +
+				TypeToString(m_type) + ".";
+			static Struct nullValue;
+			return nullValue;
+		}
+		return std::get<Struct>(m_value);
+	}
+
 #define HLSL_EVALUATE(x) \
 		Element::Element(const std::string& label, const Meta<Type::x>::TrueType& var) { \
 				m_type = Type::x; \
@@ -398,6 +438,64 @@ namespace Duat::Utility::HLSL {
 	{
 		m_label = label;
 		return *this;
+	}
+
+	void Element::Erase(const std::string& label, std::source_location loc)
+	{
+		if (m_type == Type::Struct)
+		{
+			Struct& str = std::get<Struct>(m_value);
+			for (int i = 0; i < str.elements.size(); ++i)
+				if (str.elements[i].m_label == label)
+				{
+					str.elements.erase(str.elements.begin() + i);
+					return;
+				}
+
+			m_result << Error("Struct \"" + m_label + "\" has no member \"" + label + "\".", loc);
+		}
+		else if (m_type == Type::Array)
+		{
+			Array& arr = std::get<Array>(m_value);
+			for (int i = 0; i < arr.elements.size(); ++i)
+				if (arr.elements[i].m_label == label)
+				{
+					arr.elements.erase(arr.elements.begin() + i);
+					return;
+				}
+
+			m_result << Error("Array \"" + m_label + "\" has no member \"" + label + "\".", loc);
+		}
+		else
+			m_result << Error("Element is of \"" + TypeToString(m_type) + "\" type.\nNote: You can only call Erase() on Structs and Arrays.", loc);
+	}
+
+	void Element::Erase(int index, std::source_location loc)
+	{
+		if (m_type == Type::Struct)
+		{
+			Struct& str = std::get<Struct>(m_value);
+			if (str.elements.size() > index) {
+				str.elements.erase(str.elements.begin() + index);
+				return;
+			}
+
+			m_result << Error("Index \"" + std::to_string(index) + "\" exceeds Struct elements size (" 
+				+ std::to_string(str.elements.size()) + ").", loc);
+		}
+		else if (m_type == Type::Array)
+		{
+			Array& arr = std::get<Array>(m_value);
+			if (arr.elements.size() > index) {
+				arr.elements.erase(arr.elements.begin() + index);
+				return;
+			}
+
+			m_result << Error("Index \"" + std::to_string(index) + "\" exceeds Array elements size ("
+				+ std::to_string(arr.elements.size()) + ").", loc);
+		}
+		else
+			m_result << Error("Element is of \"" + TypeToString(m_type) + "\" type.\nNote: You can only call Erase() on Structs and Arrays.", loc);
 	}
 
 	Element& Element::operator=(const Assign& rhs) {
@@ -442,8 +540,7 @@ namespace Duat::Utility::HLSL {
 
 			if (!m_buf)
 			{
-				arr.elements.push_back(Element(label.value, arr.elements.size() == 0 ?
-					Type::Empty : arr.elements[0].GetType()));
+				arr.elements.push_back(Element(label.value, arr.arrayType));
 				return arr.elements[arr.elements.size() - 1];
 			}
 		}
@@ -485,8 +582,7 @@ namespace Duat::Utility::HLSL {
 			}
 			else if (!m_buf)
 			{
-				arr.elements.resize(index.value + 1, arr.elements.size() == 0 ?
-					Element("", Type::Empty) : Element("", arr.elements[0].GetType()));
+				arr.elements.resize(index.value + 1, Element("", arr.arrayType));
 				return arr.elements[index.value];
 			}
 		}

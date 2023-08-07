@@ -19,6 +19,7 @@
 #include <Geometry/Mesh.h>
 #include "CompositionEx.h"
 #include "Camera.h"
+#include "Light.h"
 
 
 namespace Duat::Graphics {
@@ -54,17 +55,29 @@ namespace Duat::Graphics {
 		);
 		void RemoveDrawCall(size_t uniqueDrawCallIndex);
 		void AddCamera(const std::string& name, Camera* pCamera);
+		void AddLight(const std::string& name, Light* pLight);
 		void RemoveCamera(const std::string& name);
 		void AddBuffer(const std::string& name, Utility::HLSL::Layout layout);
 
 		const RenderTarget& GetRT(const std::string& name);
 
+		const RasterizerState& GetRS(const std::string& name) const;
+		const RasterizerState& GetActiveRS() const;
+		int GetActiveInstanceCount() const;
+		int GetActiveCameraIndex() const;
+		int GetLightCount() const;
 	private:
 		void InitShaders();
 		void InitTextures();
 		void InitStates();
 		void InitRenderTargets();
 		void InitBuffers();
+		void UpdateBuffers();
+		void ExecuteRequestQueue();
+
+		void DrawShadows();
+		void DrawSolid();
+		void DrawTransparent();
 
 		struct DrawCall;
 		void SetRT(const std::string& name);
@@ -88,19 +101,16 @@ namespace Duat::Graphics {
 		void SetVP(const std::vector<D3D11_VIEWPORT>& viewports);
 		void SetCB(const std::string& name);
 		void SetCB(const DrawCall& settings);
-		void SetDefaultCB(const DrawCall& settings);
-
 		//void SetSS(const std::string& name);
 
-		//void InitBuffers();
-		//void InitGUI();
-				
 		Utility::Result   m_result;
 		Utility::HResult  m_hresult;
 		DeviceEx          m_Device;
 		ContextEx         m_Context;
 		CompositionEx     m_Composition;
 		HWND              m_window;
+		DXGI_FORMAT       m_format;
+		DrawCall*         m_ActiveDrawCall;
 
 		struct DrawCall {
 			std::string GetKey();
@@ -113,25 +123,41 @@ namespace Duat::Graphics {
 			Topology tp = Topology::TriangleList;
 			VertexBuffer vb;
 			IndexBuffer ib;
+			std::vector<StructuredBuffer> sbArray;
 			size_t instances = 1;
+			size_t cameraIndex = -1;
 			size_t id;
+		};
+
+		enum class RequestType {
+			AddCamera, AddLight, RemoveCamera, RemoveLight, AddDrawCall
+		};
+
+		struct Request {
+			RequestType type;
+			int* pData;
+			std::string text;
 		};
 
 		size_t uniqueDrawCallIndex;
 		std::map<std::string, std::map<size_t, DrawCall>> m_drawCalls;
+		std::vector<Request> m_requests;
+		std::vector<RequestType> m_requestTypes;
 
-		std::map<std::string, VertexShader>       m_VS;
-		std::map<std::string, PixelShader>        m_PS;
-		std::map<std::string, ComputeShader>      m_CS;
-		std::map<std::string, Texture2D>          m_textures;
-		std::map<std::string, BlendState>         m_BS;
-		std::map<std::string, RasterizerState>    m_RS;
-		std::map<std::string, SamplerState>       m_SS;
-		std::map<std::string, DepthStencilState>  m_DSS;
-		std::map<std::string, RenderTarget>       m_RT;
-		std::map<std::string, ConstantBuffer>     m_CB;
-		std::map<std::string, StructuredBuffer>   m_SB;
-		std::map<std::string, Camera*>            m_Cameras;
+		std::map<std::string, VertexShader>                    m_VS;
+		std::map<std::string, PixelShader>                     m_PS;
+		std::map<std::string, ComputeShader>                   m_CS;
+		std::map<std::string, Texture2D>                       m_textures;
+		std::map<std::string, BlendState>                      m_BS;
+		std::map<std::string, RasterizerState>                 m_RS;
+		std::map<std::string, SamplerState>                    m_SS;
+		std::map<std::string, DepthStencilState>               m_DSS;
+		std::map<std::string, RenderTarget>                    m_RT;
+		std::map<std::string, ConstantBuffer>                  m_CB;
+		std::map<std::string, StructuredBuffer>                m_SB;
+		std::vector<std::pair<std::string, Camera*>>           m_Cameras;
+		std::vector<std::pair<std::string, Light*>>           m_Lights;
+		Texture2D m_shadowMap;
 	};
 
 }

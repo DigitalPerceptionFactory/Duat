@@ -3,16 +3,16 @@
 
 namespace Duat {
 
-	HID* HID::Focus = nullptr;
+	HID* HID::Selection = nullptr;
 
-	void HID::SetFocus()
+	void HID::SelectHID()
 	{
-		Focus = this;
+		Selection = this;
 	}
 
-	void HID::ReleaseFocus()
+	void HID::ReleaseHID()
 	{
-		Focus = nullptr;
+		Selection = nullptr;
 	}
 
 }

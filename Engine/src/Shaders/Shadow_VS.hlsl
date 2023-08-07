@@ -1,12 +1,19 @@
 #define VERTEX_SHADER
 #include "DefaultBuffer.hlsli"
+#include "BasicFunctions.hlsli"
 
-
-float4 main(float4 pos : POSITION) : SV_POSITION
+Output main(Input i, uint id : SV_InstanceID)
 {
-    /*pos.w = 1;
-    matrix modelMatrix = mul(DPF::transform[0], DPF::animationMatrix);
-    matrix mvp = mul(DPF::projection, mul(DPF::view, modelMatrix));
-    return mul(mvp, pos);*/
-    return float4(1,1,1,1);
+    i.position.w = 1;
+    matrix mvp = mul(
+        m_lights[m_cameraIndex].projectionMatrix,
+        mul(m_instanceData[id].modelMatrix, m_lights[m_cameraIndex].viewMatrix)
+    );
+
+    Output o;
+    o.position = mul(mvp, i.position);
+    o.color = i.color;
+    o.normal = ComputeNormal(i.normal, m_instanceData[0].modelMatrix, !m_isClockwise);
+    o.uv = i.uv;
+    return o;
 }

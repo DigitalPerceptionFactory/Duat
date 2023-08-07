@@ -7,7 +7,7 @@ namespace Duat::Graphics {
 
 	struct ContextEx : public Microsoft::WRL::ComPtr<ID3D11DeviceContext>
 	{
-		void Init(HWND handle);
+		void Init(HWND handle, DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT);
 		void Present();
 		void ClearRT(RenderTarget& rt);
 		void ClearRT(RenderTarget& rt, DirectX::XMFLOAT4& color);

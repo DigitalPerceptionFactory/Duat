@@ -16,6 +16,10 @@ struct Light
     matrix projectionMatrix;
 };
 
+struct Camera {
+    matrix viewMatrix;
+    matrix projectionMatrix;
+};
 
 #ifdef VERTEX_SHADER
 struct Input

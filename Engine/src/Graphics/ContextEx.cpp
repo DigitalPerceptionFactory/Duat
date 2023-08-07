@@ -3,9 +3,9 @@
 
 namespace Duat::Graphics {
 
-	void ContextEx::Init(HWND handle)
+	void ContextEx::Init(HWND handle, DXGI_FORMAT format)
 	{
-		m_swapChain.Init(handle);
+		m_swapChain.Init(handle, format);
 	}
 
 	void ContextEx::Present()
@@ -15,8 +15,8 @@ namespace Duat::Graphics {
 
 	void ContextEx::ClearRT(RenderTarget& rt)
 	{
-		(*this)->ClearRenderTargetView(rt.GetRTV(), m_clearColor);
-		(*this)->ClearDepthStencilView(rt.GetDSV(), 
+		(*this)->ClearRenderTargetView(rt.GetTarget().GetRTV(), m_clearColor);
+		(*this)->ClearDepthStencilView(rt.GetDepth().GetDSV(), 
 			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
@@ -24,8 +24,8 @@ namespace Duat::Graphics {
 	{
 		float clearColor[4];
 		std::memcpy(clearColor, &color, sizeof(float) * 4);
-		(*this)->ClearRenderTargetView(rt.GetRTV(), clearColor);
-		(*this)->ClearDepthStencilView(rt.GetDSV(),
+		(*this)->ClearRenderTargetView(rt.GetTarget().GetRTV(), clearColor);
+		(*this)->ClearDepthStencilView(rt.GetDepth().GetDSV(),
 			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 

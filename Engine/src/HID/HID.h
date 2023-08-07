@@ -6,9 +6,9 @@
 namespace Duat {
 
 	struct HID {
-		static HID* Focus;
-		void SetFocus();
-		void ReleaseFocus();
+		static HID* Selection;
+		void SelectHID();
+		void ReleaseHID();
 		virtual void Interact(Keyboard& kbd, Mouse& mouse) = 0;
 	};
 

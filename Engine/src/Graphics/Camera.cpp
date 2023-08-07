@@ -5,7 +5,7 @@
 using namespace DirectX;
 
 namespace Duat::Graphics {
-        
+
     void Camera::Init(System& gfx, const std::string& rtName, UINT topLeftX, UINT topLeftY, UINT width, UINT height, float fovAngleY, float nearZ, float farZ)
     {
         Init(&gfx, rtName, topLeftX, topLeftY, width, height, fovAngleY, nearZ, farZ);
@@ -13,8 +13,16 @@ namespace Duat::Graphics {
 
     void Camera::Init(System* pGFX, const std::string& rtName, UINT topLeftX, UINT topLeftY, UINT width, UINT height, float fovAngleY, float nearZ, float farZ)
     {
+        if (pGFX == nullptr)
+        {
+            Utility::Result result;
+            result << "Graphics System pointer can't be nullptr. Please pass valid pointer.";
+            return;
+        }
+        else m_pGFX = pGFX;
+
         if (pGFX->m_RT.count(rtName) > 0)
-            m_RT = rtName;
+            m_rtName = rtName;
         else
         {
             Utility::Result result;
@@ -70,13 +78,30 @@ namespace Duat::Graphics {
             if (kbd.IsKeyDown('D'))
                 RotateY(20 * m_rotationSpeed * (float)Time::DeltaTime);
         }
-
-        UpdateViewMatrix();
     }
 
     void Camera::SetRT(const std::string& name)
     {
-        m_RT = name;
+        // set and bind if rtName was valid name
+        if (m_pGFX->m_RT.count(name) > 0) {
+            // unbind camera from previous render target
+            if (m_rtName != "")
+            {
+                auto& bound_cameras = m_pGFX->m_RT[m_rtName].m_cameras;
+                for (int i = 0; i < bound_cameras.size(); ++i)
+                    if (bound_cameras[i] == this) {
+                        bound_cameras.erase(bound_cameras.begin() + i);
+                        break;
+                    }
+            }
+            m_rtName = name;
+            m_pGFX->m_RT[m_rtName].m_cameras.push_back(this);
+        }
+        else {
+            Utility::Result result;
+            result << "RenderTarget with name + \"" + name + "\" doesn't exist.";
+        }
+        
     }
 
     void Camera::SetFocus(DirectX::XMFLOAT3* pFocus)
@@ -84,9 +109,9 @@ namespace Duat::Graphics {
         m_focus = pFocus;
     }
 
-    std::string Camera::GetRT()
+    std::string Camera::GetNameRT()
     {
-        return m_RT;
+        return m_rtName;
     }
 
     const std::vector<D3D11_VIEWPORT>& Camera::GetViewports() const
@@ -116,13 +141,18 @@ namespace Duat::Graphics {
         );
     }
 
+    void Camera::AfterTransform()
+    {
+        UpdateViewMatrix();
+    }
+
     void Camera::UpdateViewMatrix()
     {
         if (m_focus != nullptr) {
             m_viewMatrix = XMMatrixLookAtLH(GetPosition(), *m_focus, { 0,1,0 });
         }
         else {
-            XMFLOAT3 forward = { 0,0,1 };
+            static XMFLOAT3 forward = { 0,0,1 };
             m_viewMatrix = XMMatrixLookAtLH(GetPosition(),
                 GetPosition() + XMFloat3Transform(forward, GetRotationMatrix()), 
                 {0,1,0});

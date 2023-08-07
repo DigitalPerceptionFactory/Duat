@@ -72,10 +72,10 @@ namespace Duat::Utility::HLSL {
 	template<typename T>
 	constexpr size_t GetPadding(size_t stride)
 	{
-		size_t varSize = std::is_pointer<T>::value 
+		size_t varSize = std::is_pointer<T>::value
 			?
 			sizeof(std::remove_pointer<T>::type)
-			: 
+			:
 			sizeof(T);
 
 		size_t remainder = varSize % stride;
@@ -295,7 +295,7 @@ namespace Duat::Utility::HLSL {
 		switch (t)
 		{
 			HLSL_EXPAND
-			HLSL_EXPAND_PTR
+				HLSL_EXPAND_PTR
 		}
 		Result res;
 		res << "You were trying to calculate padding of not supported data type.";
@@ -307,7 +307,7 @@ namespace Duat::Utility::HLSL {
 		switch (t)
 		{
 			HLSL_EXPAND
-			HLSL_EXPAND_PTR
+				HLSL_EXPAND_PTR
 		case Type::Struct: return "Struct";
 		case Type::Array: return "Array";
 		case Type::Function: return "Function";
@@ -374,9 +374,11 @@ namespace Duat::Utility::HLSL {
 		Type GetArrayType() const;
 		std::string GetArrayTypeString() const;
 
+		Type arrayType = Type::Invalid;
+		std::vector<char> arrayTypeSignature;
 		std::vector<Element> elements;
 	};
-		
+
 	struct Function {
 		Function();
 		Function(Layout& signature, const std::function<HLSLDataType(Buffer&)>& func);
@@ -401,15 +403,15 @@ namespace Duat::Utility::HLSL {
 
 	struct Assign {
 		friend Array; friend Struct; friend Element;
-		
+
 		Assign() = default;
 #define HLSL_EVALUATE(x) Assign(const Meta<Type::x>::TrueType& value, std::source_location loc = std::source_location::current());
 		HLSL_EXPAND
 #undef HLSL_EVALUATE
 #define HLSL_EVALUATE(x) Assign(Meta<Type::x>::TrueType value, std::source_location loc = std::source_location::current());
-		HLSL_EXPAND_PTR
+			HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
-		Assign(const HLSLDataType& value, std::source_location loc = std::source_location::current());
+			Assign(const HLSLDataType& value, std::source_location loc = std::source_location::current());
 		Assign(const Struct& value, std::source_location loc = std::source_location::current());
 		Assign(const Array& value, std::source_location loc = std::source_location::current());
 		Assign(const Function& value, std::source_location loc = std::source_location::current());
@@ -451,13 +453,25 @@ namespace Duat::Utility::HLSL {
 		HLSL_EXPAND
 #undef HLSL_EVALUATE
 #define HLSL_EVALUATE(x) Element(const std::string& label, Meta<Type::x>::TrueType var);
-		HLSL_EXPAND_PTR
+			HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 
-		// conversion operators
+			// conversion operators
 #define HLSL_EVALUATE(x) explicit operator Meta<Type::x>::TrueType() \
 		{ \
-			if (m_type != Type::x) \
+			if (m_type == Type::Function) \
+			{ \
+				Type fReturnType = std::get<Function>(m_value).GetReturnType(); \
+				if (fReturnType != Type::x) \
+				{ \
+					m_result << "It is impossible to obtain " + TypeToString(Type::x) + \
+						" because the element is of type Function which returns " + TypeToString(fReturnType) + "."; \
+					static Meta<Type::x>::TrueType nullValue; \
+					return nullValue; \
+				} \
+				return std::get<Meta<Type::x>::TrueType>(std::get<Function>(m_value)()); \
+			} \
+			else if (m_type != Type::x) \
 			{ \
 				m_result << "It is impossible to obtain " + TypeToString(Type::x) + \
 					" because the element is of type " + TypeToString(m_type) + "."; \
@@ -466,15 +480,19 @@ namespace Duat::Utility::HLSL {
 			} \
 			return std::get<Meta<Type::x>::TrueType>(m_value); \
 		}
-		HLSL_EXPAND
-		HLSL_EXPAND_PTR
+			HLSL_EXPAND
+			HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
+		explicit operator Array();
+		explicit operator Struct();
 
 		Element(const std::string& label, const Struct& var);
 		Element(const std::string& label, const Array& var);
 
 		// Assignment Operators
 		Element& Rename(const std::string& label);
+		void Erase(const std::string& label, std::source_location loc = std::source_location::current());
+		void Erase(int index, std::source_location loc = std::source_location::current());
 
 		Element& operator=(const Assign& rhs);
 
@@ -487,7 +505,7 @@ namespace Duat::Utility::HLSL {
 		const HLSLDataType& GetValue() const;
 		char* GetBuf();
 		size_t GetOffset() const;
-		
+
 	private:
 		Result m_result;
 		Type m_type = Type::Empty;
@@ -499,9 +517,17 @@ namespace Duat::Utility::HLSL {
 
 	static void EmplaceVariant(void* dest, HLSLDataType var)
 	{
-		std::visit([&](const auto& value) {
+		if (dest == nullptr) return;
+#define HLSL_EVALUATE(x) else if (std::holds_alternative<Meta<Type::x>::TrueType>(var)) { \
+			if (std::get<Meta<Type::x>::TrueType>(var) == nullptr) return; }
+		HLSL_EXPAND_PTR
+#undef HLSL_EVALUATE
+
+			std::visit([&](const auto& value) {
 			Result result;
 			using ValueType = std::decay_t<decltype(value)>;
+			if (std::is_null_pointer<ValueType>::value) return;
+
 			if constexpr (std::is_same_v<ValueType, Array>)
 			{
 				result << "You can't call EmplaceVariant on Array.";
@@ -549,16 +575,15 @@ namespace Duat::Utility::HLSL {
 #define HLSL_EVALUATE(x) \
 			else if constexpr (std::is_same_v<ValueType, Meta<Type::x>::TrueType>) \
 			{ \
-				auto refValue = *value; \
-				std::memcpy(dest, &refValue, sizeof(refValue)); \
+				std::memcpy(dest, value, sizeof(std::remove_pointer<ValueType>::type)); \
 			}
-			HLSL_EXPAND_PTR
+				HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
 			else
 			{
 				result << "You probably called EmplaceVariant on Empty or Invalid type.";
 			}
-			}, var);
+				}, var);
 	}
 
 	static void EmplaceRec(Element& e)
@@ -600,8 +625,11 @@ namespace Duat::Utility::HLSL {
 		Layout() {
 			root = Element("root", Struct());
 		}
-		Layout(const std::string& root_name) {
-			root = Element(root_name, Struct());
+		Layout(const Element& root_value) {
+			root = root_value;
+		}
+		Layout(const Assign& root_value) {
+			root = root_value;
 		}
 		Element& operator=(const Assign& rhs) {
 			root = rhs;
@@ -635,7 +663,7 @@ namespace Duat::Utility::HLSL {
 	private:
 		Element root;
 	};
-		
+
 	struct Buffer {
 		friend Element;
 		Buffer() = default;
@@ -643,13 +671,14 @@ namespace Duat::Utility::HLSL {
 			Init(layout);
 		}
 		Buffer(const Buffer& other);
-		Buffer&  operator=(const Buffer& other);
+		Buffer& operator=(const Buffer& other);
 		Buffer(Buffer&& other) noexcept;
 		Buffer& operator=(Buffer&& other) noexcept;
 
 		void Init(const Layout& layout) {
 			m_layout = layout;
 			size_t buffer_size = CalcOffsetRec(0, m_layout.root);
+			if (m_layout.root.GetType() == Type::Struct) buffer_size += GetPadding(buffer_size, 16);
 			m_buffer.resize(buffer_size);
 			SetPtrRec(m_layout.root);
 			EmplaceRec(m_layout.root);
@@ -662,6 +691,9 @@ namespace Duat::Utility::HLSL {
 		}
 		Element& operator[](Label label) {
 			return m_layout[label];
+		}
+		Layout GetLayout() const {
+			return m_layout;
 		}
 		void* GetBuffer() {
 			return m_buffer.data();
@@ -745,10 +777,10 @@ namespace Duat::Utility::HLSL {
 				return typeSize; \
 			}
 			HLSL_EXPAND
-			HLSL_EXPAND_PTR
+				HLSL_EXPAND_PTR
 #undef HLSL_EVALUATE
-				
-			return 0;
+
+				return 0;
 		}
 		void SetPtrRec(Element& e) {
 			e.m_buf = m_buffer.data();
@@ -794,7 +826,7 @@ namespace Duat::Utility::HLSL {
 		std::vector<Element*> m_functions;
 	};
 
-	
+
 
 }
 #undef HLSL_EXPAND

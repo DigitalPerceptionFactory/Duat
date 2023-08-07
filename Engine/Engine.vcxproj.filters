@@ -273,6 +273,15 @@
     <ClInclude Include="src\Geometry\Solid26.h">
       <Filter>Geometry\h</Filter>
     </ClInclude>
+    <ClInclude Include="src\Graphics\Light.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Texture2DArray.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Format\dxgi.h">
+      <Filter>Utility\Format\h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graphics\VertexShader.cpp">
@@ -416,6 +425,15 @@
     </ClCompile>
     <ClCompile Include="src\Geometry\Solid26.cpp">
       <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Light.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Texture2DArray.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Format\dxgi.cpp">
+      <Filter>Utility\Format\cpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

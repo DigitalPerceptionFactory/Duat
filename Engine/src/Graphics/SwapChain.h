@@ -11,7 +11,7 @@ namespace Duat::Graphics {
 
 	struct SwapChain : public Microsoft::WRL::ComPtr<IDXGISwapChain1>
 	{
-		void Init(HWND handle);
+		void Init(HWND handle, DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT);
 		void Present();
 
 		const DXGI_SWAP_CHAIN_DESC1& GetDesc() const;

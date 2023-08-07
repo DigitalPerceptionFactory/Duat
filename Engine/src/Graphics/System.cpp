@@ -10,9 +10,10 @@ namespace Duat::Graphics {
 	{
 		uniqueDrawCallIndex = 0;
 		m_window = handle;
+		m_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 
 		m_Device.Init();
-		m_Context.Init(handle);
+		m_Context.Init(handle, m_format);
 
 		m_hresult << D3D11CreateDevice(
 			m_Device.GetAdapter(),
@@ -32,6 +33,9 @@ namespace Duat::Graphics {
 
 		m_Composition.Init(this);
 
+		static DrawCall nullActiveDrawCall;
+		m_ActiveDrawCall = &nullActiveDrawCall;
+
 		InitShaders();
 		InitTextures();
 		InitStates();
@@ -42,48 +46,27 @@ namespace Duat::Graphics {
 		defaultCamera.Init(this, "Default");
 		defaultCamera.SetPosition({ 0, 0, -5 });
 		AddCamera("Default", &defaultCamera);
-		
-		HID::Focus = &defaultCamera;
 
-		m_Context.SetClearColor( 0,0,0,0 );
+		HID::Selection = &defaultCamera;
+
+		m_Context.SetClearColor(0, 0, 0, 0);
 	}
 
 	void System::Update()
 	{
-		for (auto& rt : m_RT) m_Context.ClearRT(rt.second);
+		ExecuteRequestQueue();
 
-		SetDSS("Default");
-		for (auto& pass : m_drawCalls)
-		{
-			if (pass.second.size() != 0) 
-			{
-				auto& settings = pass.second[0];
-				SetRT(settings);
-				SetVS(settings);
-				SetPS(settings);
-				SetBS(settings);
-				SetRS(settings);
-				SetTP(settings);
-				SetVP(settings);
-			}
-			for (auto& drawCall : pass.second)
-			{
-				auto& settings = drawCall.second;
-				SetDefaultCB(settings);
+		for (auto& sb : m_SB) sb.second.Update();
 
-				// to be implemented
-				// m_Context->VSSetConstantBuffers();
-				// m_Context->PSSetConstantBuffers();
-				// m_Context->VSSetShaderResources();
-				// m_Context->PSSetShaderResources();
+		m_Context->VSSetShaderResources(0, 1, m_SB["Cameras"].GetSRVAddressOf());
+		m_Context->PSSetShaderResources(0, 1, m_SB["Cameras"].GetSRVAddressOf());
 
-				static UINT offset = 0;
-				m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
-				m_Context->IASetIndexBuffer(settings.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
-				m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
-			}
-		}
-				
+		m_Context->VSSetShaderResources(1, 1, m_SB["Lights"].GetSRVAddressOf());
+		m_Context->PSSetShaderResources(1, 1, m_SB["Lights"].GetSRVAddressOf());
+
+		DrawShadows();
+		DrawSolid();
+		DrawTransparent();
 		m_Context.Present();
 	}
 
@@ -93,29 +76,17 @@ namespace Duat::Graphics {
 
 	size_t System::AddDrawCall(Geometry::Mesh* mesh, const std::string& vs, const std::string& ps, const std::string& cam, const Topology& tp, const std::string& bs, const std::string& rs)
 	{
-		DrawCall dc;
-		if (m_Cameras.count(cam) > 0)
-		{
-			dc.rt = m_Cameras[cam]->GetRT();
-			dc.cam = cam;
-		}
-		else m_result << "Camera \"" + cam + "\" doesn't exist.";
-
-		if (m_VS.count(vs) > 0) dc.vs = vs;
-		else m_result << "VertexShader \"" + vs + "\" doesn't exist.";
-
-		if (m_PS.count(ps) > 0) dc.ps = ps;
-		else m_result << "PixelShader \"" + ps + "\" doesn't exist.";
-
-		if (m_BS.count(bs) > 0) dc.bs = bs;
-		else m_result << "BlendState \"" + bs + "\" doesn't exist.";
-
-		if (m_RS.count(rs) > 0) dc.rs = rs;
-		else m_result << "RasterizerState \"" + rs + "\" doesn't exist.";
-
-		dc.tp = tp;
-
-		HLSL::Layout vbLayout("VertexBuffer");
+		DrawCall* pDC = new DrawCall();
+		pDC->vs = vs;
+		pDC->ps = ps;
+		pDC->bs = bs;
+		pDC->rs = rs;
+		pDC->tp = tp;
+		pDC->cam = cam;
+		pDC->instances = 1;
+		pDC->id = uniqueDrawCallIndex;
+				
+		HLSL::Layout vbLayout;
 		vbLayout["Position"];
 		vbLayout["TexCoord"];
 		vbLayout["Color"];
@@ -131,16 +102,23 @@ namespace Duat::Graphics {
 			vbLayout[i]["Normal"] = mesh->GetVertices()[i].normal;
 		}
 
-		HLSL::Layout ibLayout("IndexBuffer");
+		HLSL::Layout ibLayout;
 		for (int i = 0; i < mesh->GetIndices().size(); ++i)
 			ibLayout[i] = (int)(mesh->GetIndices()[i]);
 
-		dc.vb.Init(this, vbLayout);
-		dc.ib.Init(this, ibLayout);
-		dc.id = uniqueDrawCallIndex;
+		pDC->vb.Init(this, vbLayout);
+		pDC->ib.Init(this, ibLayout);
+				
+		HLSL::Layout sbLayout;
+		sbLayout["Matrix"] = XMMatrixIdentity();
+		sbLayout.Replicate(1);
+		StructuredBuffer sb(this,sbLayout,1);
+		pDC->sbArray.push_back(sb);
 
-		m_drawCalls[dc.GetKey()][dc.id] = std::move(dc);
-
+		Request req;
+		req.pData = reinterpret_cast<int*>(pDC);
+		req.type = RequestType::AddDrawCall;
+		m_requests.push_back(req);
 		++uniqueDrawCallIndex;
 		return uniqueDrawCallIndex - 1;
 	}
@@ -153,24 +131,27 @@ namespace Duat::Graphics {
 
 	void System::AddCamera(const std::string& name, Camera* pCamera)
 	{
-		if (pCamera == nullptr)
-		{
-			m_result << "Camera pointer is nullptr";
-			return;
-		}
-		if (m_Cameras.count(name) > 0) {
-			m_result << "Camera with name \"" + name + "\" already exists.";
-			return;
-		}
-		
-		m_Cameras[name] = pCamera;
+		Request req;
+		req.text = name;
+		req.pData = (int*)pCamera;
+		req.type = RequestType::AddCamera;
+		m_requests.push_back(req);
+	}
+
+	void System::AddLight(const std::string& name, Light* pLight)
+	{
+		Request req;
+		req.text = name;
+		req.pData = reinterpret_cast<int*>(pLight);
+		req.type = RequestType::AddLight;
+		m_requests.push_back(req);
 	}
 
 	void System::RemoveCamera(const std::string& name)
 	{
-		m_Cameras.erase(name);
-		for (auto& pass : m_drawCalls)
-			if (pass.second.size() > 0 && pass.second[0].cam == name) m_drawCalls.erase(pass.first);
+		//m_Cameras.erase(name);
+		//for (auto& pass : m_drawCalls)
+		//	if (pass.second.size() > 0 && pass.second[0].cam == name) m_drawCalls.erase(pass.first);
 	}
 
 	void System::AddBuffer(const std::string& name, Utility::HLSL::Layout layout)
@@ -182,9 +163,36 @@ namespace Duat::Graphics {
 	{
 		if (m_RT.count(name) > 0) return m_RT[name];
 		else m_result << "RenderTarget \"" + name + "\" doesn't exist.";
-		
+
 		static RenderTarget nullReference;
 		return nullReference;
+	}
+
+	const RasterizerState& System::GetRS(const std::string& name) const
+	{
+		return m_RS.at(name);
+	}
+
+	const RasterizerState& System::GetActiveRS() const
+	{
+		return m_RS.at(m_ActiveDrawCall->rs);
+	}
+
+	int System::GetActiveInstanceCount() const
+	{
+		return m_ActiveDrawCall->instances;
+	}
+
+	int System::GetActiveCameraIndex() const
+	{
+		return m_ActiveDrawCall->cameraIndex;
+	}
+
+	int System::GetLightCount() const
+	{
+		if(m_SB.count("Lights") > 0)
+			return m_SB.at("Lights").GetRootElementCount();
+		return 0;
 	}
 
 	void System::InitShaders()
@@ -199,9 +207,9 @@ namespace Duat::Graphics {
 					std::string shaderType = name.substr(name.length() - 8, 3);
 					std::string just_name = name.substr(0, name.length() - 8);
 
-					if ( shaderType == "_VS" ) m_VS[just_name].Compile(this, entry.path());
-					else if ( shaderType == "_PS" ) m_PS[just_name].Compile(this, entry.path());
-					else if ( shaderType == "_CS" ) m_CS[just_name].Compile(this, entry.path());
+					if (shaderType == "_VS") m_VS[just_name].Compile(this, entry.path());
+					else if (shaderType == "_PS") m_PS[just_name].Compile(this, entry.path());
+					else if (shaderType == "_CS") m_CS[just_name].Compile(this, entry.path());
 				}
 			}
 		}
@@ -218,9 +226,9 @@ namespace Duat::Graphics {
 					std::string shaderType = name.substr(name.length() - 7, 3);
 					std::string just_name = name.substr(0, name.length() - 7);
 
-					if ( shaderType == "_VS" ) m_VS[just_name].Load(this, entry.path());
-					else if ( shaderType == "_PS" ) m_PS[just_name].Load(this, entry.path());
-					else if ( shaderType == "_CS" ) m_CS[just_name].Load(this, entry.path());
+					if (shaderType == "_VS") m_VS[just_name].Load(this, entry.path());
+					else if (shaderType == "_PS") m_PS[just_name].Load(this, entry.path());
+					else if (shaderType == "_CS") m_CS[just_name].Load(this, entry.path());
 				}
 			}
 		}
@@ -258,9 +266,9 @@ namespace Duat::Graphics {
 	void System::InitStates()
 	{
 		// Rasterizer States
-		m_RS["Default"].Init(this, false, Fill::Solid, Cull::Back, 
+		m_RS["Default"].Init(this, false, Fill::Solid, Cull::Back,
 			GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
-		m_RS["Expensive"].Init(this, false, Fill::Solid, Cull::None, 
+		m_RS["Expensive"].Init(this, false, Fill::Solid, Cull::None,
 			GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
 		// Depth Stencil States
@@ -268,46 +276,389 @@ namespace Duat::Graphics {
 
 		// Blend States
 		m_BS["Default"].Init(this);
-		
+
 		// Sampler States
 		m_SS["Default"].Init(this);
 	}
 
 	void System::InitRenderTargets()
 	{
+		m_RT["Null"].Init(this, 1, 1, m_format);
 		m_RT["Default"].Init(this, m_Context.GetBackBuffer());
 	}
 
 	void System::InitBuffers()
 	{
-		HLSL::Layout layout;
-		layout["DeltaTime"] = HLSL::Function([](){ return (float)Time::DeltaTime; });
-		layout["IsClockwise"] = false;
-		layout["InstanceCount"] = 1;
-		layout["LightCount"] = 1;
-		layout["ViewMatrix"] = XMMatrixIdentity();
-		layout["ProjectionMatrix"] = XMMatrixIdentity();
-		m_CB["Default"].Init(this, layout, 1);
-
-		layout.Reset();
-		layout["ModelMatrix"] = XMMatrixIdentity();
-		layout.Replicate(100);
-		m_SB["Default"].Init(this, layout, 1);
-
-		layout.Reset();
-		layout["Position"] = XMFLOAT3(-3, -5, -15);
-		layout["Intensity"] = 0.3f;
-		layout["Direction"] = XMFLOAT3(-1,-1,-1);
-		layout["Color"] = XMFLOAT3(1,1,1);
-		layout["ViewMatrix"] = XMMatrixIdentity();
-		layout["ProjectionMatrix"] = XMMatrixIdentity();
-		layout.Replicate(1);
-		m_SB["Light"].Init(this, layout, 1);
-	}
 		
+		HLSL::Layout input;
+		input["pGFX"] = reinterpret_cast<int*>(this);
+		HLSL::Function fp_isClockwise = HLSL::Function(input,
+			[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+				System* pGFX = reinterpret_cast<System*>((int*)param["pGFX"]);
+				return pGFX->GetActiveRS().IsClockwise();
+			}
+		);
+		HLSL::Function fp_getInstanceCount = HLSL::Function(input,
+			[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+				System* pGFX = reinterpret_cast<System*>((int*)param["pGFX"]);
+				return pGFX->GetActiveInstanceCount();
+			}
+		);
+		HLSL::Function fp_getLightCount = HLSL::Function(input,
+			[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+				System* pGFX = reinterpret_cast<System*>((int*)param["pGFX"]);
+				return pGFX->GetLightCount();
+			}
+		);
+		HLSL::Function fp_getCameraIndex = HLSL::Function(input,
+			[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+				System* pGFX = reinterpret_cast<System*>((int*)param["pGFX"]);
+				return pGFX->GetActiveCameraIndex();
+			}
+		);
+
+		HLSL::Layout layout;
+		layout["DeltaTime"] = HLSL::Function([]() { return (float)Time::DeltaTime; });
+		layout["IsClockwise"] = fp_isClockwise;
+		layout["InstanceCount"] = fp_getInstanceCount;
+		layout["LightCount"] = fp_getLightCount;
+		layout["CameraIndex"] = fp_getCameraIndex;
+		m_CB["DrawCallBuffer"].Init(this, layout, 1);
+	}
+
+	void System::UpdateBuffers()
+	{
+		for (auto& sb : m_SB)
+			sb.second.Update();
+	}
+
+	void System::ExecuteRequestQueue()
+	{
+		if (m_requests.size() != 0)
+		{
+			// Buffers are immutable so we are taking their Layouts, edit them and recreate StructuredBuffers with them
+			HLSL::Layout cameras = m_SB["Cameras"].GetLayout();
+			HLSL::Layout lights = m_SB["Lights"].GetLayout();
+			
+			if (cameras.GetRootType() == HLSL::Type::Array)
+			{
+				if (((HLSL::Array)cameras.GetRoot()).elements.size() == 0)
+					cameras.GetRoot() = HLSL::Array(0, HLSL::Struct());
+			}
+			else if (cameras.GetRootType() != HLSL::Type::Array)
+				cameras.GetRoot() = HLSL::Array(0, HLSL::Struct());
+
+			if (lights.GetRootType() == HLSL::Type::Array)
+			{
+				if (((HLSL::Array)lights.GetRoot()).elements.size() == 0)
+					lights.GetRoot() = HLSL::Array(0, HLSL::Struct());
+			}
+			else if (lights.GetRootType() != HLSL::Type::Array)
+				lights.GetRoot() = HLSL::Array(0, HLSL::Struct());
+
+			for (auto& req : m_requests)
+			{
+				switch (req.type)
+				{
+				case RequestType::AddCamera: {
+					if (req.pData == nullptr)
+					{
+						m_result << "Camera pointer is nullptr";
+						break;
+					}
+					if (std::find_if(m_Cameras.begin(), m_Cameras.end(),
+						[&req](const auto& pair) { return pair.first == req.text; }) != m_Cameras.end()) {
+						m_result << "Camera with name \"" + req.text + "\" already exists.";
+						break;
+					}
+
+					HLSL::Layout input(HLSL::Assign(req.pData));
+					HLSL::Function fp_getViewMatrix = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Camera*>(int_ptr)->GetViewMatrix();
+						});
+					HLSL::Function fp_getProjMatrix = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Camera*>(int_ptr)->GetProjectionMatrix();
+						});
+
+					bool cameraExists = false;
+					for (auto& cam : m_Cameras)
+						if (cam.first == req.text)
+						{
+							cam.second = reinterpret_cast<Camera*>(req.pData);
+							cameraExists = true;
+							break;
+						}
+					if (!cameraExists)
+						m_Cameras.push_back({ req.text, reinterpret_cast<Camera*>(req.pData) });
+
+					cameras[req.text]["ViewMatrix"] = fp_getViewMatrix;
+					cameras[req.text]["ProjectionMatrix"] = fp_getProjMatrix;
+					break;
+				}
+				case RequestType::AddLight: {
+					HLSL::Layout input(HLSL::Assign(req.pData));
+					HLSL::Function fp_getPosition = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Light*>(int_ptr)->GetPosition();
+						});
+					HLSL::Function fp_getIntensity = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Light*>(int_ptr)->GetIntensity();
+						});
+					HLSL::Function fp_getRotation = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Light*>(int_ptr)->GetRotation();
+						});
+					HLSL::Function fp_getColor = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Light*>(int_ptr)->GetColor();
+						});
+					HLSL::Function fp_getViewMatrix = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Light*>(int_ptr)->GetViewMatrix();
+						});
+					HLSL::Function fp_getProjMatrix = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Light*>(int_ptr)->GetProjectionMatrix();
+						});
+
+					bool lightExists = false;
+					for (auto& light : m_Lights)
+						if (light.first == req.text)
+						{
+							light.second = reinterpret_cast<Light*>(req.pData);
+							lightExists = true;
+							break;
+						}
+					if (!lightExists)
+						m_Lights.push_back({ req.text, reinterpret_cast<Light*>(req.pData) });
+
+					lights[req.text]["Position"] = fp_getPosition;
+					lights[req.text]["Intensity"] = fp_getIntensity;
+					lights[req.text]["Rotation"] = fp_getRotation;
+					lights[req.text]["Color"] = fp_getColor;
+					lights[req.text]["ViewMatrix"] = fp_getViewMatrix;
+					lights[req.text]["ProjectionMatrix"] = fp_getProjMatrix;
+									
+					D3D11_TEXTURE2D_DESC desc;
+					m_Lights[0].second->GetShadowmap().GetDepth().Get()->GetDesc(&desc);
+					desc.ArraySize = static_cast<UINT>(m_Lights.size());
+					
+					m_shadowMap.Init(this, desc, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT);
+					break;
+				}
+				case RequestType::RemoveCamera: {
+					for(int i = m_Cameras.size() - 1; i >= 0; --i)
+						if (m_Cameras[i].first == req.text)
+						{
+							m_Cameras.erase(m_Cameras.begin() + i);
+							for (auto& pass : m_drawCalls)
+							{
+								if (!pass.second.empty()) {
+									// if camera set for that pass is the one we want to remove then erase such pass completely
+									if (pass.second.begin()->second.cam == req.text)
+										m_drawCalls.erase(pass.first);
+									else if (pass.second.begin()->second.cameraIndex > i)
+									{
+										for (auto& drawCall : pass.second)
+											--drawCall.second.cameraIndex;
+									}
+								}
+							}
+							break;
+						}
+					cameras.GetRoot().Erase(req.text);
+					break;
+				}
+				case RequestType::RemoveLight: {
+					for (int i = m_Lights.size() - 1; i >= 0; --i)
+						if (m_Lights[i].first == req.text)
+						{
+							m_Lights.erase(m_Lights.begin() + i);
+							break;
+						}
+
+					lights.GetRoot().Erase(req.text);
+					break;
+				}
+				case RequestType::AddDrawCall: {
+					DrawCall* pDC = reinterpret_cast<DrawCall*>(req.pData);
+
+					auto findCamera = std::find_if(m_Cameras.begin(), m_Cameras.end(),
+						[pDC](const auto& pair) { return pair.first == pDC->cam; });
+
+					if (findCamera != m_Cameras.end())
+					{
+						pDC->rt = findCamera->second->GetNameRT();
+						pDC->cameraIndex = std::distance(m_Cameras.begin(), findCamera);
+					}
+					else {
+						m_result << "Camera \"" + pDC->cam + "\" doesn't exist.";
+						delete pDC;
+						break;
+					}
+					if (m_VS.count(pDC->vs) <= 0)
+					{
+						m_result << "VertexShader \"" + pDC->vs + "\" doesn't exist.";
+						delete pDC;
+						break;
+					}
+					if (m_PS.count(pDC->ps) <= 0) 
+					{
+						m_result << "PixelShader \"" + pDC->ps + "\" doesn't exist.";
+						delete pDC;
+						break;
+					}
+					if (m_BS.count(pDC->bs) <= 0)
+					{
+						m_result << "BlendState \"" + pDC->bs + "\" doesn't exist.";
+						delete pDC;
+						break;
+					}
+					if (m_RS.count(pDC->rs) <= 0)
+					{
+						m_result << "RasterizerState \"" + pDC->rs + "\" doesn't exist.";
+						delete pDC;
+						break;
+					}
+
+					m_drawCalls[pDC->GetKey()][pDC->id] = *pDC;
+					delete pDC;
+					break;
+				}
+				}
+			}
+
+			// erase from map if buffer is empty
+			if (((HLSL::Array)cameras.GetRoot()).elements.size() > 0)
+				m_SB["Cameras"].Init(this, cameras, 1);
+			else m_SB.erase("Cameras");
+
+			if (((HLSL::Array)lights.GetRoot()).elements.size() > 0)
+				m_SB["Lights"].Init(this, lights, 1);
+			else m_SB.erase("Lights");
+
+			m_requests.resize(0);
+		}
+	}
+
+	void System::DrawShadows()
+	{
+		for (auto& light : m_Lights)
+		{
+			m_Context->ClearDepthStencilView(light.second->GetShadowmap().GetDepth().GetDSV(),
+				D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		}
+
+		SetVS("Shadow");
+		SetPS("Null");
+
+		SetDSS("Default");
+		for (auto& pass : m_drawCalls)
+		{
+			if (pass.second.size() != 0)
+			{
+				auto& settings = pass.second[0];
+				SetBS(settings);
+				SetRS(settings);
+				SetTP(settings);
+				for (auto& drawCall : pass.second)
+				{
+					m_ActiveDrawCall = &drawCall.second;
+
+					for (int i = 0; i < m_ActiveDrawCall->sbArray.size(); ++i)
+					{
+						m_ActiveDrawCall->sbArray[i].Update();
+						m_Context->VSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
+					}
+
+					static UINT offset = 0;
+					m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
+					m_Context->IASetIndexBuffer(settings.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
+					
+					auto restoreCameraIndex = m_ActiveDrawCall->cameraIndex;
+					m_ActiveDrawCall->cameraIndex = 0;
+					for (auto& light : m_Lights)
+					{
+						m_CB["DrawCallBuffer"].Update();
+						m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+
+						m_Context->OMSetRenderTargets(1, light.second->GetShadowmap().GetTarget().GetRTVAddressOf(),
+							light.second->GetShadowmap().GetDepth().GetDSV());
+						m_Context->RSSetViewports(1, light.second->GetViewport());
+						m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
+						++m_ActiveDrawCall->cameraIndex;
+					}
+					m_ActiveDrawCall->cameraIndex = restoreCameraIndex;
+				}
+			}
+		}
+
+		m_Context->OMSetRenderTargets(0, nullptr, nullptr);
+		m_Context->VSSetShaderResources(2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
+		m_Context->PSSetShaderResources(2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
+	}
+
+	void System::DrawSolid()
+	{
+		for (auto& rt : m_RT) m_Context.ClearRT(rt.second);
+				
+		SetDSS("Default");
+		for (auto& pass : m_drawCalls)
+		{
+			if (pass.second.size() != 0)
+			{
+				auto& settings = pass.second[0];
+				SetRT(settings);
+				SetVS(settings);
+				SetPS(settings);
+				SetBS(settings);
+				SetRS(settings);
+				SetTP(settings);
+				SetVP(settings);
+
+				for (auto& drawCall : pass.second)
+				{
+					m_ActiveDrawCall = &drawCall.second;
+
+					m_CB["DrawCallBuffer"].Update();
+					m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+					m_Context->PSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+
+					for (int i = 0; i < m_ActiveDrawCall->sbArray.size(); ++i)
+					{
+						m_ActiveDrawCall->sbArray[i].Update();
+						m_Context->VSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
+						m_Context->PSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
+					}
+
+					static UINT offset = 0;
+					m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
+					m_Context->IASetIndexBuffer(settings.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
+					m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
+				}
+			}
+		}
+	}
+
+	void System::DrawTransparent()
+	{
+	}
+
 	void System::SetRT(const std::string& name)
 	{
-		m_Context->OMSetRenderTargets(1, m_RT[name].GetRTVAddressOf(), m_RT[name].GetDSV());
+		m_Context->OMSetRenderTargets(1, m_RT[name].GetTarget().GetRTVAddressOf(), 
+			m_RT[name].GetDepth().GetDSV());
 	}
 
 	void System::SetRT(const DrawCall& settings)
@@ -383,12 +734,14 @@ namespace Duat::Graphics {
 
 	void System::SetVP(const std::string& cameraName)
 	{
-		SetVP(m_Cameras[cameraName]->GetViewports());
+		for(auto& cam : m_Cameras)
+			if(cam.first == cameraName)
+				SetVP(cam.second->GetViewports());
 	}
 
 	void System::SetVP(const DrawCall& settings)
 	{
-		SetVP(settings.cam);
+		SetVP(m_Cameras[settings.cameraIndex].second->GetViewports());
 	}
 
 	void System::SetVP(const D3D11_VIEWPORT& viewport)
@@ -411,26 +764,6 @@ namespace Duat::Graphics {
 		m_result << "Not implemented yet.";
 	}
 
-	void System::SetDefaultCB(const DrawCall& settings)
-	{
-		m_CB["Default"]["IsClockwise"] = m_RS[settings.rs].IsClockwise();
-		m_CB["Default"]["InstanceCount"] = (int)settings.instances;
-		m_CB["Default"]["LightCount"] = (int)m_SB["Light"].GetRootElementCount();
-		m_CB["Default"]["ViewMatrix"] = m_Cameras[settings.cam]->GetViewMatrix();
-		m_CB["Default"]["ProjectionMatrix"] = m_Cameras[settings.cam]->GetProjectionMatrix();
-		m_CB["Default"].Update();
-		m_Context->VSSetConstantBuffers(0, 1, m_CB["Default"].GetAddressOf());
-		m_Context->PSSetConstantBuffers(0, 1, m_CB["Default"].GetAddressOf());
-
-		m_SB["Default"][HLSL::Index(0)]["ModelMatrix"] = XMMatrixIdentity();
-		m_SB["Default"].Update();
-		m_Context->VSSetShaderResources(0, 1, m_SB["Default"].GetSRVAddressOf());
-		m_Context->PSSetShaderResources(0, 1, m_SB["Default"].GetSRVAddressOf());
-
-		m_Context->VSSetShaderResources(1, 1, m_SB["Light"].GetSRVAddressOf());
-		m_Context->PSSetShaderResources(1, 1, m_SB["Light"].GetSRVAddressOf());
-	}
-		
 	std::string System::DrawCall::GetKey()
 	{
 		return rt + vs + ps + rs + bs + cam + std::to_string((int)tp);

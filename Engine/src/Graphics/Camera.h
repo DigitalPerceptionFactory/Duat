@@ -8,10 +8,10 @@
 
 
 namespace Duat::Graphics {
-	
+
 	struct System;
 	struct Camera : public HID, public Geometry::Transform {
-		void Init(System& gfx, const std::string& rtName, UINT topLeftX = 0, UINT topLeftY = 0,	UINT width = 0, UINT height = 0,
+		void Init(System& gfx, const std::string& rtName, UINT topLeftX = 0, UINT topLeftY = 0, UINT width = 0, UINT height = 0,
 			float fovAngleY = 60, float nearZ = 0.01f, float farZ = 1000.0f);
 		void Init(System* pGFX, const std::string& rtName, UINT topLeftX = 0, UINT topLeftY = 0, UINT width = 0, UINT height = 0,
 			float fovAngleY = 60, float nearZ = 0.01f, float farZ = 1000.0f);
@@ -20,7 +20,7 @@ namespace Duat::Graphics {
 
 		void SetRT(const std::string& name);
 		void SetFocus(DirectX::XMFLOAT3* pFocus);
-		std::string GetRT();
+		std::string GetNameRT();
 		const std::vector<D3D11_VIEWPORT>& GetViewports() const;
 		DirectX::XMMATRIX GetViewMatrix();
 		DirectX::XMMATRIX GetProjectionMatrix();
@@ -28,16 +28,19 @@ namespace Duat::Graphics {
 
 		void SetProjectionMatrix(float fovAngleY, float aspectRatio, float nearZ, float farZ);
 	private:
+		void AfterTransform() override;
 		void UpdateViewMatrix();
+
+		System* m_pGFX = nullptr;
 
 		float m_moveSpeed = 10.0f;
 		float m_rotationSpeed = 10.0f;
-		DirectX::XMFLOAT3* m_focus;
+		DirectX::XMFLOAT3* m_focus = nullptr;
 
-		std::string m_RT;
+		std::string m_rtName;
 		std::vector<D3D11_VIEWPORT> m_viewports;
 		DirectX::XMMATRIX m_viewMatrix;
 		DirectX::XMMATRIX m_pojectionMatrix;
 	};
-	
+
 }

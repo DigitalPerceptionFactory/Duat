@@ -101,16 +101,15 @@ namespace Duat::Graphics
 		m_pGFX = pGFX;
 		m_texture = pTex2D;
 		pTex2D->GetDesc(&m_desc);
-		//m_hresult << pGFX->m_Device->CreateTexture2D(&m_desc, nullptr, ReleaseAndGetAddressOf());
 		InitViews();
 	}
 
-	void Texture2D::Init(System& gfx, D3D11_TEXTURE2D_DESC desc)
+	void Texture2D::Init(System& gfx, D3D11_TEXTURE2D_DESC desc, DXGI_FORMAT srvFormat, DXGI_FORMAT dsvFormat, DXGI_FORMAT rtvFormat)
 	{
-		Init(&gfx, desc);
+		Init(&gfx, desc, srvFormat, dsvFormat, rtvFormat);
 	}
 
-	void Texture2D::Init(System* pGFX, D3D11_TEXTURE2D_DESC desc)
+	void Texture2D::Init(System* pGFX, D3D11_TEXTURE2D_DESC desc, DXGI_FORMAT srvFormat, DXGI_FORMAT dsvFormat, DXGI_FORMAT rtvFormat)
 	{
 		if (pGFX == nullptr)
 		{
@@ -121,12 +120,16 @@ namespace Duat::Graphics
 
 		m_pGFX = pGFX;
 		m_desc = desc;
+		m_srvFormat = srvFormat;
+		m_rtvFormat = rtvFormat;
+		m_dsvFormat = dsvFormat;
 		m_hresult << pGFX->m_Device->CreateTexture2D(&m_desc, nullptr, ReleaseAndGetAddressOf());
 		InitViews();
 	}
 
 	Texture2D& Texture2D::operator=(const Texture2D& rhs)
 	{
+		m_pGFX = rhs.m_pGFX;
 		m_hresult = rhs.m_hresult;
 		m_texture = rhs.m_texture;
 		m_SRV = rhs.m_SRV;
@@ -136,6 +139,59 @@ namespace Duat::Graphics
 		m_image.Initialize(rhs.m_image.GetMetadata());
 		std::memcpy(m_image.GetPixels(), rhs.m_image.GetPixels(), rhs.m_image.GetPixelsSize());
 		return *this;
+	}
+
+	void Texture2D::Save(const std::filesystem::path& path) const
+	{
+		ScratchImage img;
+		m_hresult << CaptureTexture(m_pGFX->m_Device.Get(), m_pGFX->m_Context.Get(), m_texture.Get(), img);
+		m_hresult << SaveToWICFile(img.GetImages(), img.GetImageCount(), DirectX::WIC_FLAGS_NONE,
+			GetWICCodec(WIC_CODEC_PNG), path.wstring().c_str());
+	}
+
+	void Texture2D::SaveDepth(const std::filesystem::path& path) const
+	{
+		D3D11_TEXTURE2D_DESC desc;
+		m_texture.Get()->GetDesc(&desc);
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+		desc.Usage = D3D11_USAGE_STAGING;
+		desc.BindFlags = 0;
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> tempTex2D;
+		D3D11_MAPPED_SUBRESOURCE msr = {};
+
+		m_hresult << m_pGFX->m_Device->CreateTexture2D(&desc, nullptr, tempTex2D.GetAddressOf());
+		m_pGFX->m_Context->CopyResource(tempTex2D.Get(), m_texture.Get());
+		m_hresult << m_pGFX->m_Context->Map(tempTex2D.Get(), 0, D3D11_MAP_READ, 0, &msr);
+
+		ScratchImage img;
+		m_hresult << img.Initialize2D(DXGI_FORMAT_R32G32B32A32_FLOAT, GetWidth(), GetHeight(), 1, 1);
+		
+		auto pData = static_cast<float*>(msr.pData);
+		auto pPixels = reinterpret_cast<float*>(img.GetPixels());
+		for (int y = 0; y < GetHeight(); ++y)
+			for (int x = 0; x < GetWidth(); ++x)
+			{
+				size_t index = size_t(y * GetWidth() + x);
+				if (pData[index] != 1.0f)
+				{
+					pPixels[index * 4] = pData[index];
+					pPixels[index * 4 + 1] = pData[index];
+					pPixels[index * 4 + 2] = pData[index];
+					pPixels[index * 4 + 3] = 1.0f;
+				}
+				else {
+					pPixels[index * 4] = 0;
+					pPixels[index * 4 + 1] = 0;
+					pPixels[index * 4 + 2] = 0;
+					pPixels[index * 4 + 3] = 1.0f;
+				}
+
+			}
+
+		m_pGFX->m_Context->Unmap(tempTex2D.Get(), 0);
+		
+		m_hresult << SaveToWICFile(img.GetImages(), img.GetImageCount(), DirectX::WIC_FLAGS_NONE,
+			GetWICCodec(WIC_CODEC_PNG), path.wstring().c_str());
 	}
 
 	D3D11_TEXTURE2D_DESC Texture2D::GetDesc() const
@@ -316,7 +372,7 @@ namespace Duat::Graphics
 		{
 			D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
 			ZeroMemory(&srv_desc, sizeof(srv_desc));
-			srv_desc.Format = m_desc.Format;
+			srv_desc.Format = m_srvFormat == DXGI_FORMAT_UNKNOWN ? m_desc.Format : m_srvFormat;
 			srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 			srv_desc.Texture2D.MipLevels = m_desc.MipLevels;
 			srv_desc.Texture2D.MostDetailedMip = 0;
@@ -326,7 +382,7 @@ namespace Duat::Graphics
 		{
 			D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc;
 			ZeroMemory(&dsv_desc, sizeof(dsv_desc));
-			dsv_desc.Format = m_desc.Format;
+			dsv_desc.Format = m_dsvFormat == DXGI_FORMAT_UNKNOWN ? m_desc.Format : m_dsvFormat;
 			dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 			dsv_desc.Texture2D.MipSlice = 0;
 			m_hresult << m_pGFX->m_Device->CreateDepthStencilView(Get(), &dsv_desc, m_DSV.ReleaseAndGetAddressOf());
@@ -335,7 +391,7 @@ namespace Duat::Graphics
 		{
 			D3D11_RENDER_TARGET_VIEW_DESC rtv_desc;
 			ZeroMemory(&rtv_desc, sizeof(rtv_desc));
-			rtv_desc.Format = m_desc.Format;
+			rtv_desc.Format = m_rtvFormat == DXGI_FORMAT_UNKNOWN ? m_desc.Format : m_rtvFormat;
 			rtv_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			rtv_desc.Texture2D.MipSlice = 0;
 			m_hresult << m_pGFX->m_Device->CreateRenderTargetView(Get(), &rtv_desc, m_RTV.ReleaseAndGetAddressOf());

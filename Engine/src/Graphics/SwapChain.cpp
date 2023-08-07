@@ -2,7 +2,7 @@
 
 namespace Duat::Graphics {
 
-	void SwapChain::Init(HWND handle)
+	void SwapChain::Init(HWND handle, DXGI_FORMAT format)
 	{
 		m_vSync = false;
 		RECT rect;
@@ -11,7 +11,7 @@ namespace Duat::Graphics {
 		ZeroMemory(&m_desc, sizeof(DXGI_SWAP_CHAIN_DESC1));
 		m_desc.Width = (UINT)(rect.right - rect.left);
 		m_desc.Height = (UINT)(rect.bottom - rect.top);
-		m_desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		m_desc.Format = format;
 		m_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		m_desc.BufferCount = 2;
 		m_desc.SampleDesc.Count = 1;
