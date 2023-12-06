@@ -9,12 +9,12 @@
 
 namespace Duat::Geometry {
 		
-	struct Setup {
-		Setup() : is_signed(true), is_lefthanded(true), is_clockwise(true),
+	struct SpaceContext {
+		SpaceContext() : is_signed(true), is_lefthanded(true), is_clockwise(true),
 			posRef(-1), rotRef(-1), scaRef(-1) {}
-		Setup(DirectX::INT3 ref) : is_signed(true), is_lefthanded(true), is_clockwise(true),
+		SpaceContext(DirectX::INT3 ref) : is_signed(true), is_lefthanded(true), is_clockwise(true),
 			posRef(ref), rotRef(ref), scaRef(ref) {}
-		Setup(DirectX::INT3 posRef, DirectX::INT3 rotRef, DirectX::INT3 scaRef) :
+		SpaceContext(DirectX::INT3 posRef, DirectX::INT3 rotRef, DirectX::INT3 scaRef) :
 			is_signed(true), is_lefthanded(true), is_clockwise(true),
 			posRef(posRef), rotRef(rotRef), scaRef(scaRef) {}
 
@@ -113,33 +113,33 @@ namespace Duat::Geometry {
 		DirectX::INT3 GetPosRef(DirectX::INT3 index = -1);
 		DirectX::INT3 GetRotRef(DirectX::INT3 index = -1);
 		DirectX::INT3 GetScaRef(DirectX::INT3 index = -1);
-		DirectX::XMFLOAT3 GetPosition(DirectX::INT3 index = -1, Setup setup = Setup());
-		DirectX::XMFLOAT3 GetPosition(DirectX::XMFLOAT3 point, Setup setup);
-		DirectX::XMFLOAT2 GetPosition(DirectX::XMFLOAT2 point, Setup setup);
-		DirectX::XMFLOAT3 GetRotation(DirectX::INT3 index = -1, Setup setup = Setup());
-		DirectX::XMFLOAT3 GetScale(DirectX::INT3 index = -1, Setup setup = Setup());
+		DirectX::XMFLOAT3 GetPosition(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
+		DirectX::XMFLOAT3 GetPosition(DirectX::XMFLOAT3 point, SpaceContext setup);
+		DirectX::XMFLOAT2 GetPosition(DirectX::XMFLOAT2 point, SpaceContext setup);
+		DirectX::XMFLOAT3 GetRotation(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
+		DirectX::XMFLOAT3 GetScale(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
 		DirectX::XMMATRIX GetMatrix();
 		DirectX::XMMATRIX GetMatrix(DirectX::INT3 index);
-		Cube<float> GetExceed(DirectX::INT3 index = -1, Setup setup = Setup());
-		Cube<float> GetExceed(DirectX::XMFLOAT3 point, Setup setup = Setup());
-		Cube<float> GetExceed(DirectX::XMFLOAT2 point, Setup setup = Setup());
+		Cube<float> GetExceed(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
+		Cube<float> GetExceed(DirectX::XMFLOAT3 point, SpaceContext setup = SpaceContext());
+		Cube<float> GetExceed(DirectX::XMFLOAT2 point, SpaceContext setup = SpaceContext());
 		DirectX::XMFLOAT3 GetOrigin(DirectX::INT3 index = -1);
-		DirectX::XMFLOAT3 GetOriginPosition(DirectX::INT3 index = -1, Setup setup = Setup());
-		bool Contains(DirectX::INT3 index, Setup setup);
-		bool Contains(DirectX::XMFLOAT3 point, Setup setup);
-		bool Contains(DirectX::XMFLOAT2 point, Setup setup);
+		DirectX::XMFLOAT3 GetOriginPosition(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
+		bool Contains(DirectX::INT3 index, SpaceContext setup);
+		bool Contains(DirectX::XMFLOAT3 point, SpaceContext setup);
+		bool Contains(DirectX::XMFLOAT2 point, SpaceContext setup);
 
 		DirectX::INT3 SetAllRef(DirectX::INT3 ref, DirectX::INT3 index = -1);
 		DirectX::INT3 SetPosRef(DirectX::INT3 ref, DirectX::INT3 index = -1);
 		DirectX::INT3 SetRotRef(DirectX::INT3 ref, DirectX::INT3 index = -1);
 		DirectX::INT3 SetScaRef(DirectX::INT3 ref, DirectX::INT3 index = -1);
-		DirectX::INT3 SetPosition(DirectX::XMFLOAT3 pos, Setup setup = Setup(), DirectX::INT3 index = -1);
-		DirectX::INT3 SetRotation(DirectX::XMFLOAT3 rot, Setup setup = Setup(), DirectX::INT3 index = -1);
-		DirectX::INT3 SetScale(DirectX::XMFLOAT3 scale, Setup setup = Setup(), DirectX::INT3 index = -1);
+		DirectX::INT3 SetPosition(DirectX::XMFLOAT3 pos, SpaceContext setup = SpaceContext(), DirectX::INT3 index = -1);
+		DirectX::INT3 SetRotation(DirectX::XMFLOAT3 rot, SpaceContext setup = SpaceContext(), DirectX::INT3 index = -1);
+		DirectX::INT3 SetScale(DirectX::XMFLOAT3 scale, SpaceContext setup = SpaceContext(), DirectX::INT3 index = -1);
 		DirectX::INT3 SetOrigin(DirectX::XMFLOAT3 origin, DirectX::INT3 index = -1);
-		DirectX::INT3 Translate(DirectX::XMFLOAT3 pos, Setup setup = Setup(), DirectX::INT3 index = -1);
-		DirectX::INT3 Rotate(DirectX::XMFLOAT3 rot, Setup setup = Setup(), DirectX::INT3 index = -1);
-		DirectX::INT3 Scale(DirectX::XMFLOAT3 sca, Setup setup = Setup(), DirectX::INT3 index = -1);
+		DirectX::INT3 Translate(DirectX::XMFLOAT3 pos, SpaceContext setup = SpaceContext(), DirectX::INT3 index = -1);
+		DirectX::INT3 Rotate(DirectX::XMFLOAT3 rot, SpaceContext setup = SpaceContext(), DirectX::INT3 index = -1);
+		DirectX::INT3 Scale(DirectX::XMFLOAT3 sca, SpaceContext setup = SpaceContext(), DirectX::INT3 index = -1);
 		DirectX::INT3 Fit(DirectX::INT3 index = -1);
 
 		// fibre is made of nodes
@@ -155,11 +155,11 @@ namespace Duat::Geometry {
 		DirectX::XMFLOAT3 get_global_scale(DirectX::INT3 index);
 		DirectX::XMFLOAT3 get_global_boundary(DirectX::INT3 rotRef, DirectX::INT3 scaRef);
 		void resolve_index(DirectX::INT3& index);
-		void resolve_reference(DirectX::INT3 index, Setup& setup);
+		void resolve_reference(DirectX::INT3 index, SpaceContext& setup);
 		void resolve_pos_reference(DirectX::INT3 index, DirectX::INT3& posRef);
 		void resolve_rot_reference(DirectX::INT3 index, DirectX::INT3& rotRef);
 		void resolve_sca_reference(DirectX::INT3 index, DirectX::INT3& scaRef);
-		void resolve_all(DirectX::INT3& index, Setup& setup);
+		void resolve_all(DirectX::INT3& index, SpaceContext& setup);
 		void clamp_360(DirectX::INT3 index);
 
 		Utility::ring<Patch> m_surface;

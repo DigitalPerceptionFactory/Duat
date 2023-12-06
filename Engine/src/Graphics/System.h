@@ -20,6 +20,7 @@
 #include "CompositionEx.h"
 #include "Camera.h"
 #include "Light.h"
+#include "Object3D.h"
 
 
 namespace Duat::Graphics {
@@ -45,17 +46,22 @@ namespace Duat::Graphics {
 		void Update();
 		void Exit();
 
-		size_t AddDrawCall(Geometry::Mesh* mesh,
+		size_t AddDrawCall(const Geometry::Mesh& mesh,
 			const std::string& vs = "Default",
 			const std::string& ps = "Default",
 			const std::string& cam = "Default",
 			const Topology& tp = Topology::TriangleList,
 			const std::string& bs = "Default",
-			const std::string& rs = "Default"
+			const std::string& rs = "Default",
+			const std::string& dss = "Default"
 		);
+		size_t AddDrawCall(const GraphicsObject& object);
+		size_t AddDrawCall(const Object3D& object);
 		void RemoveDrawCall(size_t uniqueDrawCallIndex);
 		void AddCamera(const std::string& name, Camera* pCamera);
+		Camera* GetCamera(const std::string& name);
 		void AddLight(const std::string& name, Light* pLight);
+		Light* GetLight(const std::string& name);
 		void RemoveCamera(const std::string& name);
 		void AddBuffer(const std::string& name, Utility::HLSL::Layout layout);
 
@@ -78,6 +84,7 @@ namespace Duat::Graphics {
 		void DrawShadows();
 		void DrawSolid();
 		void DrawTransparent();
+		void DrawGizmos();
 
 		struct DrawCall;
 		void SetRT(const std::string& name);
@@ -95,13 +102,14 @@ namespace Duat::Graphics {
 		void SetTP(const Topology& topology);
 		void SetTP(const DrawCall& settings);
 		void SetDSS(const std::string& name);
+		void SetDSS(const DrawCall& settings);
 		void SetVP(const std::string& cameraName);
 		void SetVP(const DrawCall& settings);
 		void SetVP(const D3D11_VIEWPORT& viewport);
 		void SetVP(const std::vector<D3D11_VIEWPORT>& viewports);
 		void SetCB(const std::string& name);
 		void SetCB(const DrawCall& settings);
-		//void SetSS(const std::string& name);
+		void SetSS(const std::string& name);
 
 		Utility::Result   m_result;
 		Utility::HResult  m_hresult;
@@ -119,6 +127,7 @@ namespace Duat::Graphics {
 			std::string ps = "Default";
 			std::string bs = "Default";
 			std::string rs = "Default";
+			std::string dss = "Default";
 			std::string cam = "Default";
 			Topology tp = Topology::TriangleList;
 			VertexBuffer vb;

@@ -1,3 +1,4 @@
+#pragma pack_matrix( row_major )
 
 struct InstanceData
 {
@@ -17,8 +18,10 @@ struct Light
 };
 
 struct Camera {
+    matrix rotationMatrix;
     matrix viewMatrix;
     matrix projectionMatrix;
+    float3 position;
 };
 
 #ifdef VERTEX_SHADER

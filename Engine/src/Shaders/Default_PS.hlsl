@@ -9,7 +9,7 @@ float4 main(Input i) : SV_TARGET
     float3 ambient = float3(0.1618, 0.1618, 0.1618);
     float3 final = i.color.rgb * ambient;
     
-    //return float4(1, 1, 1, 0.2f);
+    //return float4(1, 1, 1, 1);
     
     float4 position = i.shadow;
     position.xyz /= position.w;
@@ -34,6 +34,7 @@ float4 main(Input i) : SV_TARGET
         final = float3(0.236, 0.236, 0.236);
     
     final = float3(0.1, 0.1, 0.1);
+    final = i.color;
     if (true)
     {
         for (int it = 0; it < m_lightCount; ++it)
@@ -43,8 +44,12 @@ float4 main(Input i) : SV_TARGET
 			   m_lights[it].color
 			   * max(dot(normalize(i.normal.rgb), normalize(m_lights[it].position.rgb)), 0)
 			) * m_lights[it].intensity;
+            /*final += 0.5 * Specular(32, i.normal,
+                mul(m_lights[it].position, m_cameras[m_cameraIndex].viewMatrix),
+                i.position);*/
         }
     }
-
-    return float4(final ,1);
+    
+    return float4(final , i.color.a);
 }
+#undef PIXEL_SHADER

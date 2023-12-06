@@ -5,7 +5,10 @@
 #include "Window.h"
 #include <Graphics/System.h>
 #include <Geometry/SmartMesh.h>
+#include <Geometry/Spline.h>
 #include <HID/HID.h>
+#include <Geometry/Solid26.h>
+#include <Geometry/Grid.h>
 
 
 namespace Duat
@@ -27,6 +30,7 @@ namespace Duat
 	private:
 		LRESULT     WindowProcEx(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) override;
 
+		//Trading::ForexApp m_Forex;
 		HINSTANCE   m_hInstance;
 		Utility::Result  m_result;
 		Utility::HResult m_hresult;

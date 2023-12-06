@@ -3,17 +3,19 @@
 #include <vector>
 #include <d3d11.h>
 #include <HID/HID.h>
-#include <Geometry/Transform.h>
 #include "Texture2D.h"
 #include <Utility/Classes.h>
 #include "RenderTarget.h"
+#include "Object3D.h"
+#include <Geometry/Quad.h>
 
 
 namespace Duat::Graphics {
 		
 	struct System;
-	struct Light : public HID, public Geometry::Transform {
+	struct Light : public HID, public Object3D {
 		friend System;
+		Light(System* pGFX);
 
 		void Init(System& gfx, float angleY, size_t shadowmapWidth = 4096, size_t shadowmapHeight = 4096);
 		void Init(System* pGFX, float angleY, size_t shadowmapWidth = 4096, size_t shadowmapHeight = 4096);
@@ -33,7 +35,7 @@ namespace Duat::Graphics {
 		D3D11_VIEWPORT* GetViewport();
 		RenderTarget& GetShadowmap();
 	private:
-		void AfterTransform() override;
+		void TransformFF() override;
 		void UpdateViewMatrix();
 
 		float m_moveSpeed = 10.0f;

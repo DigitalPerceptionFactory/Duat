@@ -20,13 +20,20 @@ namespace Duat::Graphics {
 			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 
-	void ContextEx::ClearRT(RenderTarget& rt, DirectX::XMFLOAT4& color)
+	void ContextEx::ClearRT(RenderTarget& rt, DirectX::XMFLOAT4& color, float depthValue, unsigned int stencilValue)
 	{
 		float clearColor[4];
 		std::memcpy(clearColor, &color, sizeof(float) * 4);
 		(*this)->ClearRenderTargetView(rt.GetTarget().GetRTV(), clearColor);
 		(*this)->ClearDepthStencilView(rt.GetDepth().GetDSV(),
-			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depthValue, stencilValue);
+	}
+
+	void ContextEx::ClearRT(RenderTarget& rt, float depthValue, unsigned int stencilValue)
+	{
+		(*this)->ClearRenderTargetView(rt.GetTarget().GetRTV(), m_clearColor);
+		(*this)->ClearDepthStencilView(rt.GetDepth().GetDSV(),
+			D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depthValue, stencilValue);
 	}
 
 	void ContextEx::SetClearColor(float r, float g, float b, float a)

@@ -36,8 +36,9 @@ float4 TransparentWindowBiasCorrection(float4 color)
     return color;
 }
 
-float4 Specular(float power,float intensity, float4 normal, float4 light, float4 eye)
+float4 Specular(float power, float3 normal, float3 light, float3 eye)
 {
-    float3 reflection = normalize(2 * normalize(normal.rgb) * intensity - normalize(light.rgb));
-    return max(pow(saturate(dot(reflection, eye.rgb)), power), 0);
+    float3 reflection = reflect(normalize(light), normalize(normal));
+    float intensity = saturate(max(dot(reflection, normalize(eye)), 0.0));
+    return pow(intensity, power);
 }

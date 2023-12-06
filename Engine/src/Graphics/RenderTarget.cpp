@@ -35,13 +35,13 @@ namespace Duat::Graphics {
 	void RenderTarget::Init(System* pGFX, ID3D11Texture2D* pTex2D)
 	{
 		m_targetTexture.Init(pGFX, pTex2D);
-
+		
 		D3D11_TEXTURE2D_DESC depth_desc;
 		ZeroMemory(&depth_desc, sizeof(depth_desc));
 		depth_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		depth_desc.Usage = D3D11_USAGE_DEFAULT;
 		depth_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		depth_desc.SampleDesc.Count = 1;
+		depth_desc.SampleDesc.Count = m_targetTexture.GetSampleCount();
 		depth_desc.SampleDesc.Quality = 0;
 		depth_desc.MipLevels = 1;
 		depth_desc.CPUAccessFlags = 0;

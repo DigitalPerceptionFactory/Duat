@@ -50,7 +50,7 @@ namespace Duat::Geometry {
 	void Transform::SetPosition(const DirectX::XMFLOAT3& position)
 	{
 		m_position = position;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetPosition(float x, float y, float z)
@@ -61,25 +61,25 @@ namespace Duat::Geometry {
 	void Transform::SetPositionX(float x)
 	{
 		m_position.x = x;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetPositionY(float y)
 	{
 		m_position.y = y;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetPositionZ(float z)
 	{
 		m_position.z = z;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetRotation(const DirectX::XMFLOAT3& rotation)
 	{
 		m_rotation = rotation;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetRotation(float x, float y, float z)
@@ -90,19 +90,19 @@ namespace Duat::Geometry {
 	void Transform::SetRotationX(float x)
 	{
 		m_rotation.x = x;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetRotationY(float y)
 	{
 		m_rotation.y = y;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetRotationZ(float z)
 	{
 		m_rotation.z = z;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetScale(const DirectX::XMFLOAT3& scale)
@@ -110,7 +110,7 @@ namespace Duat::Geometry {
 		if (scale.x > 0.0f) m_scale.x = scale.x;
 		if (scale.y > 0.0f) m_scale.y = scale.y;
 		if (scale.z > 0.0f) m_scale.z = scale.z;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetScale(float x, float y, float z)
@@ -121,25 +121,25 @@ namespace Duat::Geometry {
 	void Transform::SetScaleX(float x)
 	{
 		if (x > 0) m_scale.x = x;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetScaleY(float y)
 	{
 		if (y > 0)m_scale.y = y;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::SetScaleZ(float z)
 	{
 		if (z > 0)m_scale.z = z;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::Translate(const DirectX::XMFLOAT3& delta)
 	{
 		m_position += XMFloat3Transform(delta, GetRotationMatrix());;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::Translate(float x, float y, float z)
@@ -150,25 +150,25 @@ namespace Duat::Geometry {
 	void Transform::TranslateX(float delta)
 	{
 		m_position += XMFloat3Transform({ delta, 0, 0 }, GetRotationMatrix());;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::TranslateY(float delta)
 	{
 		m_position += XMFloat3Transform({ 0, delta, 0 }, GetRotationMatrix());;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::TranslateZ(float delta)
 	{
 		m_position += XMFloat3Transform({ 0, 0, delta }, GetRotationMatrix());;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::PositionAdd(const DirectX::XMFLOAT3& delta)
 	{
 		m_position += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::PositionAdd(float x, float y, float z)
@@ -179,25 +179,25 @@ namespace Duat::Geometry {
 	void Transform::PositionAddX(float delta)
 	{
 		m_position.x += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::PositionAddY(float delta)
 	{
 		m_position.y += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::PositionAddZ(float delta)
 	{
 		m_position.z += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::Rotate(const DirectX::XMFLOAT3& delta)
 	{
 		m_rotation += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::Rotate(float x, float y, float z)
@@ -208,19 +208,19 @@ namespace Duat::Geometry {
 	void Transform::RotateX(float delta)
 	{
 		m_rotation.x += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::RotateY(float delta)
 	{
 		m_rotation.y += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::RotateZ(float delta)
 	{
 		m_rotation.z += delta;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::Scale(const DirectX::XMFLOAT3& factor)
@@ -228,7 +228,7 @@ namespace Duat::Geometry {
 		if(factor.x > 0) m_scale.x *= factor.x;
 		if(factor.y > 0) m_scale.y *= factor.y;
 		if(factor.z > 0) m_scale.z *= factor.z;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::Scale(float x, float y, float z)
@@ -239,19 +239,19 @@ namespace Duat::Geometry {
 	void Transform::ScaleX(float factor)
 	{
 		if (factor > 0) m_scale.x *= factor;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::ScaleY(float factor)
 	{
 		if (factor > 0) m_scale.y *= factor;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::ScaleZ(float factor)
 	{
 		if (factor > 0) m_scale.z *= factor;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::ScaleAdd(const DirectX::XMFLOAT3& delta)
@@ -260,7 +260,7 @@ namespace Duat::Geometry {
 		if (predict.x > 0) m_scale.x = predict.x;
 		if (predict.y > 0) m_scale.y = predict.y;
 		if (predict.z > 0) m_scale.z = predict.z;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::ScaleAdd(float x, float y, float z)
@@ -272,24 +272,24 @@ namespace Duat::Geometry {
 	{
 		float predict = m_scale.x + delta;
 		if (predict > 0) m_scale.x = predict;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::ScaleAddY(float delta)
 	{
 		float predict = m_scale.y + delta;
 		if (predict > 0) m_scale.y = predict;
-		AfterTransform();
+		TransformFF();
 	}
 
 	void Transform::ScaleAddZ(float delta)
 	{
 		float predict = m_scale.z + delta;
 		if (predict > 0) m_scale.z = predict;
-		AfterTransform();
+		TransformFF();
 	}
 
-	void Transform::AfterTransform()
+	void Transform::TransformFF()
 	{
 	}
 

@@ -1,10 +1,22 @@
 #include "Light.h"
+#include "System.h"
 
 
 using namespace DirectX;
 
 namespace Duat::Graphics {
-		
+
+	Light::Light(System* pGFX) : Object3D(pGFX)
+	{
+		mesh = Geometry::Quad();
+		vs = "Billboard";
+		ps = "LightGizmo";
+		cam = "Default";
+		tp = Topology::TriangleList;
+		bs = "Default";
+		rs = "Billboard";
+	}
+
 	void Light::Init(System& gfx, float angleY, size_t shadowmapWidth, size_t shadowmapHeight)
 	{
 		Init(&gfx, angleY, shadowmapWidth, shadowmapHeight);
@@ -44,9 +56,10 @@ namespace Duat::Graphics {
 		m_viewport.MaxDepth = 1.0f;
 
 		m_pojectionMatrix = XMMatrixPerspectiveFovLH(
-			XMConvertToRadians(angleY), (float)shadowmapWidth / (float)shadowmapHeight, 0.001f, 1.0f
+			XMConvertToRadians(angleY), (float)shadowmapWidth / (float)shadowmapHeight, 0.001f, 1000.0f
 		);
 		UpdateViewMatrix();
+		pGFX->AddDrawCall(*this);
 	}
 
 	void Light::Interact(Keyboard& kbd, Mouse& mouse)
@@ -121,7 +134,7 @@ namespace Duat::Graphics {
 	void Light::SetProjectionAngleY(float angleY)
 	{
 		m_pojectionMatrix = XMMatrixPerspectiveFovLH(
-			angleY, (float)m_viewport.Width / (float)m_viewport.Height, 0.0f, 1.0f
+			angleY, (float)m_viewport.Width / (float)m_viewport.Height, 0.0f, 1000.0f
 		);
 	}
 
@@ -135,7 +148,7 @@ namespace Duat::Graphics {
 		return m_shadowMap;
 	}
 
-	void Light::AfterTransform()
+	void Light::TransformFF()
 	{
 		UpdateViewMatrix();
 	}

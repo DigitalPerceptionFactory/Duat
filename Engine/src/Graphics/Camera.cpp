@@ -141,7 +141,7 @@ namespace Duat::Graphics {
         );
     }
 
-    void Camera::AfterTransform()
+    void Camera::TransformFF()
     {
         UpdateViewMatrix();
     }

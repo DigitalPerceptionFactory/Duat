@@ -161,7 +161,7 @@ namespace Duat::Geometry {
 			{
 				node_to_index[node.value] = index_counter;
 				++index_counter;
-				Vertex vtx(GetPosition(node.value, Setup(0)), node.uv, { 1,1,1,1 });
+				Vertex vtx(GetPosition(node.value, SpaceContext(0)), node.uv, { 1,1,1,1 });
 				vertices.push_back(vtx);
 			}
 			indices.push_back(node_to_index[node.value]);
@@ -238,7 +238,7 @@ namespace Duat::Geometry {
 		return result;
 	}
 
-	DirectX::XMFLOAT3 SmartMesh::GetPosition(DirectX::INT3 index, Setup setup)
+	DirectX::XMFLOAT3 SmartMesh::GetPosition(DirectX::INT3 index, SpaceContext setup)
 	{
 		/*
 			in both cases we place vector in ref world
@@ -289,7 +289,7 @@ namespace Duat::Geometry {
 		);
 	}
 
-	DirectX::XMFLOAT3 SmartMesh::GetPosition(DirectX::XMFLOAT3 point, Setup setup)
+	DirectX::XMFLOAT3 SmartMesh::GetPosition(DirectX::XMFLOAT3 point, SpaceContext setup)
 	{
 		resolve_reference(0, setup);
 		// global metrics
@@ -316,7 +316,7 @@ namespace Duat::Geometry {
 		);
 	}
 
-	DirectX::XMFLOAT2 SmartMesh::GetPosition(DirectX::XMFLOAT2 point, Setup setup)
+	DirectX::XMFLOAT2 SmartMesh::GetPosition(DirectX::XMFLOAT2 point, SpaceContext setup)
 	{
 		resolve_reference(0, setup);
 		// global metrics
@@ -342,7 +342,7 @@ namespace Duat::Geometry {
 		return { vec.x,vec.y };
 	}
 
-	DirectX::XMFLOAT3 SmartMesh::GetRotation(DirectX::INT3 index, Setup setup)
+	DirectX::XMFLOAT3 SmartMesh::GetRotation(DirectX::INT3 index, SpaceContext setup)
 	{
 		resolve_all(index, setup);
 
@@ -370,7 +370,7 @@ namespace Duat::Geometry {
 		return result;
 	}
 
-	DirectX::XMFLOAT3 SmartMesh::GetScale(DirectX::INT3 index, Setup setup)
+	DirectX::XMFLOAT3 SmartMesh::GetScale(DirectX::INT3 index, SpaceContext setup)
 	{
 		resolve_all(index, setup);
 
@@ -387,7 +387,7 @@ namespace Duat::Geometry {
 		return get_global_scale(index) / get_global_scale(setup.scaRef);
 	}
 
-	Cube<float> SmartMesh::GetExceed(DirectX::INT3 index, Setup setup)
+	Cube<float> SmartMesh::GetExceed(DirectX::INT3 index, SpaceContext setup)
 	{
 		resolve_all(index, setup);
 
@@ -447,7 +447,7 @@ namespace Duat::Geometry {
 		return result;
 	}
 
-	Cube<float> SmartMesh::GetExceed(DirectX::XMFLOAT3 point, Setup setup)
+	Cube<float> SmartMesh::GetExceed(DirectX::XMFLOAT3 point, SpaceContext setup)
 	{
 		// to prevent negative setup values
 		resolve_reference(0, setup);
@@ -501,7 +501,7 @@ namespace Duat::Geometry {
 		return result;
 	}
 
-	Cube<float> SmartMesh::GetExceed(DirectX::XMFLOAT2 point, Setup setup)
+	Cube<float> SmartMesh::GetExceed(DirectX::XMFLOAT2 point, SpaceContext setup)
 	{
 		// to prevent negative setup values
 		resolve_reference(0, setup);
@@ -545,7 +545,7 @@ namespace Duat::Geometry {
 		return result;
 	}
 
-	bool SmartMesh::Contains(DirectX::INT3 index, Setup setup)
+	bool SmartMesh::Contains(DirectX::INT3 index, SpaceContext setup)
 	{
 		Cube<float> exc = GetExceed(index, setup);
 
@@ -559,7 +559,7 @@ namespace Duat::Geometry {
 		return false;
 	}
 
-	bool SmartMesh::Contains(DirectX::XMFLOAT3 point, Setup setup)
+	bool SmartMesh::Contains(DirectX::XMFLOAT3 point, SpaceContext setup)
 	{
 		Cube<float> exc = GetExceed(point, setup);
 
@@ -573,7 +573,7 @@ namespace Duat::Geometry {
 		return false;
 	}
 
-	bool SmartMesh::Contains(DirectX::XMFLOAT2 point, Setup setup)
+	bool SmartMesh::Contains(DirectX::XMFLOAT2 point, SpaceContext setup)
 	{
 		Cube<float> exc = GetExceed(point, setup);
 
@@ -597,7 +597,7 @@ namespace Duat::Geometry {
 		};
 	}
 
-	DirectX::XMFLOAT3 SmartMesh::GetOriginPosition(DirectX::INT3 index, Setup setup)
+	DirectX::XMFLOAT3 SmartMesh::GetOriginPosition(DirectX::INT3 index, SpaceContext setup)
 	{
 		resolve_all(index, setup);
 		XMFLOAT3 result = GetPosition(index, setup);
@@ -663,7 +663,7 @@ namespace Duat::Geometry {
 		return index;
 	}
 
-	DirectX::INT3 SmartMesh::SetPosition(DirectX::XMFLOAT3 pos, Setup setup, DirectX::INT3 index)
+	DirectX::INT3 SmartMesh::SetPosition(DirectX::XMFLOAT3 pos, SpaceContext setup, DirectX::INT3 index)
 	{
 		/*
 			in both cases we place vector in ref world
@@ -727,7 +727,7 @@ namespace Duat::Geometry {
 		return index;
 	}
 
-	DirectX::INT3 SmartMesh::SetRotation(DirectX::XMFLOAT3 rot, Setup setup, DirectX::INT3 index)
+	DirectX::INT3 SmartMesh::SetRotation(DirectX::XMFLOAT3 rot, SpaceContext setup, DirectX::INT3 index)
 	{
 		resolve_index(index);
 		rot -= GetRotation(index, setup); // WHY ? ? ? difference?
@@ -745,7 +745,7 @@ namespace Duat::Geometry {
 		return index;
 	}
 
-	DirectX::INT3 SmartMesh::SetScale(DirectX::XMFLOAT3 scale, Setup setup, DirectX::INT3 index)
+	DirectX::INT3 SmartMesh::SetScale(DirectX::XMFLOAT3 scale, SpaceContext setup, DirectX::INT3 index)
 	{
 		if (scale.x == 0.0f) scale.x = 1.0f;
 		if (scale.y == 0.0f) scale.y = 1.0f;
@@ -777,7 +777,7 @@ namespace Duat::Geometry {
 	}
 
 
-	DirectX::INT3 SmartMesh::Translate(DirectX::XMFLOAT3 pos, Setup setup, DirectX::INT3 index)
+	DirectX::INT3 SmartMesh::Translate(DirectX::XMFLOAT3 pos, SpaceContext setup, DirectX::INT3 index)
 	{
 		resolve_all(index, setup);
 
@@ -827,7 +827,7 @@ namespace Duat::Geometry {
 		return index;
 	}
 
-	DirectX::INT3 SmartMesh::Rotate(DirectX::XMFLOAT3 rot, Setup setup, DirectX::INT3 index)
+	DirectX::INT3 SmartMesh::Rotate(DirectX::XMFLOAT3 rot, SpaceContext setup, DirectX::INT3 index)
 	{
 		resolve_index(index);
 		rot -= GetRotation(index, setup); // WHY ? ? ? difference?
@@ -845,7 +845,7 @@ namespace Duat::Geometry {
 		return index;
 	}
 
-	DirectX::INT3 SmartMesh::Scale(DirectX::XMFLOAT3 sca, Setup setup, DirectX::INT3 index)
+	DirectX::INT3 SmartMesh::Scale(DirectX::XMFLOAT3 sca, SpaceContext setup, DirectX::INT3 index)
 	{
 		resolve_index(index);
 		if (setup.is_signed.x)
@@ -1207,7 +1207,7 @@ namespace Duat::Geometry {
 		if (index.z < 0) index.z = GetIndex();
 	}
 
-	void SmartMesh::resolve_reference(DirectX::INT3 index, Setup& setup)
+	void SmartMesh::resolve_reference(DirectX::INT3 index, SpaceContext& setup)
 	{
 		resolve_index(index);
 
@@ -1257,7 +1257,7 @@ namespace Duat::Geometry {
 		if (scaRef.z < 0) scaRef.z = ref.z;
 	}
 
-	void SmartMesh::resolve_all(DirectX::INT3& index, Setup& setup)
+	void SmartMesh::resolve_all(DirectX::INT3& index, SpaceContext& setup)
 	{
 		// resolve index
 		if (index.x < 0) index.x = GetIndex();

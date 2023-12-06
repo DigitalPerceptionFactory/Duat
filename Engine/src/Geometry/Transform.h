@@ -58,7 +58,8 @@ namespace Duat::Geometry {
 		void ScaleAddY(float delta);
 		void ScaleAddZ(float delta);
 	protected:
-		virtual void AfterTransform();
+		// Transform FollowUp Function
+		virtual void TransformFF();
 	private:
 		DirectX::XMFLOAT3 m_position;
 		DirectX::XMFLOAT3 m_rotation;

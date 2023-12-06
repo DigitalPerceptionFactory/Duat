@@ -23,3 +23,4 @@ float4 main(Input i) : SV_TARGET
     else
         return (0, 0, 0, 0);
 }
+#undef PIXEL_SHADER

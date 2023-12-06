@@ -73,25 +73,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\intermediate\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(ProjectDir)inc\dpp\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\intermediate\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(ProjectDir)inc\dpp\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\intermediate\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(ProjectDir)inc\dpp\;$(ProjectDir)inc\ForexConnect\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\intermediate\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)inc\;$(ProjectDir)src\;$(ProjectDir)inc\dpp\;$(ProjectDir)inc\ForexConnect\;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)lib\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -171,9 +171,21 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Discord\Bot.h" />
+    <ClInclude Include="src\Discord\Button.h" />
+    <ClInclude Include="src\Discord\Command.h" />
+    <ClInclude Include="src\Discord\DiscordMacros.h" />
+    <ClInclude Include="src\Discord\Hangul.h" />
+    <ClInclude Include="src\Discord\Message.h" />
+    <ClInclude Include="src\Discord\Modal.h" />
+    <ClInclude Include="src\Discord\Select.h" />
+    <ClInclude Include="src\Discord\User.h" />
+    <ClInclude Include="src\Geometry\Grid.h" />
+    <ClInclude Include="src\Geometry\Quad.h" />
     <ClInclude Include="src\Geometry\Solid26.h" />
     <ClInclude Include="src\Geometry\SmartMesh.h" />
     <ClInclude Include="src\Geometry\SmartVertex.h" />
+    <ClInclude Include="src\Geometry\Spline.h" />
     <ClInclude Include="src\Geometry\Transform.h" />
     <ClInclude Include="src\Geometry\Useful.h" />
     <ClInclude Include="src\Geometry\Mesh.h" />
@@ -186,8 +198,10 @@
     <ClInclude Include="src\Graphics\ContextEx.h" />
     <ClInclude Include="src\Graphics\DepthStencilState.h" />
     <ClInclude Include="src\Graphics\DeviceEx.h" />
+    <ClInclude Include="src\Graphics\GraphicsObject.h" />
     <ClInclude Include="src\Graphics\IndexBuffer.h" />
     <ClInclude Include="src\Graphics\Light.h" />
+    <ClInclude Include="src\Graphics\Object3D.h" />
     <ClInclude Include="src\Graphics\PixelShader.h" />
     <ClInclude Include="src\Graphics\RasterizerState.h" />
     <ClInclude Include="src\Graphics\RenderTarget.h" />
@@ -203,9 +217,17 @@
     <ClInclude Include="src\HID\HID.h" />
     <ClInclude Include="src\HID\Keyboard.h" />
     <ClInclude Include="src\HID\Mouse.h" />
+    <ClInclude Include="src\SSB\Tile.h" />
+    <ClInclude Include="src\SSB\Enumerators.h" />
+    <ClInclude Include="src\SSB\NPC.h" />
+    <ClInclude Include="src\SSB\Object.h" />
+    <ClInclude Include="src\SSB\Player.h" />
+    <ClInclude Include="src\SSB\SSB.h" />
+    <ClInclude Include="src\SSB\World.h" />
     <ClInclude Include="src\Utility\Classes.h" />
     <ClInclude Include="src\Utility\Classes\Hierarchy.h" />
     <ClInclude Include="src\Utility\Classes\Ring.h" />
+    <ClInclude Include="src\Utility\Classes\RNG.h" />
     <ClInclude Include="src\Utility\Classes\Time.h" />
     <ClInclude Include="src\Utility\Format.h" />
     <ClInclude Include="src\Utility\DirectX.h" />
@@ -231,11 +253,16 @@
     <ClInclude Include="src\Windows\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Discord\Bot.cpp" />
+    <ClCompile Include="src\Discord\User.cpp" />
     <ClCompile Include="src\EngineEntry.cpp" />
+    <ClCompile Include="src\Geometry\Grid.cpp" />
+    <ClCompile Include="src\Geometry\Quad.cpp" />
     <ClCompile Include="src\Geometry\SmartMesh.cpp" />
     <ClCompile Include="src\Geometry\Mesh.cpp" />
     <ClCompile Include="src\Geometry\SmartVertex.cpp" />
     <ClCompile Include="src\Geometry\Solid26.cpp" />
+    <ClCompile Include="src\Geometry\Spline.cpp" />
     <ClCompile Include="src\Geometry\Transform.cpp" />
     <ClCompile Include="src\Geometry\Vertex.cpp" />
     <ClCompile Include="src\Graphics\BlendState.cpp" />
@@ -248,6 +275,7 @@
     <ClCompile Include="src\Graphics\DeviceEx.cpp" />
     <ClCompile Include="src\Graphics\IndexBuffer.cpp" />
     <ClCompile Include="src\Graphics\Light.cpp" />
+    <ClCompile Include="src\Graphics\Object3D.cpp" />
     <ClCompile Include="src\Graphics\PixelShader.cpp" />
     <ClCompile Include="src\Graphics\RasterizerState.cpp" />
     <ClCompile Include="src\Graphics\RenderTarget.cpp" />
@@ -262,6 +290,12 @@
     <ClCompile Include="src\HID\HID.cpp" />
     <ClCompile Include="src\HID\Keyboard.cpp" />
     <ClCompile Include="src\HID\Mouse.cpp" />
+    <ClCompile Include="src\SSB\Tile.cpp" />
+    <ClCompile Include="src\SSB\NPC.cpp" />
+    <ClCompile Include="src\SSB\Object.cpp" />
+    <ClCompile Include="src\SSB\Player.cpp" />
+    <ClCompile Include="src\SSB\World.cpp" />
+    <ClCompile Include="src\Utility\Classes\RNG.cpp" />
     <ClCompile Include="src\Utility\Classes\Time.cpp" />
     <ClCompile Include="src\Utility\DirectX\DX_BOOL2.cpp" />
     <ClCompile Include="src\Utility\DirectX\DX_BOOL3.cpp" />
@@ -287,9 +321,18 @@
     <None Include="src\Shaders\DefaultBuffer.hlsli" />
     <None Include="src\Shaders\BasicFunctions.hlsli" />
     <None Include="src\Shaders\BasicStructs.hlsli" />
+    <None Include="src\Shaders\MathConstants.hlsli" />
     <None Include="src\Shaders\PerlinNoise.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="src\Shaders\Billboard_VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="src\Shaders\Circle_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
@@ -330,6 +373,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="src\Shaders\GridGizmo_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="src\Shaders\Gui_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
@@ -350,6 +399,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="src\Shaders\LightGizmo_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="src\Shaders\Null_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
@@ -365,6 +422,22 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\ProjectionGizmo_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\ProjectionGizmo_VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="src\Shaders\Shadow_VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

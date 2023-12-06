@@ -106,6 +106,24 @@
     <Filter Include="Utility\Format\h">
       <UniqueIdentifier>{c333ce77-50e7-4fcd-9d9d-3da049af99c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Discord">
+      <UniqueIdentifier>{e486847d-d860-4dc0-a49d-93d9c7a30d8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Discord\cpp">
+      <UniqueIdentifier>{a0d97801-7234-48e7-b73e-7a3808f005f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Discord\h">
+      <UniqueIdentifier>{1c141ea4-006a-4827-bdc4-346acf014d41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SSB">
+      <UniqueIdentifier>{b08229a2-fc45-4535-9b48-c417ff5565a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SSB\cpp">
+      <UniqueIdentifier>{b0d24c12-4a81-4625-9f49-85bfbbb4fd3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SSB\h">
+      <UniqueIdentifier>{26a060f0-f2de-4df4-ab57-e36e60fb84ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\BlendState.h">
@@ -282,6 +300,72 @@
     <ClInclude Include="src\Utility\Format\dxgi.h">
       <Filter>Utility\Format\h</Filter>
     </ClInclude>
+    <ClInclude Include="src\Geometry\Spline.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\Bot.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\Button.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\Command.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\DiscordMacros.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\Hangul.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\Message.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\Modal.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\Select.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Discord\User.h">
+      <Filter>Discord\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SSB\SSB.h">
+      <Filter>SSB\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SSB\Tile.h">
+      <Filter>SSB\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SSB\World.h">
+      <Filter>SSB\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SSB\Player.h">
+      <Filter>SSB\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SSB\Object.h">
+      <Filter>SSB\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SSB\NPC.h">
+      <Filter>SSB\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SSB\Enumerators.h">
+      <Filter>SSB\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Classes\RNG.h">
+      <Filter>Utility\Classes\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\GraphicsObject.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Grid.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Object3D.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry\Quad.h">
+      <Filter>Geometry\h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graphics\VertexShader.cpp">
@@ -435,6 +519,42 @@
     <ClCompile Include="src\Utility\Format\dxgi.cpp">
       <Filter>Utility\Format\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="src\Geometry\Spline.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Discord\Bot.cpp">
+      <Filter>Discord\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Discord\User.cpp">
+      <Filter>Discord\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SSB\Tile.cpp">
+      <Filter>SSB\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SSB\World.cpp">
+      <Filter>SSB\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SSB\Player.cpp">
+      <Filter>SSB\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SSB\Object.cpp">
+      <Filter>SSB\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SSB\NPC.cpp">
+      <Filter>SSB\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility\Classes\RNG.cpp">
+      <Filter>Utility\Classes\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Grid.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Object3D.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry\Quad.cpp">
+      <Filter>Geometry\cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\DefaultBuffer.hlsli">
@@ -447,6 +567,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="src\Shaders\PerlinNoise.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\MathConstants.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
@@ -479,6 +602,21 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="src\Shaders\Null_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Billboard_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\LightGizmo_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\ProjectionGizmo_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\ProjectionGizmo_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\GridGizmo_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

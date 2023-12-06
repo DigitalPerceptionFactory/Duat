@@ -1,8 +1,8 @@
 #pragma once
-#include <Utility/DirectX.h>
+#include "Transform.h"
 
 
-struct SmartVertex {
+struct SmartVertex : public Duat::Geometry::Transform {
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;

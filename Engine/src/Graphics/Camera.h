@@ -28,7 +28,7 @@ namespace Duat::Graphics {
 
 		void SetProjectionMatrix(float fovAngleY, float aspectRatio, float nearZ, float farZ);
 	private:
-		void AfterTransform() override;
+		void TransformFF() override;
 		void UpdateViewMatrix();
 
 		System* m_pGFX = nullptr;

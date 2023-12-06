@@ -5,6 +5,10 @@ namespace Duat::Geometry {
 
 	Tetrahedron::Tetrahedron()
 	{
+		m_vertices.resize(24);
+
+		//m_vertices[0] = {-1.0f, }
+
 	}
 
 	//Cube::Cube()
@@ -123,6 +127,61 @@ namespace Duat::Geometry {
 
 	Icosahedron::Icosahedron()
 	{
+		float q = 0.25f * 3;
+		float h = 0.5f * 3;
+
+		m_vertices.resize(12);
+		
+		// bottom
+		m_vertices[0] = { -q, -h, 0 };
+		m_vertices[1] = { q, -h, 0 };
+		
+		// right
+		m_vertices[2] = {  h, 0, -q };
+		m_vertices[3] = { h, 0, q };
+
+		// back
+		m_vertices[4] = { 0, -q, h };
+		m_vertices[5] = { 0, q, h };
+
+		// left
+		m_vertices[6] = { -h, 0, -q };
+		m_vertices[7] = { -h, 0, q };
+
+		// front
+		m_vertices[8] = { 0, -q, -h };
+		m_vertices[9] = { 0, q, -h };
+
+		// top
+		m_vertices[10] = { -q, h, 0 };
+		m_vertices[11] = { q, h, 0 };
+
+		m_indices =
+		{
+			1, 8, 2,
+			1, 2, 3,
+			1, 3, 4,
+			1, 4, 0,
+			0, 4, 7,
+			0, 6, 8,
+			0, 8, 1,
+			8, 6, 9,
+			8, 9, 2,
+			9, 11, 2,
+			2, 11, 3,
+			3, 11, 5,
+			3, 5, 4,
+			4, 5, 7,
+			5, 10, 7,
+			5, 11, 10,
+			6, 10, 9,
+			9, 10, 11,
+			0, 7, 6,
+			6, 7, 10
+		};
+
+		SeparateTriangles();
+		UpdateNormals();
 	}
 
 }

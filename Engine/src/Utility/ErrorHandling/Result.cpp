@@ -1,4 +1,7 @@
 #include "Result.h"
+#include <string_view>
+#include <comdef.h>
+
 
 namespace Duat::Utility {
 

@@ -13,23 +13,23 @@ namespace Duat::Graphics {
 			Address u = Address::Wrap, Address v = Address::Wrap, Comparison comp = Comparison::LessEqual,
 			TextureFiltering filter = Filter::Linear, UINT maxAnisotropy = 16,
 			FLOAT minLOD = 0, FLOAT maxLOD = D3D11_FLOAT32_MAX, FLOAT offsetLOD = 0,
-			DirectX::XMFLOAT4 borderColor = { 1,1,1,1 });
+			DirectX::XMFLOAT4 borderColor = { 1,0,0,1 });
 		HRESULT Init(System& gfx,
 			Address u, Address v, Address w, Comparison comp = Comparison::LessEqual,
 			TextureFiltering filter = Filter::Linear, UINT maxAnisotropy = 16,
 			FLOAT minLOD = 0, FLOAT maxLOD = D3D11_FLOAT32_MAX, FLOAT offsetLOD = 0,
-			DirectX::XMFLOAT4 borderColor = { 1,1,1,1 });
+			DirectX::XMFLOAT4 borderColor = { 1,0,0,1 });
 
 		HRESULT Init(System* pGFX,
 			Address u = Address::Wrap, Address v = Address::Wrap, Comparison comp = Comparison::LessEqual,
 			TextureFiltering filter = Filter::Linear, UINT maxAnisotropy = 16,
 			FLOAT minLOD = 0, FLOAT maxLOD = D3D11_FLOAT32_MAX, FLOAT offsetLOD = 0,
-			DirectX::XMFLOAT4 borderColor = { 1,1,1,1 });
+			DirectX::XMFLOAT4 borderColor = { 1,0,0,1 });
 		HRESULT Init(System* pGFX,
 			Address u, Address v, Address w, Comparison comp = Comparison::LessEqual,
 			TextureFiltering filter = Filter::Linear, UINT maxAnisotropy = 16,
 			FLOAT minLOD = 0, FLOAT maxLOD = D3D11_FLOAT32_MAX, FLOAT offsetLOD = 0,
-			DirectX::XMFLOAT4 borderColor = { 1,1,1,1 });
+			DirectX::XMFLOAT4 borderColor = { 1,0,0,1 });
 		HRESULT Update();
 
 		Address GetAddressU();
