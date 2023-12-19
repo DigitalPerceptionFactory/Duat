@@ -229,6 +229,11 @@ namespace Duat::Graphics
 		return m_desc.SampleDesc.Count;
 	}
 
+	UINT Texture2D::GetSampleQuality() const
+	{
+		return m_desc.SampleDesc.Quality;
+	}
+
 	Usage Texture2D::GetUsage() const
 	{
 		return Usage(m_desc.Usage);
@@ -330,9 +335,18 @@ namespace Duat::Graphics
 		UpdateTexture();
 	}
 
-	void Texture2D::SetSampleCount(UINT sampleCount)
+	void Texture2D::SetSample(UINT count, UINT quality)
 	{
-		m_desc.SampleDesc.Count = sampleCount;
+		UINT maxSupportedQuality;
+		m_hresult << m_pGFX->m_Device->CheckMultisampleQualityLevels(
+			GetFormat(),
+			count,
+			&maxSupportedQuality
+		);
+		if (maxSupportedQuality == 0) return;
+
+		if (quality >= maxSupportedQuality)	m_desc.SampleDesc.Quality = maxSupportedQuality - 1;
+		m_desc.SampleDesc.Count = count;
 		UpdateTexture();
 	}
 
@@ -373,7 +387,7 @@ namespace Duat::Graphics
 			D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
 			ZeroMemory(&srv_desc, sizeof(srv_desc));
 			srv_desc.Format = m_srvFormat == DXGI_FORMAT_UNKNOWN ? m_desc.Format : m_srvFormat;
-			srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			srv_desc.ViewDimension = GetSampleCount() > 1 ? D3D11_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D;
 			srv_desc.Texture2D.MipLevels = m_desc.MipLevels;
 			srv_desc.Texture2D.MostDetailedMip = 0;
 			m_hresult << m_pGFX->m_Device->CreateShaderResourceView(Get(), &srv_desc, m_SRV.ReleaseAndGetAddressOf());
@@ -383,7 +397,7 @@ namespace Duat::Graphics
 			D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc;
 			ZeroMemory(&dsv_desc, sizeof(dsv_desc));
 			dsv_desc.Format = m_dsvFormat == DXGI_FORMAT_UNKNOWN ? m_desc.Format : m_dsvFormat;
-			dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			dsv_desc.ViewDimension = GetSampleCount() > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 			dsv_desc.Texture2D.MipSlice = 0;
 			m_hresult << m_pGFX->m_Device->CreateDepthStencilView(Get(), &dsv_desc, m_DSV.ReleaseAndGetAddressOf());
 		}
@@ -392,7 +406,7 @@ namespace Duat::Graphics
 			D3D11_RENDER_TARGET_VIEW_DESC rtv_desc;
 			ZeroMemory(&rtv_desc, sizeof(rtv_desc));
 			rtv_desc.Format = m_rtvFormat == DXGI_FORMAT_UNKNOWN ? m_desc.Format : m_rtvFormat;
-			rtv_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+			rtv_desc.ViewDimension = GetSampleCount() > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
 			rtv_desc.Texture2D.MipSlice = 0;
 			m_hresult << m_pGFX->m_Device->CreateRenderTargetView(Get(), &rtv_desc, m_RTV.ReleaseAndGetAddressOf());
 		}
@@ -408,7 +422,7 @@ namespace Duat::Graphics
 		}
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> newTexture;
 		m_hresult << m_pGFX->m_Device->CreateTexture2D(&m_desc, nullptr, newTexture.GetAddressOf());
-		m_pGFX->m_Context->CopyResource(newTexture.Get(), Get());
+		//m_pGFX->m_Context->CopyResource(newTexture.Get(), Get());
 		m_texture = newTexture;
 		InitViews();
 	}

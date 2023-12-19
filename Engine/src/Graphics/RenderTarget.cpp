@@ -42,7 +42,7 @@ namespace Duat::Graphics {
 		depth_desc.Usage = D3D11_USAGE_DEFAULT;
 		depth_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		depth_desc.SampleDesc.Count = m_targetTexture.GetSampleCount();
-		depth_desc.SampleDesc.Quality = 0;
+		depth_desc.SampleDesc.Quality = m_targetTexture.GetSampleQuality();
 		depth_desc.MipLevels = 1;
 		depth_desc.CPUAccessFlags = 0;
 		depth_desc.MiscFlags = 0;
@@ -89,10 +89,146 @@ namespace Duat::Graphics {
 		m_depthTexture.Init(pGFX, desc, DXGI_FORMAT_R32_FLOAT, depthFormat);
 	}
 
+	void RenderTarget::Init(System& gfx, D3D11_TEXTURE2D_DESC targetDesc)
+	{
+		Init(&gfx, targetDesc);
+	}
+
+	void RenderTarget::Init(System* pGFX, D3D11_TEXTURE2D_DESC targetDesc)
+	{
+		targetDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
+		m_targetTexture.Init(pGFX, targetDesc);
+
+		D3D11_TEXTURE2D_DESC depth_desc;
+		ZeroMemory(&depth_desc, sizeof(depth_desc));
+		depth_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depth_desc.Usage = D3D11_USAGE_DEFAULT;
+		depth_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		depth_desc.SampleDesc.Count = m_targetTexture.GetSampleCount();
+		depth_desc.SampleDesc.Quality = m_targetTexture.GetSampleQuality();
+		depth_desc.MipLevels = 1;
+		depth_desc.CPUAccessFlags = 0;
+		depth_desc.MiscFlags = 0;
+		depth_desc.ArraySize = 1;
+		depth_desc.Width = m_targetTexture.GetWidth();
+		depth_desc.Height = m_targetTexture.GetHeight();
+		m_depthTexture.Init(pGFX, depth_desc);
+	}
+
 	void RenderTarget::Init(const Texture2D& rt, const Texture2D& depth)
 	{
 		m_targetTexture = rt;
 		m_depthTexture = depth;
+	}
+
+	void RenderTarget::SetTargetDesc(D3D11_TEXTURE2D_DESC desc)
+	{
+		m_targetTexture.SetDesc(desc);
+	}
+
+	void RenderTarget::SetTargetWidth(UINT width)
+	{
+		m_targetTexture.SetWidth(width);
+	}
+
+	void RenderTarget::SetTargetHeight(UINT height)
+	{
+		m_targetTexture.SetHeight(height);
+	}
+
+	void RenderTarget::SetTargetMipLevels(UINT mipLevels)
+	{
+		m_targetTexture.SetMipLevels(mipLevels);
+	}
+
+	void RenderTarget::SetTargetArraySize(UINT arraySize)
+	{
+		m_targetTexture.SetArraySize(arraySize);
+	}
+
+	void RenderTarget::SetTargetFormat(DXGI_FORMAT format)
+	{
+		m_targetTexture.SetFormat(format);
+	}
+
+	void RenderTarget::SetTargetSample(UINT count, UINT quality)
+	{
+		m_targetTexture.SetSample(count, quality);
+	}
+
+	void RenderTarget::SetTargetUsage(Usage usage)
+	{
+		m_targetTexture.SetUsage(usage);
+	}
+
+	void RenderTarget::SetTargetBindFlags(UINT bindFlags)
+	{
+		m_targetTexture.SetBindFlags(bindFlags);
+	}
+
+	void RenderTarget::SetTargetCPUAccessFlags(UINT cpuFlags)
+	{
+		m_targetTexture.SetCPUAccessFlags(cpuFlags);
+	}
+
+	void RenderTarget::SetTargetMiscFlags(UINT miscFlags)
+	{
+		m_targetTexture.SetMiscFlags(miscFlags);
+	}
+
+	void RenderTarget::SetDepthDesc(D3D11_TEXTURE2D_DESC desc)
+	{
+		m_depthTexture.SetDesc(desc);
+	}
+
+	void RenderTarget::SetDepthWidth(UINT width)
+	{
+		m_depthTexture.SetWidth(width);
+	}
+
+	void RenderTarget::SetDepthHeight(UINT height)
+	{
+		m_depthTexture.SetHeight(height);
+	}
+
+	void RenderTarget::SetDepthMipLevels(UINT mipLevels)
+	{
+		m_depthTexture.SetMipLevels(mipLevels);
+	}
+
+	void RenderTarget::SetDepthArraySize(UINT arraySize)
+	{
+		m_depthTexture.SetArraySize(arraySize);
+	}
+
+	void RenderTarget::SetDepthFormat(DXGI_FORMAT format)
+	{
+		m_depthTexture.SetFormat(format);
+	}
+
+	void RenderTarget::SetDepthSample(UINT count, UINT quality)
+	{
+		m_depthTexture.SetSample(count, quality);
+	}
+
+	void RenderTarget::SetDepthUsage(Usage usage)
+	{
+		m_depthTexture.SetUsage(usage);
+	}
+
+	void RenderTarget::SetDepthBindFlags(UINT bindFlags)
+	{
+		m_depthTexture.SetBindFlags(bindFlags);
+	}
+
+	void RenderTarget::SetDepthCPUAccessFlags(UINT cpuFlags)
+	{
+		m_depthTexture.SetCPUAccessFlags(cpuFlags);
+	}
+
+	void RenderTarget::SetDepthMiscFlags(UINT miscFlags)
+	{
+		m_depthTexture.SetMiscFlags(miscFlags);
 	}
 
 	UINT RenderTarget::GetWidth() const

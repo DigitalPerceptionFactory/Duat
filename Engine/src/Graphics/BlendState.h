@@ -8,6 +8,8 @@ namespace Duat::Graphics {
 
 	struct System;
 	struct BlendState : public Microsoft::WRL::ComPtr<ID3D11BlendState> {
+		HRESULT Init(System& gfx, D3D11_RENDER_TARGET_BLEND_DESC desc);
+		HRESULT Init(System* pGFX, D3D11_RENDER_TARGET_BLEND_DESC desc);
 		HRESULT Init(System& gfx,
 			bool blendEnable = true, Blend srcBlend = Blend::SrcAlpha, Blend destBlend = Blend::InvSrcAlpha,
 			BlendOp blendOp = BlendOp::Add,

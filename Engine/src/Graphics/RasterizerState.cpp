@@ -3,7 +3,21 @@
 
 
 namespace Duat::Graphics {
-        
+
+    HRESULT RasterizerState::Init(System& gfx, D3D11_RASTERIZER_DESC rsDesc, std::vector<D3D11_VIEWPORT> vpDesc)
+    {
+        return Init(&gfx, rsDesc, vpDesc);
+    }
+
+    HRESULT RasterizerState::Init(System* pGFX, D3D11_RASTERIZER_DESC rsDesc, std::vector<D3D11_VIEWPORT> vpDesc)
+    {
+        m_pGFX = pGFX;
+        m_desc = rsDesc;
+        m_VPcache = vpDesc;
+
+        return m_pGFX->m_Device->CreateRasterizerState(&m_desc, ReleaseAndGetAddressOf());
+    }
+
     HRESULT RasterizerState::Init(System& gfx, bool isClockwise, Fill fill, Cull cull, float width, float height, float normalizedWidth, float normalizedHeight, float minDepth, float maxDepth, DirectX::XMFLOAT2 ndcPosition)
     {
         return Init(&gfx, isClockwise, fill, cull, width, height, normalizedWidth, normalizedHeight, minDepth, maxDepth, ndcPosition);
@@ -12,14 +26,14 @@ namespace Duat::Graphics {
     HRESULT RasterizerState::Init(System* pGFX, bool isClockwise, Fill fill, Cull cull, float width, float height, float normalizedWidth, float normalizedHeight, float minDepth, float maxDepth, DirectX::XMFLOAT2 ndcPosition)
     {
         m_pGFX = pGFX;
-        m_normalizedWidth = normalizedWidth;
-        m_normalizedHeight = normalizedHeight;
-        m_viewport.MinDepth = minDepth;
-        m_viewport.MaxDepth = maxDepth;
-        m_ndcPosition = ndcPosition;
-        m_width = width;
-        m_height = height;
-        UpdateViewport();
+        m_normalizedWidth[0] = normalizedWidth;
+        m_normalizedHeight[0] = normalizedHeight;
+        m_viewports[0].MinDepth = minDepth;
+        m_viewports[0].MaxDepth = maxDepth;
+        m_ndcPosition[0] = ndcPosition;
+        m_width[0] = width;
+        m_height[0] = height;
+        UpdateViewports();
 
         ZeroMemory(&m_desc, sizeof(D3D11_RASTERIZER_DESC));
         m_desc.FillMode = D3D11_FILL_MODE(fill);
@@ -34,9 +48,9 @@ namespace Duat::Graphics {
         return m_pGFX->m_Device->CreateRasterizerState(&m_desc, ReleaseAndGetAddressOf());
     }
 
-    D3D11_VIEWPORT* RasterizerState::GetViewport()
+    D3D11_VIEWPORT* RasterizerState::GetViewports()
     {
-        return &m_viewport;
+        return m_VPcache.data();
     }
 
     bool RasterizerState::IsClockwise() const
@@ -54,39 +68,39 @@ namespace Duat::Graphics {
         return Cull(m_desc.CullMode);
     }
 
-    float RasterizerState::GetNormalizedWidth() const
+    float RasterizerState::GetNormalizedWidth(int viewportIndex) const
     {
-        return m_normalizedWidth;
+        return m_normalizedWidth.at(viewportIndex);
     }
 
-    float RasterizerState::GetNormalizedHeight() const
+    float RasterizerState::GetNormalizedHeight(int viewportIndex) const
     {
-        return m_normalizedHeight;
+        return m_normalizedHeight.at(viewportIndex);
     }
 
-    float RasterizerState::GetMinDepth() const
+    float RasterizerState::GetMinDepth(int viewportIndex) const
     {
-        return m_viewport.MinDepth;
+        return m_viewports.at(viewportIndex).MinDepth;
     }
 
-    float RasterizerState::GetMaxDepth() const
+    float RasterizerState::GetMaxDepth(int viewportIndex) const
     {
-        return m_viewport.MaxDepth;
+        return m_viewports.at(viewportIndex).MaxDepth;
     }
 
-    DirectX::XMFLOAT2 RasterizerState::GetNDCPosition() const
+    DirectX::XMFLOAT2 RasterizerState::GetNDCPosition(int viewportIndex) const
     {
-        return m_ndcPosition;
+        return m_ndcPosition.at(viewportIndex);
     }
 
-    float RasterizerState::GetWidth() const
+    float RasterizerState::GetWidth(int viewportIndex) const
     {
-        return m_width;
+        return m_width.at(viewportIndex);
     }
 
-    float RasterizerState::GetHeight() const
+    float RasterizerState::GetHeight(int viewportIndex) const
     {
-        return m_height;
+        return m_height.at(viewportIndex);
     }
 
     void RasterizerState::SetClockwise(bool flag)
@@ -104,82 +118,93 @@ namespace Duat::Graphics {
         m_desc.CullMode = D3D11_CULL_MODE(cull);
     }
 
-    void RasterizerState::SetNormalizedWidth(float normalizedWidth)
+    void RasterizerState::SetNormalizedWidth(float normalizedWidth, int viewportIndex)
     {
-        m_normalizedWidth = std::clamp(normalizedWidth, 0.0f, 1.0f);;
-        UpdateViewport();
+        m_normalizedWidth[viewportIndex] = std::clamp(normalizedWidth, 0.0f, 1.0f);;
+        UpdateViewports();
     }
 
-    void RasterizerState::SetNormalizedHeight(float normalizedHeight)
+    void RasterizerState::SetNormalizedHeight(float normalizedHeight, int viewportIndex)
     {
-        m_normalizedHeight = std::clamp(normalizedHeight, 0.0f, 1.0f);
-        UpdateViewport();
+        m_normalizedHeight[viewportIndex] = std::clamp(normalizedHeight, 0.0f, 1.0f);
+        UpdateViewports();
     }
 
-    void RasterizerState::SetMinDepth(float minDepth)
+    void RasterizerState::SetMinDepth(float minDepth, int viewportIndex)
     {
-        m_viewport.MinDepth = minDepth;
+        m_viewports[viewportIndex].MinDepth = minDepth;
     }
 
-    void RasterizerState::SetMaxDepth(float maxDepth)
+    void RasterizerState::SetMaxDepth(float maxDepth, int viewportIndex)
     {
-        m_viewport.MaxDepth = maxDepth;
+        m_viewports[viewportIndex].MaxDepth = maxDepth;
     }
 
-    void RasterizerState::SetNDCPosition(DirectX::XMFLOAT2 ndcPosition)
+    void RasterizerState::SetNDCPosition(DirectX::XMFLOAT2 ndcPosition, int viewportIndex)
     {
-        m_ndcPosition = {
+        m_ndcPosition[viewportIndex] = {
             std::clamp(ndcPosition.x, 0.0f, 1.0f),
             std::clamp(ndcPosition.y, 0.0f, 1.0f)
         };
-        UpdateViewport();
+        UpdateViewports();
     }
 
-    void RasterizerState::SetWidth(float width)
+    void RasterizerState::SetWidth(float width, int viewportIndex)
     {
-        m_width = width;
-        UpdateViewport();
+        m_width[viewportIndex] = width;
+        UpdateViewports();
     }
 
-    void RasterizerState::SetHeight(float height)
+    void RasterizerState::SetHeight(float height, int viewportIndex)
     {
-        m_height = height;
-        UpdateViewport();
+        m_height[viewportIndex] = height;
+        UpdateViewports();
     }
 
-    void RasterizerState::UpdateViewport()
+    void RasterizerState::UpdateViewports()
     {
-        if (m_ndcPosition.x + m_normalizedWidth > 1.0f)
+        m_VPcache.resize(0);
+        for (auto& vp : m_viewports)
         {
-            m_normalizedWidth += 1.0f - m_ndcPosition.x + m_normalizedWidth;
-            m_ndcPosition.x = 1.0f - m_normalizedWidth;
-        }
-        else if (m_ndcPosition.x - m_normalizedWidth < -1.0f)
-        {
-            m_normalizedWidth -= 1.0f + m_ndcPosition.x - m_normalizedWidth;
-            m_ndcPosition.x = -1.0f + m_normalizedWidth;
-        }
+            float width = m_width[vp.first];
+            float height = m_height[vp.first];
+            float normalizedWidth =  m_normalizedWidth[vp.first];
+            float normalizedHeight = m_normalizedHeight[vp.first];
+            DirectX::XMFLOAT2 ndcPosition = m_ndcPosition[vp.first];
 
-        if (m_ndcPosition.y + m_normalizedHeight> 1.0f)
-        {
-            m_normalizedHeight += 1.0f - m_ndcPosition.y + m_normalizedHeight;
-            m_ndcPosition.y = 1.0f - m_normalizedHeight;
-        }
-        else if (m_ndcPosition.y - m_normalizedHeight < -1.0f)
-        {
-            m_normalizedHeight -= 1.0f + m_ndcPosition.y - m_normalizedHeight;
-            m_ndcPosition.y = -1.0f + m_normalizedHeight;
-        }
+            if (ndcPosition.x + normalizedWidth > 1.0f)
+            {
+                normalizedWidth += 1.0f - ndcPosition.x + normalizedWidth;
+                ndcPosition.x = 1.0f - normalizedWidth;
+            }
+            else if (ndcPosition.x - normalizedWidth < -1.0f)
+            {
+                normalizedWidth -= 1.0f + ndcPosition.x - normalizedWidth;
+                ndcPosition.x = -1.0f + normalizedWidth;
+            }
 
-        float u = (m_ndcPosition.x + 1) / 2;
-        float v = (m_ndcPosition.y + 1) / 2;
+            if (ndcPosition.y + normalizedHeight > 1.0f)
+            {
+                normalizedHeight += 1.0f - ndcPosition.y + normalizedHeight;
+                ndcPosition.y = 1.0f - normalizedHeight;
+            }
+            else if (ndcPosition.y - normalizedHeight < -1.0f)
+            {
+                normalizedHeight -= 1.0f + ndcPosition.y - normalizedHeight;
+                ndcPosition.y = -1.0f + normalizedHeight;
+            }
 
-        m_viewport.TopLeftX = u * m_width - m_normalizedWidth * m_width;
-        m_viewport.TopLeftY = v * m_height + m_normalizedHeight * m_height;
-        m_viewport.TopLeftX = 0;
-        m_viewport.TopLeftY = 0;
-        m_viewport.Width = m_normalizedWidth * m_width;
-        m_viewport.Height = m_normalizedHeight * m_height;
+            float u = (ndcPosition.x + 1) / 2;
+            float v = (ndcPosition.y + 1) / 2;
+
+            vp.second.TopLeftX = u * width - normalizedWidth * width;
+            vp.second.TopLeftY = v * height + normalizedHeight * height;
+            vp.second.TopLeftX = 0;
+            vp.second.TopLeftY = 0;
+            vp.second.Width = normalizedWidth * width;
+            vp.second.Height = normalizedHeight * height;
+            m_VPcache.push_back(vp.second);
+        }
     }
 
 

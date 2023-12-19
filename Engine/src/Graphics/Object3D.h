@@ -6,13 +6,23 @@
 namespace Duat::Graphics {
 
 	struct System;
-	struct Object3D : public GraphicsObject, public Geometry::Transform {
-		Object3D(System* pGFX) : m_pGFX(pGFX), m_projectionGizmo(-1) {}
-		void SetProjectionGizmo(bool flag);
+	struct Object3D : public Geometry::Mesh, public GraphicsObject, public Geometry::Transform {
+		Object3D(System& gfx);
+		Object3D(System* pGFX);
+		Object3D(System& gfx, const Geometry::Mesh& mesh, const GraphicsObject& gObj);
+		Object3D(System* pGFX, const Geometry::Mesh& mesh, const GraphicsObject& gObj);
+		Geometry::Mesh GetMesh() const;
+
+		bool IsDrawCallEnabled() const;
+		bool IsGizmoEnabled() const;
+
+		void DrawCallEnabled(bool flag);
+		void GizmoEnabled(bool flag);
 	protected:
 		System* m_pGFX;
 	private:
-		int m_projectionGizmo;
+		int m_DCIndex;
+		int m_GizmoDCIndex;
 	};
 
 }

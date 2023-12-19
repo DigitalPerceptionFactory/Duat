@@ -13,14 +13,17 @@ namespace Duat::Geometry {
 		SetPosition(0, 0, 0);
 		SetRotation(90, 0, 0);
 		SetScale(m_width, m_height, 1);
+		
+		Mesh::SetMesh(Quad());
+		SetPS("GridGizmo");
+		SetRS_CullMode(Cull::None);
+		GraphicsObject::Set(Graphics::Preset::Transparent);
 
-		mesh = Quad();
-		vs = "Default";
-		ps = "GridGizmo";
-		cam = "Default";
-		tp = Topology::TriangleList;
-		bs = "Default";
-		rs = "Expensive";
+		for (auto& vtx : m_vertices)
+		{
+			vtx.texCoord.x = 1 / m_widthDensity * vtx.texCoord.x;
+			vtx.texCoord.y = 1 / m_heightDensity * vtx.texCoord.y;
+		}
 	}
 
 	Grid::Grid(Graphics::System* pGFX, float width, float height, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation, float widthDensity, float heightDensity)
@@ -34,13 +37,16 @@ namespace Duat::Geometry {
 		SetRotation(rotation);
 		SetScale(m_width, m_height, 1);
 
-		mesh = Quad();
-		vs = "Default";
-		ps = "GridGizmo";
-		cam = "Default";
-		tp = Topology::TriangleList;
-		bs = "Default";
-		rs = "Expensive";
+		Mesh::SetMesh(Quad());
+		SetPS("GridGizmo");
+		SetRS_CullMode(Cull::None);
+		GraphicsObject::Set(Graphics::Preset::Transparent);
+
+		for (auto& vtx : m_vertices)
+		{
+			vtx.texCoord.x = 1 / m_widthDensity * vtx.texCoord.x;
+			vtx.texCoord.y = 1 / m_heightDensity * vtx.texCoord.y;
+		}
 	}
 
 }

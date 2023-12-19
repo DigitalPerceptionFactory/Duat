@@ -8,6 +8,8 @@ namespace Duat::Graphics {
 
 	struct System;
 	struct DepthStencilState : Microsoft::WRL::ComPtr<ID3D11DepthStencilState>, public Stencil {
+		HRESULT Init(System& gfx, D3D11_DEPTH_STENCIL_DESC desc);
+		HRESULT Init(System* pGFX, D3D11_DEPTH_STENCIL_DESC desc);
 		HRESULT Init(System& gfx,
 			bool depthEnabled = true, DepthWriteMask depthWriteMask = DepthWriteMask::All, Comparison comp = Comparison::LessEqual,
 			bool stencilEnabled = false, Stencil stencil = Stencil());

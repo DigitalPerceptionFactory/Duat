@@ -6,11 +6,13 @@ using namespace Duat::Utility;
 
 namespace Duat::Graphics {
 
-	void System::Init(HWND handle)
+	void System::Init(HWND handle, UINT msaaCount, UINT msaaQuality)
 	{
 		uniqueDrawCallIndex = 0;
 		m_window = handle;
 		m_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		m_MSAACount = msaaCount;
+		m_MSAAQuality = msaaQuality;
 
 		m_Device.Init();
 		m_Context.Init(handle, m_format);
@@ -71,6 +73,9 @@ namespace Duat::Graphics {
 		DrawShadows();
 		DrawSolid();
 		DrawTransparent();
+
+		m_Context->ResolveSubresource(
+			m_Context.GetBackBuffer(), 0, m_RT["Default"].GetTarget().Get(), 0, m_format);
 		m_Context.Present();
 	}
 
@@ -78,18 +83,68 @@ namespace Duat::Graphics {
 	{
 	}
 
-	size_t System::AddDrawCall(const Geometry::Mesh& mesh, const std::string& vs, const std::string& ps, const std::string& cam, const Topology& tp, const std::string& bs, const std::string& rs, const std::string& dss)
+	void System::SetMSAA(UINT count, UINT quality)
+	{
+		// must figure out how to rebuild render target at runtime
+		m_result << "Not supported yet.";
+		m_MSAACount = count;
+		m_MSAAQuality = quality;
+	}
+		
+	size_t System::AddDrawCall(const Geometry::Mesh& mesh, const GraphicsObject& object)
+	{
+		return AddDrawCall(Object3D(this, mesh, object));
+	}
+
+	size_t System::AddDrawCall(const Object3D& object)
 	{
 		DrawCall* pDC = new DrawCall();
-		pDC->vs = vs;
-		pDC->ps = ps;
-		pDC->bs = bs;
-		pDC->rs = rs;
-		pDC->dss = dss;
-		pDC->tp = tp;
-		pDC->cam = cam;
+
+		// check if state exists, then if alias exists, if there is none then create new based on DESC
+		if (m_BS.find(object.GetBS()) == m_BS.end())
+		{
+			if (m_BSAlias.find(object.GetBS()) != m_BSAlias.end())
+				pDC->bs = m_BSAlias.at(object.GetBS());
+			else
+			{
+				m_BS[object.GetBS()].Init(this, object.GetBS_DESC());
+				pDC->bs = object.GetBS();
+			}
+		}
+		else pDC->bs = object.GetBS();
+
+		if (m_DSS.find(object.GetDSS()) == m_DSS.end())
+		{
+			if (m_DSSAlias.find(object.GetDSS()) != m_DSSAlias.end())
+				pDC->dss = m_DSSAlias.at(object.GetDSS());
+			else
+			{
+				m_DSS[object.GetDSS()].Init(this, object.GetDSS_DESC());
+				pDC->dss = object.GetDSS();
+			}
+		}
+		else pDC->dss = object.GetDSS();
+
+		if (m_RS.find(object.GetRS()) == m_RS.end())
+		{
+			if (m_RSAlias.find(object.GetRS()) != m_RSAlias.end())
+				pDC->rs = m_RSAlias.at(object.GetRS());
+			else
+			{
+				m_RS[object.GetRS()].Init(this, object.GetRS_DESC(), object.GetVP_DESC());
+				pDC->rs = object.GetRS();
+			}
+		}
+		else pDC->rs = object.GetRS();
+
+		pDC->vs = object.GetVS();
+		pDC->ps = object.GetPS();
+		pDC->tp = object.GetTopology();
+		pDC->cam = object.GetCamera();
 		pDC->instances = 1;
 		pDC->id = uniqueDrawCallIndex;
+
+		auto& mesh = static_cast<const Geometry::Mesh>(object);
 
 		HLSL::Layout vbLayout;
 		vbLayout["Position"];
@@ -114,70 +169,6 @@ namespace Duat::Graphics {
 		pDC->vb.Init(this, vbLayout);
 		pDC->ib.Init(this, ibLayout);
 
-		HLSL::Layout sbLayout;
-		sbLayout["Matrix"] = XMMatrixIdentity();
-		sbLayout.Replicate(1);
-		StructuredBuffer sb(this, sbLayout, 1);
-		pDC->sbArray.push_back(sb);
-
-		Request req;
-		req.pData = reinterpret_cast<int*>(pDC);
-		req.type = RequestType::AddDrawCall;
-		m_requests.push_back(req);
-		++uniqueDrawCallIndex;
-		return uniqueDrawCallIndex - 1;
-	}
-
-	size_t System::AddDrawCall(const GraphicsObject& object)
-	{
-		return AddDrawCall(
-			object.mesh,
-			object.vs,
-			object.ps,
-			object.cam,
-			object.tp,
-			object.bs,
-			object.rs,
-			object.dss
-		);
-	}
-
-	size_t System::AddDrawCall(const Object3D& object)
-	{
-		DrawCall* pDC = new DrawCall();
-		pDC->vs = object.vs;
-		pDC->ps = object.ps;
-		pDC->bs = object.bs;
-		pDC->rs = object.rs;
-		pDC->dss = object.dss;
-		pDC->tp = object.tp;
-		pDC->cam = object.cam;
-		pDC->instances = 1;
-		pDC->id = uniqueDrawCallIndex;
-
-		HLSL::Layout vbLayout;
-		vbLayout["Position"];
-		vbLayout["TexCoord"];
-		vbLayout["Color"];
-		vbLayout["Normal"];
-		vbLayout["Shadow"] = XMFLOAT4();
-		vbLayout.Replicate(object.mesh.GetVertices().size());
-
-		for (int i = 0; i < object.mesh.GetVertices().size(); ++i)
-		{
-			vbLayout[i]["Position"] = object.mesh.GetVertices()[i].position;
-			vbLayout[i]["TexCoord"] = object.mesh.GetVertices()[i].texCoord;
-			vbLayout[i]["Color"] = object.mesh.GetVertices()[i].color;
-			vbLayout[i]["Normal"] = object.mesh.GetVertices()[i].normal;
-		}
-
-		HLSL::Layout ibLayout;
-		for (int i = 0; i < object.mesh.GetIndices().size(); ++i)
-			ibLayout[i] = (int)(object.mesh.GetIndices()[i]);
-
-		pDC->vb.Init(this, vbLayout);
-		pDC->ib.Init(this, ibLayout);
-
 		HLSL::Function fp_getMatrix = HLSL::Function(
 			[&object]() -> HLSL::HLSLDataType {
 				return object.GetMatrix();
@@ -192,6 +183,7 @@ namespace Duat::Graphics {
 		Request req;
 		req.pData = reinterpret_cast<int*>(pDC);
 		req.type = RequestType::AddDrawCall;
+		object.GetBS_IsBlendEnabled() ? req.text = "Transparent" : req.text = "";
 		m_requests.push_back(req);
 		++uniqueDrawCallIndex;
 		return uniqueDrawCallIndex - 1;
@@ -265,6 +257,16 @@ namespace Duat::Graphics {
 
 	const RasterizerState& System::GetActiveRS() const
 	{
+		if (m_RS.count(m_ActiveDrawCall->rs) <= 0)
+		{
+			if (m_RSAlias.count(m_ActiveDrawCall->rs) <= 0)
+			{
+				Utility::Result result;
+				result << "There is no RS or RSAlias matching ActiveDrawCall settings.";
+			}
+			else return m_RS.at(m_RSAlias.at(m_ActiveDrawCall->rs));
+		}
+
 		return m_RS.at(m_ActiveDrawCall->rs);
 	}
 
@@ -357,6 +359,15 @@ namespace Duat::Graphics {
 
 	void System::InitStates()
 	{
+		GraphicsObject temp;
+		m_BS[temp.GetBS()].Init(this, temp.GetBS_DESC());
+		m_BSAlias["Default"] = temp.GetBS();
+		m_DSS[temp.GetDSS()].Init(this, temp.GetDSS_DESC());
+		m_DSSAlias["Default"] = temp.GetDSS();
+		m_RS[temp.GetRS()].Init(this, temp.GetRS_DESC(), temp.GetVP_DESC());
+		m_RSAlias["Default"] = temp.GetRS();
+
+		/*
 		// Rasterizer States
 		m_RS["Default"].Init(this, false, Fill::Solid, Cull::Back,
 			GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
@@ -373,7 +384,7 @@ namespace Duat::Graphics {
 		// Blend States
 		m_BS["Default"].Init(this);
 		m_BS["Disabled"].Init(this, false);
-
+		*/
 		// Sampler States
 		m_SS["Default"].Init(this);
 	}
@@ -381,7 +392,12 @@ namespace Duat::Graphics {
 	void System::InitRenderTargets()
 	{
 		m_RT["Null"].Init(this, 1, 1, m_format);
-		m_RT["Default"].Init(this, m_Context.GetBackBuffer());
+
+		D3D11_TEXTURE2D_DESC desc;
+		m_Context.GetBackBuffer()->GetDesc(&desc);
+		m_RT["Default"].Init(this, desc);
+		m_RT["Default"].SetTargetSample(m_MSAACount, m_MSAAQuality);
+		m_RT["Default"].SetDepthSample(m_MSAACount, m_MSAAQuality);
 	}
 
 	void System::InitBuffers()
@@ -470,6 +486,11 @@ namespace Duat::Graphics {
 					}
 
 					HLSL::Layout input(HLSL::Assign(req.pData));
+					HLSL::Function fp_getTranslationMatrix = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<Camera*>(int_ptr)->GetTranslationMatrix();
+						});
 					HLSL::Function fp_getRotationMatrix = HLSL::Function(input,
 						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
 							int* int_ptr = (int*)param.GetRoot();
@@ -485,12 +506,7 @@ namespace Duat::Graphics {
 							int* int_ptr = (int*)param.GetRoot();
 							return reinterpret_cast<Camera*>(int_ptr)->GetProjectionMatrix();
 						});
-					HLSL::Function fp_getPosition = HLSL::Function(input,
-						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
-							int* int_ptr = (int*)param.GetRoot();
-							return reinterpret_cast<Camera*>(int_ptr)->GetPosition();
-						});
-
+					
 					// does it make sense ???
 					bool cameraExists = false;
 					for (auto& cam : m_Cameras)
@@ -503,10 +519,10 @@ namespace Duat::Graphics {
 					if (!cameraExists)
 						m_Cameras.push_back({ req.text, reinterpret_cast<Camera*>(req.pData) });
 
+					cameras[req.text]["TranslationMatrix"] = fp_getTranslationMatrix;
 					cameras[req.text]["RotationMatrix"] = fp_getRotationMatrix;
 					cameras[req.text]["ViewMatrix"] = fp_getViewMatrix;
 					cameras[req.text]["ProjectionMatrix"] = fp_getProjMatrix;
-					cameras[req.text]["Position"] = fp_getPosition;
 					break;
 				}
 				case RequestType::AddLight: {
@@ -642,7 +658,10 @@ namespace Duat::Graphics {
 						break;
 					}
 
-					m_drawCalls[pDC->GetKey()][pDC->id] = *pDC;
+					if (req.text == "Transparent")
+						m_transparentDrawCalls[pDC->GetKey()][pDC->id] = *pDC;
+					else
+						m_drawCalls[pDC->GetKey()][pDC->id] = *pDC;
 					delete pDC;
 					break;
 				}
@@ -724,6 +743,7 @@ namespace Duat::Graphics {
 	{
 		for (auto& rt : m_RT) m_Context.ClearRT(rt.second);
 
+		SetSS("Default");
 		for (auto& pass : m_drawCalls)
 		{
 			if (pass.second.size() != 0)
@@ -764,6 +784,42 @@ namespace Duat::Graphics {
 
 	void System::DrawTransparent()
 	{
+		for (auto& pass : m_transparentDrawCalls)
+		{
+			if (pass.second.size() != 0)
+			{
+				auto& settings = pass.second.begin()->second;
+				SetRT(settings);
+				SetVS(settings);
+				SetPS(settings);
+				SetBS(settings);
+				SetRS(settings);
+				SetDSS(settings);
+				SetTP(settings);
+				SetVP(settings);
+
+				for (auto& drawCall : pass.second)
+				{
+					m_ActiveDrawCall = &drawCall.second;
+
+					m_CB["DrawCallBuffer"].Update();
+					m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+					m_Context->PSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+
+					for (int i = 0; i < m_ActiveDrawCall->sbArray.size(); ++i)
+					{
+						m_ActiveDrawCall->sbArray[i].Update();
+						m_Context->VSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
+						m_Context->PSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
+					}
+
+					static UINT offset = 0;
+					m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
+					m_Context->IASetIndexBuffer(settings.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
+					m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
+				}
+			}
+		}
 	}
 
 	void System::DrawGizmos()

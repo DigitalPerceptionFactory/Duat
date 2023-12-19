@@ -38,6 +38,7 @@ namespace Duat::Graphics {
 		UINT GetArraySize() const;
 		DXGI_FORMAT GetFormat() const;
 		UINT GetSampleCount() const;
+		UINT GetSampleQuality() const;
 		Usage GetUsage() const;
 		UINT GetBindFlags() const;
 		UINT GetCPUAccessFlags() const;
@@ -58,7 +59,7 @@ namespace Duat::Graphics {
 		void SetMipLevels(UINT mipLevels);
 		void SetArraySize(UINT arraySize);
 		void SetFormat(DXGI_FORMAT format);
-		void SetSampleCount(UINT sampleCount);
+		void SetSample(UINT count, UINT quality);
 		void SetUsage(Usage usage);
 		void SetBindFlags(UINT bindFlags);
 		void SetCPUAccessFlags(UINT cpuFlags);

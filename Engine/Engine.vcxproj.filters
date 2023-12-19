@@ -555,6 +555,9 @@
     <ClCompile Include="src\Geometry\Quad.cpp">
       <Filter>Geometry\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="src\Graphics\GraphicsObject.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\DefaultBuffer.hlsli">

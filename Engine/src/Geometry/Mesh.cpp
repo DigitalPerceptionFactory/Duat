@@ -4,7 +4,7 @@
 
 
 namespace Duat::Geometry {
-
+		
 	void Mesh::Reset()
 	{
 		m_vertices.resize(0);
@@ -92,6 +92,12 @@ namespace Duat::Geometry {
 		};
 
 		UpdateNormals();
+	}
+
+	void Mesh::SetMesh(const Mesh& other)
+	{
+		m_vertices = other.m_vertices;
+		m_indices = other.m_indices;
 	}
 
 	void Mesh::SetVertices(const std::vector<Vertex>& vertices)

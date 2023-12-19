@@ -3,7 +3,23 @@
 
 
 namespace Duat::Graphics {
-	
+
+	HRESULT BlendState::Init(System& gfx, D3D11_RENDER_TARGET_BLEND_DESC desc)
+	{
+		return Init(&gfx, desc);
+	}
+
+	HRESULT BlendState::Init(System* pGFX, D3D11_RENDER_TARGET_BLEND_DESC desc)
+	{
+		m_pGFX = pGFX;
+		m_desc = desc;
+		D3D11_BLEND_DESC blendDesc;
+		ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
+		blendDesc.RenderTarget[0] = m_desc;
+
+		return m_pGFX->m_Device->CreateBlendState(&blendDesc, ReleaseAndGetAddressOf());
+	}
+
 	HRESULT BlendState::Init(System& gfx, bool blendEnable, Blend srcBlend, Blend destBlend, BlendOp blendOp, Blend srcBlendAlpha, Blend destBlendAlpha, BlendOp blendOpAlpha, ColorWriteMask mask)
 	{
 		return Init(&gfx, blendEnable, srcBlend, destBlend, blendOp, srcBlendAlpha, destBlendAlpha, blendOpAlpha, mask);

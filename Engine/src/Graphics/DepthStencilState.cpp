@@ -4,6 +4,20 @@
 
 namespace Duat::Graphics {
 
+	HRESULT DepthStencilState::Init(System& gfx, D3D11_DEPTH_STENCIL_DESC desc)
+	{
+		return Init(&gfx, desc);
+	}
+
+	HRESULT DepthStencilState::Init(System* pGFX, D3D11_DEPTH_STENCIL_DESC desc)
+	{
+		m_pGFX = pGFX;
+		m_desc = desc;
+		Stencil::Set(desc);
+
+		return m_pGFX->m_Device->CreateDepthStencilState(&m_desc, ReleaseAndGetAddressOf());
+	}
+
 	HRESULT DepthStencilState::Init(System& gfx, bool depthEnabled, DepthWriteMask depthWriteMask, Comparison comp, bool stencilEnabled, Stencil stencil)
 	{
 		return Init(&gfx, depthEnabled, depthWriteMask, comp, stencilEnabled, stencil);

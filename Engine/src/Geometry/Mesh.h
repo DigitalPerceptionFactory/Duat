@@ -9,6 +9,7 @@ namespace Duat::Geometry {
 		void Reset();
 		void TestInit();
 		void CubeInit();
+		void SetMesh(const Mesh& other);
 		void SetVertices(const std::vector<Vertex>& vertices);
 		void SetIndices(const std::vector<unsigned int>& indices);
 		void AppendVertices(const std::vector<Vertex>& vertices);

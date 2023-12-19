@@ -143,6 +143,7 @@ enum class StencilOp {
 
 struct Stencil {
 	Stencil() = default;
+	Stencil(const D3D11_DEPTH_STENCIL_DESC& desc);
 	Stencil(StencilOp frontFail, StencilOp frontDepthFail, StencilOp frontPass, Comparison frontComp,
 		StencilOp backFail, StencilOp backDepthFail, StencilOp backPass, Comparison backComp,
 		UINT8 readMask = 0xFF, UINT8 writeMask = 0xFF);
@@ -158,6 +159,7 @@ struct Stencil {
 	UINT8 GetWriteMask();
 	UINT8 GetReadMask();
 
+	void Set(const D3D11_DEPTH_STENCIL_DESC& desc);
 	void SetFrontFail(StencilOp op);
 	void SetFrontDepthFail(StencilOp op);
 	void SetFrontPass(StencilOp op);

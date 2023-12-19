@@ -18,10 +18,10 @@ struct Light
 };
 
 struct Camera {
+    matrix translationMatrix;
     matrix rotationMatrix;
     matrix viewMatrix;
     matrix projectionMatrix;
-    float3 position;
 };
 
 #ifdef VERTEX_SHADER

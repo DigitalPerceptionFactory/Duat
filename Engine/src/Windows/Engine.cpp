@@ -29,7 +29,8 @@ namespace Duat
 		//m_Forex.Buy("Capybara", "EUR/USD", 1000);
 		//Sleep(5000);
 
-		m_gfx.Init(m_hWnd);
+		m_gfx.Init(m_hWnd, 8, 1);
+
 		static Graphics::Light light(&m_gfx);
 		light.Init(m_gfx, 90);
 		light.SetPosition(-3, 1, 2);
@@ -72,12 +73,14 @@ namespace Duat
 				
 		static Geometry::Grid g(&m_gfx, 10,10);
 		//g.ps = "Texture";
-		m_gfx.AddDrawCall(g);
+		g.SetRS_MultisampleEnabled(1);
+		g.DrawCallEnabled(true);
 
-		m_gfx.AddDrawCall(finalMesh, "Default", "Default", "Default",
-			Topology::TriangleList, "Default", "Expensive");
+		static Graphics::Object3D model(m_gfx, finalMesh, Graphics::GraphicsObject());
+		model.SetRS_CullMode(Cull::None);
+		model.DrawCallEnabled(true);
 				
-		light.SetProjectionGizmo(1);
+		light.GizmoEnabled(1);
 
 		Geometry::Mesh splineMesh;
 		Geometry::Spline spline;

@@ -8,13 +8,11 @@ namespace Duat::Graphics {
 
 	Light::Light(System* pGFX) : Object3D(pGFX)
 	{
-		mesh = Geometry::Quad();
-		vs = "Billboard";
-		ps = "LightGizmo";
-		cam = "Default";
-		tp = Topology::TriangleList;
-		bs = "Default";
-		rs = "Billboard";
+		Mesh::SetMesh(Geometry::Quad());
+		SetVS("Billboard");
+		SetPS("LightGizmo");
+		SetRS_CullMode(Cull::None);
+		GraphicsObject::Set(Preset::Transparent);
 	}
 
 	void Light::Init(System& gfx, float angleY, size_t shadowmapWidth, size_t shadowmapHeight)

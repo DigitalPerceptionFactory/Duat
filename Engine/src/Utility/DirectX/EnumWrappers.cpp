@@ -261,6 +261,22 @@ void TextureFiltering::Set(Filter min, Filter mag, Filter mip, FilterMode mode)
 	}
 }
 
+Stencil::Stencil(const D3D11_DEPTH_STENCIL_DESC& desc)
+{
+	Stencil(
+		StencilOp(desc.FrontFace.StencilFailOp),
+		StencilOp(desc.FrontFace.StencilDepthFailOp),
+		StencilOp(desc.FrontFace.StencilPassOp),
+		Comparison(desc.FrontFace.StencilFunc),
+		StencilOp(desc.BackFace.StencilFailOp),
+		StencilOp(desc.BackFace.StencilDepthFailOp),
+		StencilOp(desc.BackFace.StencilPassOp),
+		Comparison(desc.BackFace.StencilFunc),
+		desc.StencilReadMask,
+		desc.StencilWriteMask
+	);
+}
+
 Stencil::Stencil(StencilOp frontFail, StencilOp frontDepthFail, StencilOp frontPass, Comparison frontComp, StencilOp backFail, StencilOp backDepthFail, StencilOp backPass, Comparison backComp, UINT8 readMask, UINT8 writeMask)
 	: frontFail(frontFail), frontDepthFail(frontDepthFail), frontPass(frontPass), frontComp(frontComp),
 	backFail(backFail), backDepthFail(backDepthFail), backPass(backPass), backComp(backComp), readMask(readMask), writeMask(writeMask)
@@ -315,6 +331,22 @@ UINT8 Stencil::GetWriteMask()
 UINT8 Stencil::GetReadMask()
 {
 	return readMask;
+}
+
+void Stencil::Set(const D3D11_DEPTH_STENCIL_DESC& desc)
+{
+	Stencil(
+		StencilOp(desc.FrontFace.StencilFailOp),
+		StencilOp(desc.FrontFace.StencilDepthFailOp),
+		StencilOp(desc.FrontFace.StencilPassOp),
+		Comparison(desc.FrontFace.StencilFunc),
+		StencilOp(desc.BackFace.StencilFailOp),
+		StencilOp(desc.BackFace.StencilDepthFailOp),
+		StencilOp(desc.BackFace.StencilPassOp),
+		Comparison(desc.BackFace.StencilFunc),
+		desc.StencilReadMask,
+		desc.StencilWriteMask
+	);
 }
 
 void Stencil::SetFrontFail(StencilOp op)

@@ -42,20 +42,13 @@ namespace Duat::Graphics {
 		friend CompositionEx;
 		friend Camera;
 
-		void Init(HWND handle);
+		void Init(HWND handle, UINT msaaCount = 1, UINT msaaQuality = 0);
 		void Update();
 		void Exit();
 
-		size_t AddDrawCall(const Geometry::Mesh& mesh,
-			const std::string& vs = "Default",
-			const std::string& ps = "Default",
-			const std::string& cam = "Default",
-			const Topology& tp = Topology::TriangleList,
-			const std::string& bs = "Default",
-			const std::string& rs = "Default",
-			const std::string& dss = "Default"
-		);
-		size_t AddDrawCall(const GraphicsObject& object);
+		void SetMSAA(UINT count, UINT quality);
+
+		size_t AddDrawCall(const Geometry::Mesh&  mesh, const GraphicsObject& object);
 		size_t AddDrawCall(const Object3D& object);
 		void RemoveDrawCall(size_t uniqueDrawCallIndex);
 		void AddCamera(const std::string& name, Camera* pCamera);
@@ -118,6 +111,8 @@ namespace Duat::Graphics {
 		CompositionEx     m_Composition;
 		HWND              m_window;
 		DXGI_FORMAT       m_format;
+		UINT              m_MSAACount;
+		UINT              m_MSAAQuality;
 		DrawCall*         m_ActiveDrawCall;
 
 		struct DrawCall {
@@ -150,21 +145,25 @@ namespace Duat::Graphics {
 
 		size_t uniqueDrawCallIndex;
 		std::map<std::string, std::map<size_t, DrawCall>> m_drawCalls;
+		std::map<std::string, std::map<size_t, DrawCall>> m_transparentDrawCalls;
 		std::vector<Request> m_requests;
 		std::vector<RequestType> m_requestTypes;
 
-		std::map<std::string, VertexShader>                    m_VS;
-		std::map<std::string, PixelShader>                     m_PS;
-		std::map<std::string, ComputeShader>                   m_CS;
-		std::map<std::string, Texture2D>                       m_textures;
-		std::map<std::string, BlendState>                      m_BS;
-		std::map<std::string, RasterizerState>                 m_RS;
-		std::map<std::string, SamplerState>                    m_SS;
-		std::map<std::string, DepthStencilState>               m_DSS;
-		std::map<std::string, RenderTarget>                    m_RT;
-		std::map<std::string, ConstantBuffer>                  m_CB;
-		std::map<std::string, StructuredBuffer>                m_SB;
-		std::vector<std::pair<std::string, Camera*>>           m_Cameras;
+		std::unordered_map<std::string, VertexShader>         m_VS;
+		std::unordered_map<std::string, PixelShader>          m_PS;
+		std::unordered_map<std::string, ComputeShader>        m_CS;
+		std::unordered_map<std::string, Texture2D>            m_textures;
+		std::unordered_map<std::string, BlendState>           m_BS;
+		std::unordered_map<std::string, std::string>          m_BSAlias;
+		std::unordered_map<std::string, RasterizerState>      m_RS;
+		std::unordered_map<std::string, std::string>          m_RSAlias;
+		std::unordered_map<std::string, SamplerState>         m_SS;
+		std::unordered_map<std::string, DepthStencilState>    m_DSS;
+		std::unordered_map<std::string, std::string>          m_DSSAlias;
+		std::unordered_map<std::string, RenderTarget>         m_RT;
+		std::unordered_map<std::string, ConstantBuffer>       m_CB;
+		std::unordered_map<std::string, StructuredBuffer>     m_SB;
+		std::vector<std::pair<std::string, Camera*>>          m_Cameras;
 		std::vector<std::pair<std::string, Light*>>           m_Lights;
 		Texture2D m_shadowMap;
 	};

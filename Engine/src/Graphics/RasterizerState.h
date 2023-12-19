@@ -9,6 +9,8 @@ namespace Duat::Graphics {
 
 	struct System;
 	struct RasterizerState : public Microsoft::WRL::ComPtr<ID3D11RasterizerState> {
+		HRESULT Init(System& gfx, D3D11_RASTERIZER_DESC rsDesc, std::vector< D3D11_VIEWPORT> vpDesc);
+		HRESULT Init(System* pGFX, D3D11_RASTERIZER_DESC rsDesc, std::vector< D3D11_VIEWPORT> vpDesc);
 		HRESULT Init(System& gfx, bool isClockwise, Fill fill, Cull cull, float width, float height,
 			float normalizedWidth = 1.0f, float normalizedHeight = 1.0f,
 			float minDepth = 0.0f, float maxDepth = 1.0f,
@@ -19,40 +21,41 @@ namespace Duat::Graphics {
 			DirectX::XMFLOAT2 ndcPosition = { 0.0f,0.0f });
 		HRESULT Update();
 
-		D3D11_VIEWPORT* GetViewport();
+		D3D11_VIEWPORT* GetViewports();
 		bool IsClockwise() const;
 		Fill GetFill() const;
 		Cull GetCull() const;
-		float GetNormalizedWidth() const;
-		float GetNormalizedHeight() const;
-		float GetMinDepth() const;
-		float GetMaxDepth() const;
-		DirectX::XMFLOAT2 GetNDCPosition() const;
-		float GetWidth() const;
-		float GetHeight() const;
+		float GetNormalizedWidth(int viewportIndex = 0) const;
+		float GetNormalizedHeight(int viewportIndex = 0) const;
+		float GetMinDepth(int viewportIndex = 0) const;
+		float GetMaxDepth(int viewportIndex = 0) const;
+		DirectX::XMFLOAT2 GetNDCPosition(int viewportIndex = 0) const;
+		float GetWidth(int viewportIndex = 0) const;
+		float GetHeight(int viewportIndex = 0) const;
 
 		void SetClockwise(bool flag);
 		void SetFill(Fill fill);
 		void SetCull(Cull cull);
-		void SetNormalizedWidth(float normalizedWidth);
-		void SetNormalizedHeight(float normalizedHeight);
-		void SetMinDepth(float minDepth);
-		void SetMaxDepth(float maxDepth);
-		void SetNDCPosition(DirectX::XMFLOAT2 ndcPosition);
-		void SetWidth(float width);
-		void SetHeight(float height);
+		void SetNormalizedWidth(float normalizedWidth, int viewportIndex = 0);
+		void SetNormalizedHeight(float normalizedHeight, int viewportIndex = 0);
+		void SetMinDepth(float minDepth, int viewportIndex = 0);
+		void SetMaxDepth(float maxDepth, int viewportIndex = 0);
+		void SetNDCPosition(DirectX::XMFLOAT2 ndcPosition, int viewportIndex = 0);
+		void SetWidth(float width, int viewportIndex = 0);
+		void SetHeight(float height, int viewportIndex = 0);
 	private:
-		void UpdateViewport();
+		void UpdateViewports();
 
 		System* m_pGFX;
-		float m_width;
-		float m_height;
-		float m_normalizedWidth;
-		float m_normalizedHeight;
-		DirectX::XMFLOAT2 m_ndcPosition;
-
 		D3D11_RASTERIZER_DESC m_desc;
-		D3D11_VIEWPORT m_viewport;
+
+		std::unordered_map<int, float> m_width;
+		std::unordered_map<int, float> m_height;
+		std::unordered_map<int, float> m_normalizedWidth;
+		std::unordered_map<int, float> m_normalizedHeight;
+		std::unordered_map<int, DirectX::XMFLOAT2> m_ndcPosition;
+		std::unordered_map<int, D3D11_VIEWPORT> m_viewports;
+		std::vector<D3D11_VIEWPORT> m_VPcache;
 	};
 
 }
