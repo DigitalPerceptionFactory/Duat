@@ -25,11 +25,13 @@ namespace Duat
 
 	void Engine::StartUp()
 	{
-		//m_Forex.Init("D261372190", "sPi4l", 1);
-		//m_Forex.Buy("Capybara", "EUR/USD", 1000);
-		//Sleep(5000);
-
 		m_gfx.Init(m_hWnd, 8, 1);
+
+		Graphics::Object3D skybox(m_gfx);
+		skybox.SetMesh(Geometry::Cube());
+		skybox.Set(Graphics::Preset::Skybox);
+		skybox.SetTexture("skybox");
+		skybox.DrawCallEnabled(1);
 
 		static Graphics::Light light(&m_gfx);
 		light.Init(m_gfx, 90);
@@ -79,9 +81,28 @@ namespace Duat
 		static Graphics::Object3D model(m_gfx, finalMesh, Graphics::GraphicsObject());
 		model.SetRS_CullMode(Cull::None);
 		model.DrawCallEnabled(true);
-				
-		light.GizmoEnabled(1);
+		//model.DrawCallEnabled(false);
+		
+		static Graphics::Object3D rightPlane(m_gfx, Geometry::Quad(), Graphics::GraphicsObject());
+		rightPlane.SetVertexColor(0, 0.3, 0);
+		rightPlane.DrawCallEnabled(1);
+		rightPlane.Scale(10, 5, 1);
+		rightPlane.Translate(5, 0, 0);
+		rightPlane.Rotate(0, 90, 0);
+		static Graphics::Object3D backPlane(m_gfx, Geometry::Quad(), Graphics::GraphicsObject());
+		backPlane.SetVertexColor(0, 0.3, 0);
+		backPlane.DrawCallEnabled(1);
+		backPlane.Scale(10, 5, 1);
+		backPlane.Translate(0, 0, 5);
+		static Graphics::Object3D botPlane(m_gfx, Geometry::Quad(), Graphics::GraphicsObject());
+		botPlane.SetVertexColor(0, 0.3, 0);
+		botPlane.DrawCallEnabled(1);
+		botPlane.Scale(10, 10, 1);
+		botPlane.Translate(0, -2.5, 0);
+		botPlane.Rotate(90, 0, 0);
 
+		light.GizmoEnabled(1);
+				
 		Geometry::Mesh splineMesh;
 		Geometry::Spline spline;
 		spline.Append(Geometry::Bezier_Cubic(

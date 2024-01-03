@@ -43,14 +43,8 @@ namespace Duat::Graphics {
 		InitStates();
 		InitRenderTargets();
 		InitBuffers();
-
-		static Camera defaultCamera;
-		defaultCamera.Init(this, "Default");
-		defaultCamera.SetPosition({ 0, 0, -5 });
-		AddCamera("Default", &defaultCamera);
-
-		HID::Selection = &defaultCamera;
-
+		InitCameras();
+		
 		m_Context.SetClearColor(0, 0, 0, 0);
 	}
 
@@ -60,15 +54,14 @@ namespace Duat::Graphics {
 
 		for (auto& sb : m_SB) sb.second.Update();
 
-		m_Context->VSSetShaderResources(0, 1, m_SB["Cameras"].GetSRVAddressOf());
-		m_Context->PSSetShaderResources(0, 1, m_SB["Cameras"].GetSRVAddressOf());
+		m_Context->VSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET, 1, m_SB["Cameras"].GetSRVAddressOf());
+		m_Context->PSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET, 1, m_SB["Cameras"].GetSRVAddressOf());
 
-		m_Context->VSSetShaderResources(1, 1, m_SB["Lights"].GetSRVAddressOf());
-		m_Context->PSSetShaderResources(1, 1, m_SB["Lights"].GetSRVAddressOf());
+		m_Context->VSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 1, 1, m_SB["Lights"].GetSRVAddressOf());
+		m_Context->PSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 1, 1, m_SB["Lights"].GetSRVAddressOf());
 
 		m_Context->PSSetSamplers(0, 1, m_SS["Default"].GetAddressOf());
-
-		m_Context->PSSetShaderResources(4, 1, m_textures["whatever"].GetSRVAddressOf());
+		//m_Context->PSSetShaderResources(4, 1, m_textures["whatever"].GetSRVAddressOf());
 
 		DrawShadows();
 		DrawSolid();
@@ -98,49 +91,18 @@ namespace Duat::Graphics {
 
 	size_t System::AddDrawCall(const Object3D& object)
 	{
+		Learn(object);
+
 		DrawCall* pDC = new DrawCall();
-
-		// check if state exists, then if alias exists, if there is none then create new based on DESC
-		if (m_BS.find(object.GetBS()) == m_BS.end())
-		{
-			if (m_BSAlias.find(object.GetBS()) != m_BSAlias.end())
-				pDC->bs = m_BSAlias.at(object.GetBS());
-			else
-			{
-				m_BS[object.GetBS()].Init(this, object.GetBS_DESC());
-				pDC->bs = object.GetBS();
-			}
-		}
-		else pDC->bs = object.GetBS();
-
-		if (m_DSS.find(object.GetDSS()) == m_DSS.end())
-		{
-			if (m_DSSAlias.find(object.GetDSS()) != m_DSSAlias.end())
-				pDC->dss = m_DSSAlias.at(object.GetDSS());
-			else
-			{
-				m_DSS[object.GetDSS()].Init(this, object.GetDSS_DESC());
-				pDC->dss = object.GetDSS();
-			}
-		}
-		else pDC->dss = object.GetDSS();
-
-		if (m_RS.find(object.GetRS()) == m_RS.end())
-		{
-			if (m_RSAlias.find(object.GetRS()) != m_RSAlias.end())
-				pDC->rs = m_RSAlias.at(object.GetRS());
-			else
-			{
-				m_RS[object.GetRS()].Init(this, object.GetRS_DESC(), object.GetVP_DESC());
-				pDC->rs = object.GetRS();
-			}
-		}
-		else pDC->rs = object.GetRS();
-
 		pDC->vs = object.GetVS();
 		pDC->ps = object.GetPS();
-		pDC->tp = object.GetTopology();
+		pDC->bs = object.GetBS();
+		pDC->rs = object.GetRS();
+		pDC->dss = object.GetDSS();
 		pDC->cam = object.GetCamera();
+		pDC->tp = object.GetTopology();
+		pDC->textures = object.GetTextures();
+		// pDC->samplers =
 		pDC->instances = 1;
 		pDC->id = uniqueDrawCallIndex;
 
@@ -191,8 +153,10 @@ namespace Duat::Graphics {
 
 	void System::RemoveDrawCall(size_t uniqueDrawCallIndex)
 	{
-		for (auto& dc : m_drawCalls)
-			dc.second.erase(uniqueDrawCallIndex);
+		Request req;
+		req.type = RequestType::RemoveDrawCall;
+		req.pData = new int(uniqueDrawCallIndex);
+		m_requests.push_back(req);
 	}
 
 	void System::AddCamera(const std::string& name, Camera* pCamera)
@@ -259,12 +223,8 @@ namespace Duat::Graphics {
 	{
 		if (m_RS.count(m_ActiveDrawCall->rs) <= 0)
 		{
-			if (m_RSAlias.count(m_ActiveDrawCall->rs) <= 0)
-			{
-				Utility::Result result;
-				result << "There is no RS or RSAlias matching ActiveDrawCall settings.";
-			}
-			else return m_RS.at(m_RSAlias.at(m_ActiveDrawCall->rs));
+			Utility::Result result;
+			result << "There is no RS matching ActiveDrawCall settings.";
 		}
 
 		return m_RS.at(m_ActiveDrawCall->rs);
@@ -285,6 +245,16 @@ namespace Duat::Graphics {
 		if (m_SB.count("Lights") > 0)
 			return m_SB.at("Lights").GetRootElementCount();
 		return 0;
+	}
+		
+	void System::InitCameras()
+	{
+		static Camera defaultCamera;
+		defaultCamera.Init(this, "Default");
+		defaultCamera.SetPosition({ 0, 0, -5 });
+		AddCamera("Default", &defaultCamera);
+
+		HID::Selection = &defaultCamera;
 	}
 
 	void System::InitShaders()
@@ -328,44 +298,73 @@ namespace Duat::Graphics {
 
 	void System::InitTextures()
 	{
+		std::string tex2Dfolder = "textures2d";
+		std::string texCubefolder = "textures3d";
+
 		if (IsDebuggerPresent())
 		{
-			for (const auto& entry : std::filesystem::directory_iterator("res/textures"))
+			for (const auto& entry : std::filesystem::directory_iterator("res/" + tex2Dfolder))
 			{
 				if (entry.is_regular_file())
 				{
 					std::string name = entry.path().filename().string();
 					name = name.substr(0, name.length() - entry.path().extension().string().length());
-					m_textures[name].Init(this, entry.path());
+					m_textures[name].Init(this, entry.path(), TexType::Tex2D);
+				}
+			}
+
+			for (const auto& entry : std::filesystem::directory_iterator("res/" + texCubefolder))
+			{
+				if (entry.is_regular_file())
+				{
+					std::string name = entry.path().filename().string();
+					name = name.substr(0, name.length() - entry.path().extension().string().length());
+					if (name[name.length() - 1] == '0')
+						m_textures[name.substr(0, name.length() - 1)].Init(this, entry.path(), TexType::Cube);
 				}
 			}
 		}
 		else
 		{
-			if (std::filesystem::exists("Textures") && std::filesystem::is_directory("Textures")) {}
-			else std::filesystem::create_directory("Textures");
+			if (std::filesystem::exists("Resources") && std::filesystem::is_directory("Resources")) {}
+			else std::filesystem::create_directory("Resources");
 
-			for (const auto& entry : std::filesystem::directory_iterator("Textures"))
+			if (std::filesystem::exists("Resources/" + tex2Dfolder) && std::filesystem::is_directory("Resources/" + tex2Dfolder)) {}
+			else std::filesystem::create_directory("Resources/" + tex2Dfolder);
+
+			if (std::filesystem::exists("Resources/" + texCubefolder) && std::filesystem::is_directory("Resources/" + texCubefolder)) {}
+			else std::filesystem::create_directory("Resources/" + texCubefolder);
+
+			for (const auto& entry : std::filesystem::directory_iterator("Resources/" + tex2Dfolder))
 			{
 				if (entry.is_regular_file())
 				{
 					std::string name = entry.path().filename().string();
 					name = name.substr(0, name.length() - entry.path().extension().string().length());
-					m_textures[name].Init(this, entry.path());
+					m_textures[name].Init(this, entry.path(), TexType::Tex2D);
 				}
 			}
+
+			/*for (const auto& entry : std::filesystem::directory_iterator("Resources/" + texCubefolder))
+			{
+				if (entry.is_regular_file())
+				{
+					std::string name = entry.path().filename().string();
+					name = name.substr(0, name.length() - entry.path().extension().string().length());
+					if(name[name.length() - 1] == '0')
+						m_textures[name].Init(this, entry.path(), TexType::Cube);
+				}
+			}*/
 		}
 	}
 
 	void System::InitStates()
 	{
 		GraphicsObject temp;
-		m_BS[temp.GetBS()].Init(this, temp.GetBS_DESC());
-		m_BSAlias["Default"] = temp.GetBS();
-		m_DSS[temp.GetDSS()].Init(this, temp.GetDSS_DESC());
-		m_DSSAlias["Default"] = temp.GetDSS();
-		m_RS[temp.GetRS()].Init(this, temp.GetRS_DESC(), temp.GetVP_DESC());
-		m_RSAlias["Default"] = temp.GetRS();
+		Learn(temp);
+		m_ActiveDrawCall->bs = temp.GetBS();
+		m_ActiveDrawCall->rs = temp.GetRS();
+		m_ActiveDrawCall->dss = temp.GetDSS();
 
 		/*
 		// Rasterizer States
@@ -665,6 +664,15 @@ namespace Duat::Graphics {
 					delete pDC;
 					break;
 				}
+				case RequestType::RemoveDrawCall:
+				{
+					for (auto& dc : m_drawCalls)
+						dc.second.erase(*req.pData);
+					for (auto& dc : m_transparentDrawCalls)
+						dc.second.erase(*req.pData);
+					delete req.pData;
+					break;
+				}
 				}
 			}
 
@@ -683,7 +691,6 @@ namespace Duat::Graphics {
 
 	void System::DrawShadows()
 	{
-		return;
 		for (auto& light : m_Lights)
 		{
 			m_Context->ClearDepthStencilView(light.second->GetShadowmap().GetDepth().GetDSV(),
@@ -691,7 +698,8 @@ namespace Duat::Graphics {
 		}
 
 		SetVS("Shadow");
-		SetPS("Default");
+		UnbindPS();
+		UnbindSRV(DEFAULT_BUFFER_SLOT_OFFSET + 2);
 
 		SetDSS("Default");
 		for (auto& pass : m_drawCalls)
@@ -735,15 +743,14 @@ namespace Duat::Graphics {
 		}
 
 		m_Context->OMSetRenderTargets(0, nullptr, nullptr);
-		m_Context->VSSetShaderResources(2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
-		m_Context->PSSetShaderResources(2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
+		m_Context->VSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
+		m_Context->PSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
 	}
 
 	void System::DrawSolid()
 	{
 		for (auto& rt : m_RT) m_Context.ClearRT(rt.second);
 
-		SetSS("Default");
 		for (auto& pass : m_drawCalls)
 		{
 			if (pass.second.size() != 0)
@@ -766,13 +773,19 @@ namespace Duat::Graphics {
 					m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
 					m_Context->PSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
 
-					for (int i = 0; i < m_ActiveDrawCall->sbArray.size(); ++i)
-					{
-						m_ActiveDrawCall->sbArray[i].Update();
-						m_Context->VSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
-						m_Context->PSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
-					}
+					SetSRV(m_ActiveDrawCall->sbArray, DEFAULT_RESOURCE_SLOT_OFFSET + 3);
 
+					for (int i = 0; i < m_ActiveDrawCall->samplers.size(); ++i)
+					{
+						m_Context->PSSetSamplers(i, 1,
+							m_SS.at(m_ActiveDrawCall->samplers[i]).GetAddressOf());
+					}
+					for (int i = 0; i < std::min<size_t>(m_ActiveDrawCall->textures.size(), 10); ++i)
+					{
+						m_Context->PSSetShaderResources(i, 1, 
+							m_textures.at(m_ActiveDrawCall->textures[i]).GetSRVAddressOf());
+					}
+					
 					static UINT offset = 0;
 					m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
 					m_Context->IASetIndexBuffer(settings.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -806,11 +819,17 @@ namespace Duat::Graphics {
 					m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
 					m_Context->PSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
 
-					for (int i = 0; i < m_ActiveDrawCall->sbArray.size(); ++i)
+					SetSRV(m_ActiveDrawCall->sbArray, DEFAULT_RESOURCE_SLOT_OFFSET + 3);
+
+					for (int i = 0; i < m_ActiveDrawCall->samplers.size(); ++i)
 					{
-						m_ActiveDrawCall->sbArray[i].Update();
-						m_Context->VSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
-						m_Context->PSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
+						m_Context->PSSetSamplers(i, 1,
+							m_SS.at(m_ActiveDrawCall->samplers[i]).GetAddressOf());
+					}
+					for (int i = 0; i < std::min<size_t>(m_ActiveDrawCall->textures.size(), 10); ++i)
+					{
+						m_Context->PSSetShaderResources(i, 1,
+							m_textures.at(m_ActiveDrawCall->textures[i]).GetSRVAddressOf());
 					}
 
 					static UINT offset = 0;
@@ -824,6 +843,16 @@ namespace Duat::Graphics {
 
 	void System::DrawGizmos()
 	{
+	}
+
+	void System::Learn(const GraphicsObject& object)
+	{
+		if (m_BS.find(object.GetBS()) == m_BS.end())
+			m_BS[object.GetBS()].Init(this, object.GetBS_DESC());
+		if (m_DSS.find(object.GetDSS()) == m_DSS.end())
+			m_DSS[object.GetDSS()].Init(this, object.GetDSS_DESC());
+		if (m_RS.find(object.GetRS()) == m_RS.end())
+			m_RS[object.GetRS()].Init(this, object.GetRS_DESC(), object.GetVP_DESC());
 	}
 
 	void System::SetRT(const std::string& name)
@@ -943,6 +972,39 @@ namespace Duat::Graphics {
 	void System::SetSS(const std::string& name)
 	{
 
+	}
+
+	void System::SetSRV(std::vector<StructuredBuffer>& resources, size_t offset)
+	{
+		for (int i = 0; i < resources.size(); ++i)
+		{
+			m_ActiveDrawCall->sbArray[i].Update();
+			m_Context->VSSetShaderResources(offset + i, 1, resources[i].GetSRVAddressOf());
+			m_Context->PSSetShaderResources(offset + i, 1, resources[i].GetSRVAddressOf());
+		}
+	}
+
+	void System::UnbindRT()
+	{
+		static ID3D11RenderTargetView* nullRTV = nullptr;
+		m_Context->OMSetRenderTargets(0, &nullRTV, nullptr);
+	}
+
+	void System::UnbindVS()
+	{
+		m_Context->VSSetShader(nullptr, 0, 0);
+	}
+
+	void System::UnbindPS()
+	{
+		m_Context->PSSetShader(nullptr, 0, 0);
+	}
+
+	void System::UnbindSRV(size_t slot)
+	{
+		static ID3D11ShaderResourceView* nullSRV = nullptr;
+		m_Context->VSSetShaderResources(slot, 1, &nullSRV);
+		m_Context->PSSetShaderResources(slot, 1, &nullSRV);
 	}
 
 	std::string System::DrawCall::GetKey()

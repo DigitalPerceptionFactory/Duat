@@ -36,23 +36,23 @@ struct Input
 
 struct Output
 {
-    float4 position : SV_POSITION;
+    float4 screen : SV_POSITION;
+    float4 position : POSITION;
     float4 uv : TEXCOORD;
     float4 color : COLOR;
     float4 normal : NORMAL;
     float4 shadow : SHADOW;
-    float4 eye : EYE;
 };
 #endif
 
 #ifdef PIXEL_SHADER
 struct Input
 {
-    float4 position : SV_POSITION;
+    float4 screen : SV_POSITION;
+    float4 position : POSITION;
     float4 uv : TEXCOORD;
     float4 color : COLOR;
     float4 normal : NORMAL;
     float4 shadow : SHADOW;
-    float4 eye : EYE;
 };
 #endif

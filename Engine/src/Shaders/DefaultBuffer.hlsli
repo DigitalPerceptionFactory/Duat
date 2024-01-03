@@ -9,7 +9,7 @@ cbuffer DrawCallBuffer : register(b0)
     int      m_cameraIndex;
 };
 
-StructuredBuffer<Camera> m_cameras : register(t0);
-StructuredBuffer<Light> m_lights : register(t1);
-Texture2DArray<float> m_shadowMaps : register(t2);
-StructuredBuffer<InstanceData> m_instanceData : register(t3);
+StructuredBuffer<Camera> m_cameras : register(t10);
+StructuredBuffer<Light> m_lights : register(t11);
+Texture2DArray<float> m_shadowMaps : register(t12);
+StructuredBuffer<InstanceData> m_instanceData : register(t13);

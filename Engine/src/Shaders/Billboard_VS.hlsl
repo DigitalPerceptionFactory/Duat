@@ -12,11 +12,11 @@ Output main(Input i, uint id : SV_InstanceID)
 
     Output o;
     i.position = mul(i.position, m_cameras[m_cameraIndex].rotationMatrix);
-    o.position = mul(i.position, mvp);
+    o.screen = mul(i.position, mvp);
+    o.position = mul(float4(0, 0, 0, 1), m_cameras[m_cameraIndex].translationMatrix);
+    o.uv = i.uv;
     o.color = i.color;
     o.normal = ComputeNormal(i.normal, mul(m,v), !m_isClockwise);
-    o.uv = i.uv;
-    o.eye = mul(float4(0, 0, 0, 1), m_cameras[m_cameraIndex].translationMatrix);
     return o;
 }
 #undef VERTEX_SHADER

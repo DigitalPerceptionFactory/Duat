@@ -11,15 +11,15 @@ namespace Duat::Graphics {
 		Set(Preset::Default);
 	}
 
-	void GraphicsObject::Set(Preset preset)
+	void GraphicsObject::Set(Preset preset, int index)
 	{
 		switch (preset)
 		{
 		case Preset::Default:
-			Set(Preset::DefaultBS);
-			Set(Preset::DefaultDSS);
-			Set(Preset::DefaultRS);
-			Set(Preset::DefaultVP);
+			Set(Preset::DefaultBS, index);
+			Set(Preset::DefaultDSS, index);
+			Set(Preset::DefaultRS, index);
+			Set(Preset::DefaultVP, index);
 			SetTopology(Topology::TriangleList);
 			SetVS("Default");
 			SetPS("Default");
@@ -45,12 +45,12 @@ namespace Duat::Graphics {
 			SetRS_ScissorEnabled(false);
 			break;
 		case Preset::DefaultVP:
-			SetVP_Width(GetSystemMetrics(SM_CXSCREEN));
-			SetVP_Height(GetSystemMetrics(SM_CYSCREEN));
-			SetVP_TopLeftX(0);
-			SetVP_TopLeftY(0);
-			SetVP_MinDepth(0.0f);
-			SetVP_MaxDepth(1.0f);
+			SetVP_Width(GetSystemMetrics(SM_CXSCREEN), index);
+			SetVP_Height(GetSystemMetrics(SM_CYSCREEN), index);
+			SetVP_TopLeftX(0, index);
+			SetVP_TopLeftY(0, index);
+			SetVP_MinDepth(0.0f, index);
+			SetVP_MaxDepth(1.0f, index);
 			break;
 		case Preset::Transparent:
 			SetBS_BlendEnabled(true);
@@ -62,7 +62,22 @@ namespace Duat::Graphics {
 			SetBS_AlphaBlendOp(BlendOp::Add);
 			SetBS_Mask(ColorWriteMask::EnableAll);
 			break;
+		case Preset::Skybox:
+			SetVS("Skybox");
+			SetPS("Skybox");
+			SetTopology(Topology::TriangleList);
+			Set(Preset::DefaultRS);
+			SetRS_CullMode(Cull::None);
+			Set(Preset::DefaultVP, index);
+			Set(Preset::Transparent);
+			Set(Preset::DefaultDSS);
+			//SetDSS_DepthComparison(Comparison::Less);
+			
+			SetSS_Comparison(Comparison::GreaterEqual);
+			
+			break;
 		}
+
 	}
 
 	std::string GraphicsObject::GetPS() const
@@ -95,6 +110,33 @@ namespace Duat::Graphics {
 		m_Camera = cam;
 	}
 
+	std::string GraphicsObject::GetTexture(int textureIndex) const
+	{
+		return m_Textures.at(textureIndex);
+	}
+
+	std::vector<std::string> GraphicsObject::GetTextures() const
+	{
+		std::vector<std::string> out;
+		std::vector<std::pair<int, std::string>> sortedOut;
+
+		for (auto& tex : m_Textures) sortedOut.push_back(tex);
+
+		std::sort(sortedOut.begin(), sortedOut.end(),
+			[](const auto& a, const auto& b) {
+				return a.first < b.first;
+			});
+
+		for (auto& o : sortedOut) out.push_back(o.second);
+
+		return out;
+	}
+
+	void GraphicsObject::SetTexture(const std::string& name, int textureIndex)
+	{
+		m_Textures[textureIndex] = name;
+	}
+
 	Topology GraphicsObject::GetTopology() const
 	{
 		return m_TP;
@@ -107,8 +149,7 @@ namespace Duat::Graphics {
 
 	std::string GraphicsObject::GetBS() const
 	{
-		char* ptr = (char*)&m_BS;
-		return std::string(ptr, sizeof(m_BS));
+		return Serialize(m_BS);
 	}
 
 	D3D11_RENDER_TARGET_BLEND_DESC GraphicsObject::GetBS_DESC() const
@@ -198,8 +239,7 @@ namespace Duat::Graphics {
 
 	std::string GraphicsObject::GetDSS() const
 	{
-		char* ptr = (char*)&m_DSS;
-		return std::string(ptr, sizeof(m_DSS));
+		return Serialize(m_DSS);
 	}
 
 	D3D11_DEPTH_STENCIL_DESC GraphicsObject::GetDSS_DESC() const
@@ -349,9 +389,12 @@ namespace Duat::Graphics {
 
 	std::string GraphicsObject::GetRS() const
 	{
-		char* ptr = (char*)&m_RS;
-		auto vps = GetVP_DESC();
-		return std::string(ptr, sizeof(m_RS)) + std::string((char*)vps.data(), vps.size());
+		std::string out = Serialize(m_RS);
+
+		for (auto& vp : GetVP_DESC())
+			out += Serialize(vp);
+
+		return out;
 	}
 
 	D3D11_RASTERIZER_DESC GraphicsObject::GetRS_DESC() const
@@ -452,11 +495,22 @@ namespace Duat::Graphics {
 	std::vector<D3D11_VIEWPORT> GraphicsObject::GetVP_DESC() const
 	{
 		std::vector<D3D11_VIEWPORT> out;
+		
+		std::vector<std::pair<int,D3D11_VIEWPORT>> sortedOut;
 		for (auto& vp : m_VP)
 		{
 			if (vp.second.Width != 0 && vp.second.Height != 0)
-				out.push_back(vp.second);
+				sortedOut.push_back(vp);
 		}
+
+		std::sort(sortedOut.begin(), sortedOut.end(),
+			[](const auto& a, const auto& b) {
+				return a.first < b.first;
+			});
+
+		for (auto& o : sortedOut)
+			out.push_back(o.second);
+
 		return out;
 	}
 
@@ -518,6 +572,136 @@ namespace Duat::Graphics {
 	void GraphicsObject::SetVP_MaxDepth(float maxDepth, int viewportIndex)
 	{
 		m_VP[viewportIndex].MaxDepth = maxDepth;
+	}
+
+	std::vector<D3D11_SAMPLER_DESC> GraphicsObject::GetSS_DESC() const
+	{
+		std::vector<D3D11_SAMPLER_DESC> out;
+		std::vector<std::pair<int, D3D11_SAMPLER_DESC>> sortedOut;
+
+		for (auto& ss : m_SS) sortedOut.push_back(ss);
+
+		std::sort(sortedOut.begin(), sortedOut.end(),
+			[](const auto& a, const auto& b) {
+				return a.first < b.first;
+			});
+
+		for (auto& o : sortedOut) out.push_back(o.second);
+
+		return out;
+	}
+
+	Address GraphicsObject::GetSS_AddressU(int samplerIndex) const
+	{
+		return Address(m_SS.at(samplerIndex).AddressU);
+	}
+
+	Address GraphicsObject::GetSS_AddressV(int samplerIndex) const
+	{
+		return Address(m_SS.at(samplerIndex).AddressV);
+	}
+
+	Address GraphicsObject::GetSS_AddressW(int samplerIndex) const
+	{
+		return Address(m_SS.at(samplerIndex).AddressW);
+	}
+
+	Comparison GraphicsObject::GetSS_Comparison(int samplerIndex) const
+	{
+		return Comparison(m_SS.at(samplerIndex).ComparisonFunc);
+	}
+
+	FLOAT GraphicsObject::GetSS_MipLODBias(int samplerIndex) const
+	{
+		return m_SS.at(samplerIndex).MipLODBias;
+	}
+
+	FLOAT GraphicsObject::GetSS_MinLOD(int samplerIndex) const
+	{
+		return m_SS.at(samplerIndex).MinLOD;
+	}
+
+	FLOAT GraphicsObject::GetSS_MaxLOD(int samplerIndex) const
+	{
+		return m_SS.at(samplerIndex).MaxLOD;
+	}
+
+	D3D11_FILTER GraphicsObject::GetSS_Filter(int samplerIndex) const
+	{
+		return D3D11_FILTER(m_SS.at(samplerIndex).Filter);
+	}
+		
+	UINT GraphicsObject::GetSS_MaxAnisotropy(int samplerIndex) const
+	{
+		return m_SS.at(samplerIndex).MaxAnisotropy;
+	}
+
+	DirectX::XMFLOAT4 GraphicsObject::GetSS_BorderColor(int samplerIndex) const
+	{
+		DirectX::XMFLOAT4 out;
+		out.x = m_SS.at(samplerIndex).BorderColor[0];
+		out.y = m_SS.at(samplerIndex).BorderColor[1];
+		out.z = m_SS.at(samplerIndex).BorderColor[2];
+		out.w = m_SS.at(samplerIndex).BorderColor[3];
+		return out;
+	}
+
+	void GraphicsObject::SetSS_AddressU(Address u, int samplerIndex)
+	{
+		m_SS[samplerIndex].AddressU = D3D11_TEXTURE_ADDRESS_MODE(u);
+	}
+
+	void GraphicsObject::SetSS_AddressV(Address v, int samplerIndex)
+	{
+		m_SS[samplerIndex].AddressV = D3D11_TEXTURE_ADDRESS_MODE(v);
+	}
+
+	void GraphicsObject::SetSS_AddressW(Address w, int samplerIndex)
+	{
+		m_SS[samplerIndex].AddressW = D3D11_TEXTURE_ADDRESS_MODE(w);
+	}
+
+	void GraphicsObject::SetSS_Comparison(Comparison comp, int samplerIndex)
+	{
+		m_SS[samplerIndex].ComparisonFunc = D3D11_COMPARISON_FUNC(comp);
+	}
+
+	void GraphicsObject::SetSS_MipLODBias(FLOAT bias, int samplerIndex)
+	{
+		m_SS[samplerIndex].MipLODBias = bias;
+	}
+
+	void GraphicsObject::SetSS_MinLOD(FLOAT minLOD, int samplerIndex)
+	{
+		m_SS[samplerIndex].MinLOD = minLOD;
+	}
+
+	void GraphicsObject::SetSS_MaxLOD(FLOAT maxLOD, int samplerIndex)
+	{
+		m_SS[samplerIndex].MaxLOD = maxLOD;
+	}
+
+	void GraphicsObject::SetSS_Filter(D3D11_FILTER filter, int samplerIndex)
+	{
+		m_SS[samplerIndex].Filter = filter;
+	}
+
+	void GraphicsObject::SetSS_Filter(TextureFiltering filter, int samplerIndex)
+	{
+		m_SS[samplerIndex].Filter = filter.GetFilter();
+	}
+
+	void GraphicsObject::SetSS_MaxAnisotropy(UINT maxAnisotropy, int samplerIndex)
+	{
+		m_SS[samplerIndex].MaxAnisotropy = maxAnisotropy;
+	}
+
+	void GraphicsObject::SetSS_BorderColor(DirectX::XMFLOAT4 borderColor, int samplerIndex)
+	{
+		m_SS[samplerIndex].BorderColor[0] = borderColor.x;
+		m_SS[samplerIndex].BorderColor[1] = borderColor.y;
+		m_SS[samplerIndex].BorderColor[2] = borderColor.z;
+		m_SS[samplerIndex].BorderColor[3] = borderColor.w;
 	}
 
 }

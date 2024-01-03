@@ -6,9 +6,9 @@
 float4 main(Input i) : SV_TARGET
 {
 	float4 final;
-float x = i.uv.x - 0.5f;
-float y = i.uv.y - 0.5f;
-float r = sqrt(x * x + y * y);
+	float x = i.uv.x - 0.5f;
+	float y = i.uv.y - 0.5f;
+	float r = sqrt(x * x + y * y);
 
 	for (int j = 0; j < 50; ++j)
 	{
@@ -22,12 +22,11 @@ float r = sqrt(x * x + y * y);
 		else break;
 	}
 
-	float thickness = 0.03;
+	float thickness = 0.01;
 	if (i.uv.x < thickness || 1 - i.uv.x < thickness || i.uv.y < thickness || 1 - i.uv.y < thickness)
-		final = float4(1, 1, 1, 0.3);
+		final = float4(1, 1, 1, 1);
 	else final = float4(0, 0, 0, 0);
-
-	if (r < 0.45) return float4(final.rgb, 1 - 2 * r);
+		
 	return final;
 
 	int fraX = i.uv.x * 1000;

@@ -6,7 +6,9 @@
 #include "VertexShader.h"
 #include "PixelShader.h"
 #include "ComputeShader.h"
+#include "Texture.h"
 #include "Texture2D.h"
+#include "TextureCube.h"
 #include "BlendState.h"
 #include "SamplerState.h"
 #include "RasterizerState.h"
@@ -22,6 +24,9 @@
 #include "Light.h"
 #include "Object3D.h"
 
+#define DEFAULT_BUFFER_SLOT_OFFSET 10
+#define DEFAULT_RESOURCE_SLOT_OFFSET 10
+
 
 namespace Duat::Graphics {
 
@@ -29,7 +34,9 @@ namespace Duat::Graphics {
 		friend VertexShader;
 		friend PixelShader;
 		friend ComputeShader;
+		friend Texture;
 		friend Texture2D;
+		friend TextureCube;
 		friend VertexBuffer;
 		friend IndexBuffer;
 		friend ConstantBuffer;
@@ -66,6 +73,7 @@ namespace Duat::Graphics {
 		int GetActiveCameraIndex() const;
 		int GetLightCount() const;
 	private:
+		void InitCameras();
 		void InitShaders();
 		void InitTextures();
 		void InitStates();
@@ -78,6 +86,8 @@ namespace Duat::Graphics {
 		void DrawSolid();
 		void DrawTransparent();
 		void DrawGizmos();
+
+		void Learn(const GraphicsObject& obj);
 
 		struct DrawCall;
 		void SetRT(const std::string& name);
@@ -103,6 +113,12 @@ namespace Duat::Graphics {
 		void SetCB(const std::string& name);
 		void SetCB(const DrawCall& settings);
 		void SetSS(const std::string& name);
+		void SetSRV(std::vector<StructuredBuffer>& resources, size_t offset);
+
+		void UnbindRT();
+		void UnbindVS();
+		void UnbindPS();
+		void UnbindSRV(size_t slot);
 
 		Utility::Result   m_result;
 		Utility::HResult  m_hresult;
@@ -127,6 +143,8 @@ namespace Duat::Graphics {
 			Topology tp = Topology::TriangleList;
 			VertexBuffer vb;
 			IndexBuffer ib;
+			std::vector<std::string> textures;
+			std::vector<std::string> samplers;
 			std::vector<StructuredBuffer> sbArray;
 			size_t instances = 1;
 			size_t cameraIndex = -1;
@@ -134,7 +152,7 @@ namespace Duat::Graphics {
 		};
 
 		enum class RequestType {
-			AddCamera, AddLight, RemoveCamera, RemoveLight, AddDrawCall
+			AddCamera, AddLight, RemoveCamera, RemoveLight, AddDrawCall, RemoveDrawCall
 		};
 
 		struct Request {
@@ -147,19 +165,16 @@ namespace Duat::Graphics {
 		std::map<std::string, std::map<size_t, DrawCall>> m_drawCalls;
 		std::map<std::string, std::map<size_t, DrawCall>> m_transparentDrawCalls;
 		std::vector<Request> m_requests;
-		std::vector<RequestType> m_requestTypes;
+		//std::vector<RequestType> m_requestTypes;
 
 		std::unordered_map<std::string, VertexShader>         m_VS;
 		std::unordered_map<std::string, PixelShader>          m_PS;
 		std::unordered_map<std::string, ComputeShader>        m_CS;
-		std::unordered_map<std::string, Texture2D>            m_textures;
+		std::unordered_map<std::string, Texture>              m_textures;
 		std::unordered_map<std::string, BlendState>           m_BS;
-		std::unordered_map<std::string, std::string>          m_BSAlias;
 		std::unordered_map<std::string, RasterizerState>      m_RS;
-		std::unordered_map<std::string, std::string>          m_RSAlias;
 		std::unordered_map<std::string, SamplerState>         m_SS;
 		std::unordered_map<std::string, DepthStencilState>    m_DSS;
-		std::unordered_map<std::string, std::string>          m_DSSAlias;
 		std::unordered_map<std::string, RenderTarget>         m_RT;
 		std::unordered_map<std::string, ConstantBuffer>       m_CB;
 		std::unordered_map<std::string, StructuredBuffer>     m_SB;

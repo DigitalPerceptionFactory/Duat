@@ -13,20 +13,20 @@ Output main(Input i, uint id : SV_InstanceID)
 
     Output o;
     if (i.position.x == 0 && i.position.y == 0 && i.position.z == 0)
-        o.position = mul(i.position, mul(v, p));
+        o.screen = mul(i.position, mul(v, p));
     else if (i.position.y == 0) {
         i.position = float4(0, 0, 0, 1);
-        o.position = mul(i.position, m);
-        o.position.y = 0;
-        o.position = mul(o.position, mul(v, p));
+        o.screen = mul(i.position, m);
+        o.screen.y = 0;
+        o.screen = mul(o.screen, mul(v, p));
     }
     else {
         i.position = float4(0, 0, 0, 1);
-        o.position = mul(i.position, mvp);
+        o.screen = mul(i.position, mvp);
     }
 
-    o.color = i.color;
     o.uv = i.uv;
+    o.color = i.color;
     return o;
 }
 #undef VERTEX_SHADER

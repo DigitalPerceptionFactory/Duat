@@ -120,9 +120,9 @@ namespace Duat::Geometry {
 		DirectX::XMFLOAT3 GetScale(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
 		DirectX::XMMATRIX GetMatrix();
 		DirectX::XMMATRIX GetMatrix(DirectX::INT3 index);
-		Cube<float> GetExceed(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
-		Cube<float> GetExceed(DirectX::XMFLOAT3 point, SpaceContext setup = SpaceContext());
-		Cube<float> GetExceed(DirectX::XMFLOAT2 point, SpaceContext setup = SpaceContext());
+		Rect3D<float> GetExceed(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
+		Rect3D<float> GetExceed(DirectX::XMFLOAT3 point, SpaceContext setup = SpaceContext());
+		Rect3D<float> GetExceed(DirectX::XMFLOAT2 point, SpaceContext setup = SpaceContext());
 		DirectX::XMFLOAT3 GetOrigin(DirectX::INT3 index = -1);
 		DirectX::XMFLOAT3 GetOriginPosition(DirectX::INT3 index = -1, SpaceContext setup = SpaceContext());
 		bool Contains(DirectX::INT3 index, SpaceContext setup);

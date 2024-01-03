@@ -3,3 +3,4 @@
 #include "Classes/Ring.h"
 #include "Classes/Time.h"
 #include "Classes/RNG.h"
+#include "Classes/Serialization.h"

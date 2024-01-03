@@ -387,7 +387,7 @@ namespace Duat::Geometry {
 		return get_global_scale(index) / get_global_scale(setup.scaRef);
 	}
 
-	Cube<float> SmartMesh::GetExceed(DirectX::INT3 index, SpaceContext setup)
+	Rect3D<float> SmartMesh::GetExceed(DirectX::INT3 index, SpaceContext setup)
 	{
 		resolve_all(index, setup);
 
@@ -404,7 +404,7 @@ namespace Duat::Geometry {
 		XMFLOAT3 ref_shifted_positive = get_global_position(setup.posRef) + ref_boundary;
 		XMFLOAT3 ref_shifted_negative = get_global_position(setup.posRef) - ref_boundary;
 
-		Cube<float> result;
+		Rect3D<float> result;
 		result.top = shifted_positive.y - ref_shifted_positive.y;
 		result.right = shifted_positive.x - ref_shifted_positive.x;
 		result.back = shifted_positive.z - ref_shifted_positive.z;
@@ -447,7 +447,7 @@ namespace Duat::Geometry {
 		return result;
 	}
 
-	Cube<float> SmartMesh::GetExceed(DirectX::XMFLOAT3 point, SpaceContext setup)
+	Rect3D<float> SmartMesh::GetExceed(DirectX::XMFLOAT3 point, SpaceContext setup)
 	{
 		// to prevent negative setup values
 		resolve_reference(0, setup);
@@ -458,7 +458,7 @@ namespace Duat::Geometry {
 		XMFLOAT3 ref_shifted_positive = get_global_position(setup.posRef) + ref_boundary;
 		XMFLOAT3 ref_shifted_negative = get_global_position(setup.posRef) - ref_boundary;
 
-		Cube<float> result;
+		Rect3D<float> result;
 		result.top = shifted_positive.y - ref_shifted_positive.y;
 		result.right = shifted_positive.x - ref_shifted_positive.x;
 		result.back = shifted_positive.z - ref_shifted_positive.z;
@@ -501,7 +501,7 @@ namespace Duat::Geometry {
 		return result;
 	}
 
-	Cube<float> SmartMesh::GetExceed(DirectX::XMFLOAT2 point, SpaceContext setup)
+	Rect3D<float> SmartMesh::GetExceed(DirectX::XMFLOAT2 point, SpaceContext setup)
 	{
 		// to prevent negative setup values
 		resolve_reference(0, setup);
@@ -512,7 +512,7 @@ namespace Duat::Geometry {
 		XMFLOAT3 ref_shifted_positive = get_global_position(setup.posRef) + ref_boundary;
 		XMFLOAT3 ref_shifted_negative = get_global_position(setup.posRef) - ref_boundary;
 
-		Cube<float> result;
+		Rect3D<float> result;
 		result.top = shifted_positive.y - ref_shifted_positive.y;
 		result.right = shifted_positive.x - ref_shifted_positive.x;
 		result.back = 0.0f;
@@ -547,7 +547,7 @@ namespace Duat::Geometry {
 
 	bool SmartMesh::Contains(DirectX::INT3 index, SpaceContext setup)
 	{
-		Cube<float> exc = GetExceed(index, setup);
+		Rect3D<float> exc = GetExceed(index, setup);
 
 		if (
 			exc.left <= 0 && exc.right <= 0 &&
@@ -561,7 +561,7 @@ namespace Duat::Geometry {
 
 	bool SmartMesh::Contains(DirectX::XMFLOAT3 point, SpaceContext setup)
 	{
-		Cube<float> exc = GetExceed(point, setup);
+		Rect3D<float> exc = GetExceed(point, setup);
 
 		if (
 			exc.left <= 0 && exc.right <= 0 &&
@@ -575,7 +575,7 @@ namespace Duat::Geometry {
 
 	bool SmartMesh::Contains(DirectX::XMFLOAT2 point, SpaceContext setup)
 	{
-		Cube<float> exc = GetExceed(point, setup);
+		Rect3D<float> exc = GetExceed(point, setup);
 
 		if (
 			exc.left <= 0 && exc.right <= 0 &&
@@ -865,7 +865,7 @@ namespace Duat::Geometry {
 
 	DirectX::INT3 SmartMesh::Fit(DirectX::INT3 index)
 	{
-		Cube<float> exc = GetExceed(index);
+		Rect3D<float> exc = GetExceed(index);
 
 		auto& sekai_x = Get(index.x);
 		sekai_x.scale.x -= (exc.left + exc.right) / 2;

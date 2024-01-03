@@ -19,6 +19,7 @@ namespace Duat::Geometry {
 		SetVertexColor(1, 1, 1, 1);
 
 		m_indices = { 2, 0, 1, 2, 1, 3 };
+		UpdateNormals();
 	}
 
 }

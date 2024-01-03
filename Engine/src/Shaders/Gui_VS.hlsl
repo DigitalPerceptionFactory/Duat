@@ -12,10 +12,10 @@ StructuredBuffer<GUI_Buffer> gb : register(t0);
 Output main(Input i, uint id : SV_InstanceID)
 {
     Output o;
-    o.position = mul(gb[id].m, i.position);
+    o.screen = mul(gb[id].m, i.position);
     //o.position.x += gb[id].position.x - gb[id].position.z;
     //o.position.y += gb[id].position.y - gb[id].position.w;
-    o.position.w = 1;
+    o.screen.w = 1;
     o.uv = i.uv;
     o.color = i.color;
     o.normal = i.normal;

@@ -11,9 +11,53 @@ namespace Duat::Geometry {
 
 	}
 
-	//Cube::Cube()
-	//{
-	//}
+	Cube::Cube()
+	{
+		m_vertices.resize(8);
+
+		m_vertices[0].position = { -1, 1, -1, };
+		m_vertices[1].position = { 1, 1, -1, };
+		m_vertices[2].position = { -1, -1, -1, };
+		m_vertices[3].position = { 1, -1, -1, };
+		m_vertices[4].position = { -1, 1, 1, };
+		m_vertices[5].position = { 1, 1, 1, };
+		m_vertices[6].position = { -1, -1, 1, };
+		m_vertices[7].position = { 1, -1, 1, };
+
+		// unit cube
+		for (auto& vtx : m_vertices)
+		{
+			vtx.position.x *= 0.5f;
+			vtx.position.y *= 0.5f;
+			vtx.position.z *= 0.5f;
+		}
+
+		m_vertices[0].texCoord = { 0, 1 };
+		m_vertices[1].texCoord = { 1, 1 };
+		m_vertices[2].texCoord = { 0, 0 };
+		m_vertices[3].texCoord = { 1, 0 };
+		m_vertices[4].texCoord = { 0, 1 };
+		m_vertices[5].texCoord = { 1, 1 };
+		m_vertices[6].texCoord = { 0, 0 };
+		m_vertices[7].texCoord = { 1, 0 };
+
+		m_indices = {
+			4,5,6,
+			6,5,7,
+			7,5,1,
+			7,1,3,
+			3,1,0,
+			3,0,2,
+			2,0,4,
+			2,4,6,
+			4,0,1,
+			4,1,5,
+			2,6,7,
+			2,7,3
+		};
+
+		UpdateNormals();
+	}
 
 	Octahedron::Octahedron()
 	{

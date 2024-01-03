@@ -1,21 +1,23 @@
 #pragma once
 #include <unordered_map>
 #include <string>
+#include <algorithm>
 #include <Geometry/Mesh.h>
 #include <Utility/DirectX/EnumWrappers.h>
+#include <Utility/Classes/Serialization.h>
 
 
 namespace Duat::Graphics {
 
 	enum class Preset {
 		Default, DefaultBS, DefaultDSS, DefaultRS, DefaultVP,
-		Transparent
+		Transparent, Skybox
 	};
 
 	struct GraphicsObject {
 		GraphicsObject();
 
-		void Set(Preset preset);
+		void Set(Preset preset, int index = 0);
 
 		// Shader getters
 		std::string GetPS() const;
@@ -28,6 +30,12 @@ namespace Duat::Graphics {
 		std::string GetCamera() const;
 		// Camera setters
 		void SetCamera(const std::string& cam);
+
+		// Texture getters
+		std::string GetTexture(int textureIndex = 0) const;
+		std::vector<std::string> GetTextures() const;
+		// Texture setters
+		void SetTexture(const std::string&  name, int textureIndex = 0);
 
 		// Topology getters
 		Topology GetTopology() const;
@@ -127,15 +135,43 @@ namespace Duat::Graphics {
 		void SetVP_MinDepth(float minDepth, int viewportIndex = 0);
 		void SetVP_MaxDepth(float maxDepth, int viewportIndex = 0);
 
+		// Sampler State getters
+		std::vector<D3D11_SAMPLER_DESC> GetSS_DESC() const;
+		Address GetSS_AddressU(int samplerIndex = 0) const;
+		Address GetSS_AddressV(int samplerIndex = 0) const;
+		Address GetSS_AddressW(int samplerIndex = 0) const;
+		Comparison GetSS_Comparison(int samplerIndex = 0) const;
+		FLOAT GetSS_MipLODBias(int samplerIndex = 0) const;
+		FLOAT GetSS_MinLOD(int samplerIndex = 0) const;
+		FLOAT GetSS_MaxLOD(int samplerIndex = 0) const;
+		D3D11_FILTER GetSS_Filter(int samplerIndex = 0) const;
+		//TextureFiltering GetSS_TextureFiltering(int samplerIndex = 0) const;
+		UINT GetSS_MaxAnisotropy(int samplerIndex = 0) const;
+		DirectX::XMFLOAT4 GetSS_BorderColor(int samplerIndex  = 0) const;
+		// Sampler State setters
+		void SetSS_AddressU(Address u, int samplerIndex = 0);
+		void SetSS_AddressV(Address v, int samplerIndex = 0);
+		void SetSS_AddressW(Address w, int samplerIndex = 0);
+		void SetSS_Comparison(Comparison comp, int samplerIndex = 0);
+		void SetSS_MipLODBias(FLOAT bias, int samplerIndex = 0);
+		void SetSS_MinLOD(FLOAT minLOD, int samplerIndex = 0);
+		void SetSS_MaxLOD(FLOAT maxLOD, int samplerIndex = 0);
+		void SetSS_Filter(D3D11_FILTER filter, int samplerIndex = 0);
+		void SetSS_Filter(TextureFiltering filter, int samplerIndex = 0);
+		void SetSS_MaxAnisotropy(UINT maxAnisotropy, int samplerIndex = 0);
+		void SetSS_BorderColor(DirectX::XMFLOAT4 borderColor, int samplerIndex = 0);
+
 	private:
 		std::string m_PS;
 		std::string m_VS;
 		std::string m_Camera;
+		std::unordered_map<int, std::string> m_Textures;
 		Topology m_TP;
 		D3D11_RENDER_TARGET_BLEND_DESC m_BS;
 		D3D11_DEPTH_STENCIL_DESC m_DSS; 
 		D3D11_RASTERIZER_DESC m_RS;
 		std::unordered_map<int, D3D11_VIEWPORT> m_VP;
+		std::unordered_map<int, D3D11_SAMPLER_DESC> m_SS;
 	};
 
 }

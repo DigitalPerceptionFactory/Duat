@@ -124,6 +124,12 @@
     <Filter Include="SSB\h">
       <UniqueIdentifier>{26a060f0-f2de-4df4-ab57-e36e60fb84ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\hlsli">
+      <UniqueIdentifier>{e48ca5f6-d08f-4b67-a648-5456b74399d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\hlsl">
+      <UniqueIdentifier>{fbb6cd67-96ca-4722-b580-16e6d73a44a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\BlendState.h">
@@ -366,6 +372,15 @@
     <ClInclude Include="src\Geometry\Quad.h">
       <Filter>Geometry\h</Filter>
     </ClInclude>
+    <ClInclude Include="src\Graphics\TextureCube.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utility\Classes\Serialization.h">
+      <Filter>Utility\Classes\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Texture.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graphics\VertexShader.cpp">
@@ -558,69 +573,81 @@
     <ClCompile Include="src\Graphics\GraphicsObject.cpp">
       <Filter>Graphics\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="src\Graphics\TextureCube.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Texture.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\DefaultBuffer.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="src\Shaders\BasicFunctions.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsli</Filter>
     </None>
     <None Include="src\Shaders\BasicStructs.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsli</Filter>
+    </None>
+    <None Include="src\Shaders\DefaultBuffer.hlsli">
+      <Filter>Shaders\hlsli</Filter>
     </None>
     <None Include="src\Shaders\PerlinNoise.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsli</Filter>
     </None>
     <None Include="src\Shaders\MathConstants.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsli</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="src\Shaders\Circle_PS.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="src\Shaders\Texture_PS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
     </FxCompile>
-    <FxCompile Include="src\Shaders\Default_CS.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="src\Shaders\Skybox_VS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
     </FxCompile>
-    <FxCompile Include="src\Shaders\Default_PS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\Default_VS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\Gui_PS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\Gui_VS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\Null_PS.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="src\Shaders\Skybox_PS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
     </FxCompile>
     <FxCompile Include="src\Shaders\Shadow_VS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\Texture_PS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\Null_VS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\Billboard_VS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="src\Shaders\LightGizmo_PS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsl</Filter>
     </FxCompile>
     <FxCompile Include="src\Shaders\ProjectionGizmo_VS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsl</Filter>
     </FxCompile>
     <FxCompile Include="src\Shaders\ProjectionGizmo_PS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Null_VS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Null_PS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\LightGizmo_PS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Gui_VS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Gui_PS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
     </FxCompile>
     <FxCompile Include="src\Shaders\GridGizmo_PS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Default_VS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Default_PS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Default_CS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Circle_PS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
+    </FxCompile>
+    <FxCompile Include="src\Shaders\Billboard_VS.hlsl">
+      <Filter>Shaders\hlsl</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

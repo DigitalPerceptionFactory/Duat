@@ -15,7 +15,7 @@ namespace Duat::Geometry {
 	};
 
 	template<typename T>
-	struct Cube {
+	struct Rect3D {
 		T left, right, top, bottom, front, back;
 	};
 
