@@ -1,5 +1,5 @@
 #define PIXEL_SHADER
-#include "DefaultBuffer.hlsli"
+#include "DefaultRegisters.hlsli"
 #include "BasicFunctions.hlsli"
 
 

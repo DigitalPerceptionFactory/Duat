@@ -16,6 +16,7 @@ namespace Duat::Graphics {
 
 	struct GraphicsObject {
 		GraphicsObject();
+		GraphicsObject(Preset preset, int index = 0);
 
 		void Set(Preset preset, int index = 0);
 

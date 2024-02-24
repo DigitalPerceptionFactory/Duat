@@ -9,6 +9,7 @@ namespace Duat::Graphics {
 
 	struct System;
 	struct RasterizerState : public Microsoft::WRL::ComPtr<ID3D11RasterizerState> {
+		RasterizerState();
 		HRESULT Init(System& gfx, D3D11_RASTERIZER_DESC rsDesc, std::vector< D3D11_VIEWPORT> vpDesc);
 		HRESULT Init(System* pGFX, D3D11_RASTERIZER_DESC rsDesc, std::vector< D3D11_VIEWPORT> vpDesc);
 		HRESULT Init(System& gfx, bool isClockwise, Fill fill, Cull cull, float width, float height,
@@ -43,6 +44,12 @@ namespace Duat::Graphics {
 		void SetNDCPosition(DirectX::XMFLOAT2 ndcPosition, int viewportIndex = 0);
 		void SetWidth(float width, int viewportIndex = 0);
 		void SetHeight(float height, int viewportIndex = 0);
+		void SetDepthBias(int bias);
+		void SetDepthBiasClamp(float depthClamp);
+		void SetSlopeScaledDepthBias(float slope);
+		void SetScissorEnable(bool flag);
+		void SetAntialiasedLineEnable(bool flag);
+		void SetDepthClipEnable(bool flag);
 	private:
 		void UpdateViewports();
 

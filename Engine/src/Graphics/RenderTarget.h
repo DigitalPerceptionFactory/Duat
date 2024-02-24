@@ -10,12 +10,12 @@ namespace Duat::Graphics {
 		friend System;
 		friend Camera;
 
-		void Init(System& gfx, const std::filesystem::path& path);
+		/*void Init(System& gfx, const std::filesystem::path& path);
 		void Init(System* pGFX, const std::filesystem::path& path);
 		void Init(System& gfx, ID3D11Texture2D* pTex2D);
 		void Init(System* pGFX, ID3D11Texture2D* pTex2D);
-		void Init(System& gfx, size_t width, size_t height, DXGI_FORMAT pixelFormat, DXGI_FORMAT depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
-		void Init(System* pGFX, size_t width, size_t height, DXGI_FORMAT pixelFormat, DXGI_FORMAT depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
+		//  void Init(System& gfx, size_t width, size_t height, DXGI_FORMAT pixelFormat, DXGI_FORMAT depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
+		//  void Init(System* pGFX, size_t width, size_t height, DXGI_FORMAT pixelFormat, DXGI_FORMAT depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
 		void Init(System& gfx, D3D11_TEXTURE2D_DESC targetDesc);
 		void Init(System* pGFX, D3D11_TEXTURE2D_DESC targetDesc);
 		void Init(const Texture2D& rt, const Texture2D& depth);
@@ -46,10 +46,10 @@ namespace Duat::Graphics {
 
 		UINT GetWidth() const;
 		UINT GetHeight() const;
-		Texture2D& GetTarget();
-		Texture2D& GetDepth();
+		Texture& GetTarget();
+		Texture& GetDepth();
 			
-	private:
+	private:*/
 		Texture2D m_targetTexture;
 		Texture2D m_depthTexture;
 		std::vector<Camera*> m_cameras;

@@ -33,9 +33,9 @@ namespace Duat
 		skybox.SetTexture("skybox");
 		skybox.DrawCallEnabled(1);
 
-		static Graphics::Light light(&m_gfx);
-		light.Init(m_gfx, 90);
-		light.SetPosition(-3, 1, 2);
+		static Graphics::PointLight light(m_gfx);
+		//light.SetPosition(-3, 1, 2);
+		light.SetPosition(0, 0, -5);
 		light.SetScale(0.25, 0.25, 0.25);
 		light.SetIntensity(0.5);
 		m_gfx.AddLight("Sun", &light);
@@ -76,7 +76,7 @@ namespace Duat
 		static Geometry::Grid g(&m_gfx, 10,10);
 		//g.ps = "Texture";
 		g.SetRS_MultisampleEnabled(1);
-		g.DrawCallEnabled(true);
+		//g.DrawCallEnabled(true);
 
 		static Graphics::Object3D model(m_gfx, finalMesh, Graphics::GraphicsObject());
 		model.SetRS_CullMode(Cull::None);

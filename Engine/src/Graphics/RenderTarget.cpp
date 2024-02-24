@@ -3,7 +3,7 @@
 
 
 namespace Duat::Graphics {
-	
+/*
 	void RenderTarget::Init(System& gfx, const std::filesystem::path& path)
 	{
 		Init(&gfx, path);
@@ -11,7 +11,7 @@ namespace Duat::Graphics {
 
 	void RenderTarget::Init(System* pGFX, const std::filesystem::path& path)
 	{
-		m_targetTexture.Init(pGFX, path);
+		m_targetTexture.Load(pGFX, path);
 		m_targetTexture.SetBindFlags(D3D11_BIND_RENDER_TARGET);
 		
 		D3D11_TEXTURE2D_DESC depth_desc;
@@ -24,7 +24,8 @@ namespace Duat::Graphics {
 		depth_desc.MipLevels = 1;
 		depth_desc.Width = m_targetTexture.GetWidth();
 		depth_desc.Height = m_targetTexture.GetHeight();
-		m_depthTexture.Init(pGFX, depth_desc);
+		m_depthTexture.SetDesc(depth_desc);
+		m_depthTexture.Update(pGFX);
 	}
 
 	void RenderTarget::Init(System& gfx, ID3D11Texture2D* pTex2D)
@@ -34,7 +35,11 @@ namespace Duat::Graphics {
 
 	void RenderTarget::Init(System* pGFX, ID3D11Texture2D* pTex2D)
 	{
-		m_targetTexture.Init(pGFX, pTex2D);
+		D3D11_TEXTURE2D_DESC desc;
+		pTex2D->GetDesc(&desc);
+		m_targetTexture.SetDesc(desc);
+		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		m_targetTexture.Update(pGFX);
 		
 		D3D11_TEXTURE2D_DESC depth_desc;
 		ZeroMemory(&depth_desc, sizeof(depth_desc));
@@ -49,7 +54,8 @@ namespace Duat::Graphics {
 		depth_desc.ArraySize = 1;
 		depth_desc.Width = m_targetTexture.GetWidth();
 		depth_desc.Height = m_targetTexture.GetHeight();
-		m_depthTexture.Init(pGFX, depth_desc);
+		m_depthTexture.SetDesc(depth_desc);
+		m_depthTexture.Update(pGFX);
 	}
 
 	void RenderTarget::Init(System& gfx, size_t width, size_t height, DXGI_FORMAT pixelFormat, DXGI_FORMAT depthFormat)
@@ -72,7 +78,8 @@ namespace Duat::Graphics {
 		desc.MiscFlags = 0;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-		m_targetTexture.Init(pGFX, desc);
+		m_targetTexture.SetDesc(desc);
+		m_targetTexture.Update(pGFX);
 
 		ZeroMemory(&desc, sizeof(desc));
 		desc.Format = depthFormat;
@@ -97,7 +104,8 @@ namespace Duat::Graphics {
 	void RenderTarget::Init(System* pGFX, D3D11_TEXTURE2D_DESC targetDesc)
 	{
 		targetDesc.BindFlags = D3D11_BIND_RENDER_TARGET;
-		m_targetTexture.Init(pGFX, targetDesc);
+		m_targetTexture.SetDesc(targetDesc);
+		m_targetTexture.Update(pGFX);
 
 		D3D11_TEXTURE2D_DESC depth_desc;
 		ZeroMemory(&depth_desc, sizeof(depth_desc));
@@ -112,13 +120,14 @@ namespace Duat::Graphics {
 		depth_desc.ArraySize = 1;
 		depth_desc.Width = m_targetTexture.GetWidth();
 		depth_desc.Height = m_targetTexture.GetHeight();
-		m_depthTexture.Init(pGFX, depth_desc);
+		m_depthTexture.SetDesc(depth_desc);
+		m_depthTexture.Update(pGFX);
 	}
 
 	void RenderTarget::Init(const Texture2D& rt, const Texture2D& depth)
 	{
-		m_targetTexture = rt;
-		m_depthTexture = depth;
+		// m_targetTexture = rt;
+		// m_depthTexture = depth;
 	}
 
 	void RenderTarget::SetTargetDesc(D3D11_TEXTURE2D_DESC desc)
@@ -241,14 +250,14 @@ namespace Duat::Graphics {
 		return m_targetTexture.GetHeight();
 	}
 
-	Texture2D& RenderTarget::GetTarget()
+	Texture& RenderTarget::GetTarget()
 	{
 		return m_targetTexture;
 	}
 
-	Texture2D& RenderTarget::GetDepth()
+	Texture& RenderTarget::GetDepth()
 	{
 		return m_depthTexture;
 	}
-
+	*/
 }

@@ -6,11 +6,11 @@ using namespace Duat::Utility;
 
 namespace Duat::Graphics {
 
-	void System::Init(HWND handle, UINT msaaCount, UINT msaaQuality)
+	void System::Init(HWND handle, UINT msaaCount, UINT msaaQuality, DXGI_FORMAT format)
 	{
 		uniqueDrawCallIndex = 0;
 		m_window = handle;
-		m_format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		m_format = format;
 		m_MSAACount = msaaCount;
 		m_MSAAQuality = msaaQuality;
 
@@ -44,8 +44,13 @@ namespace Duat::Graphics {
 		InitRenderTargets();
 		InitBuffers();
 		InitCameras();
-		
-		m_Context.SetClearColor(0, 0, 0, 0);
+
+		m_PointShadowmap.SetFormat(DXGI_FORMAT_R32_TYPELESS);
+		m_PointShadowmap.SetSRVFormat(DXGI_FORMAT_R32_FLOAT);
+		m_PointShadowmap.SetDSVFormat(DXGI_FORMAT_D32_FLOAT);
+		m_PointShadowmap.SetBindFlags(D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL);
+		m_PointShadowmap.SetWidth(100);
+		m_PointShadowmap.ForceResize(this, 10);
 	}
 
 	void System::Update()
@@ -68,7 +73,7 @@ namespace Duat::Graphics {
 		DrawTransparent();
 
 		m_Context->ResolveSubresource(
-			m_Context.GetBackBuffer(), 0, m_RT["Default"].GetTarget().Get(), 0, m_format);
+			m_Context.GetBackBuffer(), 0, m_RT["Default"].m_targetTexture.Get(), 0, m_format);
 		m_Context.Present();
 	}
 
@@ -83,7 +88,12 @@ namespace Duat::Graphics {
 		m_MSAACount = count;
 		m_MSAAQuality = quality;
 	}
-		
+
+	DXGI_FORMAT System::GetFormat() const
+	{
+		return m_format;
+	}
+
 	size_t System::AddDrawCall(const Geometry::Mesh& mesh, const GraphicsObject& object)
 	{
 		return AddDrawCall(Object3D(this, mesh, object));
@@ -246,7 +256,7 @@ namespace Duat::Graphics {
 			return m_SB.at("Lights").GetRootElementCount();
 		return 0;
 	}
-		
+
 	void System::InitCameras()
 	{
 		static Camera defaultCamera;
@@ -309,7 +319,9 @@ namespace Duat::Graphics {
 				{
 					std::string name = entry.path().filename().string();
 					name = name.substr(0, name.length() - entry.path().extension().string().length());
-					m_textures[name].Init(this, entry.path(), TexType::Tex2D);
+
+					m_textures[name] = std::make_unique<Texture2D>();
+					m_textures[name]->Load(this, entry.path());
 				}
 			}
 
@@ -319,8 +331,13 @@ namespace Duat::Graphics {
 				{
 					std::string name = entry.path().filename().string();
 					name = name.substr(0, name.length() - entry.path().extension().string().length());
+
 					if (name[name.length() - 1] == '0')
-						m_textures[name.substr(0, name.length() - 1)].Init(this, entry.path(), TexType::Cube);
+					{
+						std::string unindexedName = name.substr(0, name.length() - 1);
+						m_textures[unindexedName] = std::make_unique<TextureCube>();
+						m_textures[unindexedName]->Load(this, entry.path());
+					}
 				}
 			}
 		}
@@ -341,20 +358,27 @@ namespace Duat::Graphics {
 				{
 					std::string name = entry.path().filename().string();
 					name = name.substr(0, name.length() - entry.path().extension().string().length());
-					m_textures[name].Init(this, entry.path(), TexType::Tex2D);
+
+					m_textures[name] = std::make_unique<Texture2D>();
+					m_textures[name]->Load(this, entry.path());
 				}
 			}
 
-			/*for (const auto& entry : std::filesystem::directory_iterator("Resources/" + texCubefolder))
+			for (const auto& entry : std::filesystem::directory_iterator("Resources/" + texCubefolder))
 			{
 				if (entry.is_regular_file())
 				{
 					std::string name = entry.path().filename().string();
 					name = name.substr(0, name.length() - entry.path().extension().string().length());
-					if(name[name.length() - 1] == '0')
-						m_textures[name].Init(this, entry.path(), TexType::Cube);
+
+					if (name[name.length() - 1] == '0')
+					{
+						std::string unindexedName = name.substr(0, name.length() - 1);
+						m_textures[unindexedName] = std::make_unique<TextureCube>();
+						m_textures[unindexedName]->Load(this, entry.path());
+					}
 				}
-			}*/
+			}
 		}
 	}
 
@@ -390,13 +414,21 @@ namespace Duat::Graphics {
 
 	void System::InitRenderTargets()
 	{
-		m_RT["Null"].Init(this, 1, 1, m_format);
-
 		D3D11_TEXTURE2D_DESC desc;
 		m_Context.GetBackBuffer()->GetDesc(&desc);
-		m_RT["Default"].Init(this, desc);
-		m_RT["Default"].SetTargetSample(m_MSAACount, m_MSAAQuality);
-		m_RT["Default"].SetDepthSample(m_MSAACount, m_MSAAQuality);
+
+		m_RT["Default"].m_targetTexture.SetDesc(desc);
+		m_RT["Default"].m_targetTexture.SetRTVFormat(m_format);
+		m_RT["Default"].m_targetTexture.SetBindFlags(D3D11_BIND_RENDER_TARGET);
+		m_RT["Default"].m_targetTexture.SetSample(m_MSAACount, m_MSAAQuality);
+		m_RT["Default"].m_targetTexture.Update(this);
+
+		m_RT["Default"].m_depthTexture.SetDesc(desc);
+		m_RT["Default"].m_depthTexture.SetFormat(DXGI_FORMAT_D24_UNORM_S8_UINT);
+		m_RT["Default"].m_depthTexture.SetDSVFormat(DXGI_FORMAT_D24_UNORM_S8_UINT);
+		m_RT["Default"].m_depthTexture.SetBindFlags(D3D11_BIND_DEPTH_STENCIL);
+		m_RT["Default"].m_depthTexture.SetSample(m_MSAACount, m_MSAAQuality);
+		m_RT["Default"].m_depthTexture.Update(this);
 	}
 
 	void System::InitBuffers()
@@ -435,6 +467,7 @@ namespace Duat::Graphics {
 		layout["InstanceCount"] = fp_getInstanceCount;
 		layout["LightCount"] = fp_getLightCount;
 		layout["CameraIndex"] = fp_getCameraIndex;
+		layout["ShadowmapIndex"] = (int)0;
 		m_CB["DrawCallBuffer"].Init(this, layout, 1);
 	}
 
@@ -448,6 +481,12 @@ namespace Duat::Graphics {
 	{
 		if (m_requests.size() != 0)
 		{
+			//  int newLightSize = m_Lights.size();
+			//  for (auto& req : m_requests)
+			//  	if (req.type == RequestType::AddLight) newLightSize++;
+			//  	else if (req.type == RequestType::RemoveLight) newLightSize--;
+			//  if (newLightSize != m_Lights.size()) m_PointShadowmap.ForceResize(this, newLightSize);
+
 			// Buffers are immutable so we are taking their Layouts, edit them and recreate StructuredBuffers with them
 			HLSL::Layout cameras = m_SB["Cameras"].GetLayout();
 			HLSL::Layout lights = m_SB["Lights"].GetLayout();
@@ -505,7 +544,7 @@ namespace Duat::Graphics {
 							int* int_ptr = (int*)param.GetRoot();
 							return reinterpret_cast<Camera*>(int_ptr)->GetProjectionMatrix();
 						});
-					
+
 					// does it make sense ???
 					bool cameraExists = false;
 					for (auto& cam : m_Cameras)
@@ -546,15 +585,41 @@ namespace Duat::Graphics {
 							int* int_ptr = (int*)param.GetRoot();
 							return reinterpret_cast<Light*>(int_ptr)->GetColor();
 						});
-					HLSL::Function fp_getViewMatrix = HLSL::Function(input,
-						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
-							int* int_ptr = (int*)param.GetRoot();
-							return reinterpret_cast<Light*>(int_ptr)->GetViewMatrix();
-						});
 					HLSL::Function fp_getProjMatrix = HLSL::Function(input,
 						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
 							int* int_ptr = (int*)param.GetRoot();
 							return reinterpret_cast<Light*>(int_ptr)->GetProjectionMatrix();
+						});
+					// TEMPORARY SOLUTION VERY BAD REPLACE FAST OMG OMG
+					HLSL::Function fp_getViewMatrix0 = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<PointLight*>(int_ptr)->GetViewMatrix(0);
+						});
+					HLSL::Function fp_getViewMatrix1 = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<PointLight*>(int_ptr)->GetViewMatrix(1);
+						});
+					HLSL::Function fp_getViewMatrix2 = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<PointLight*>(int_ptr)->GetViewMatrix(2);
+						});
+					HLSL::Function fp_getViewMatrix3 = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<PointLight*>(int_ptr)->GetViewMatrix(3);
+						});
+					HLSL::Function fp_getViewMatrix4 = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<PointLight*>(int_ptr)->GetViewMatrix(4);
+						});
+					HLSL::Function fp_getViewMatrix5 = HLSL::Function(input,
+						[](HLSL::Buffer& param) -> HLSL::HLSLDataType {
+							int* int_ptr = (int*)param.GetRoot();
+							return reinterpret_cast<PointLight*>(int_ptr)->GetViewMatrix(5);
 						});
 
 					bool lightExists = false;
@@ -572,14 +637,19 @@ namespace Duat::Graphics {
 					lights[req.text]["Intensity"] = fp_getIntensity;
 					lights[req.text]["Rotation"] = fp_getRotation;
 					lights[req.text]["Color"] = fp_getColor;
-					lights[req.text]["ViewMatrix"] = fp_getViewMatrix;
 					lights[req.text]["ProjectionMatrix"] = fp_getProjMatrix;
+					lights[req.text]["ViewMatrix0"] = fp_getViewMatrix0;
+					lights[req.text]["ViewMatrix1"] = fp_getViewMatrix1;
+					lights[req.text]["ViewMatrix2"] = fp_getViewMatrix2;
+					lights[req.text]["ViewMatrix3"] = fp_getViewMatrix3;
+					lights[req.text]["ViewMatrix4"] = fp_getViewMatrix4;
+					lights[req.text]["ViewMatrix5"] = fp_getViewMatrix5;
 
-					D3D11_TEXTURE2D_DESC desc;
-					m_Lights[0].second->GetShadowmap().GetDepth().Get()->GetDesc(&desc);
+					/*D3D11_TEXTURE2D_DESC desc;
+					m_Lights[0].second->GetShadowmap().Get()->GetDesc(&desc);
 					desc.ArraySize = static_cast<UINT>(m_Lights.size());
 
-					m_shadowMap.Init(this, desc, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT);
+					m_shadowMap.Init(this, desc, DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_D32_FLOAT);*/
 					break;
 				}
 				case RequestType::RemoveCamera: {
@@ -691,34 +761,35 @@ namespace Duat::Graphics {
 
 	void System::DrawShadows()
 	{
-		for (auto& light : m_Lights)
-		{
-			m_Context->ClearDepthStencilView(light.second->GetShadowmap().GetDepth().GetDSV(),
-				D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		}
+		// for (auto& light : m_Lights)
+		// 	light.second->GetShadowmap()->ClearDSV(this, true, 1.0f, false);
+
+		m_PointShadowmap.ClearDSV(this, 3, true, 1.0f, false);
+
+		m_Context->VSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1,
+			m_PointShadowmap.GetSRVAddressOf());
+		m_Context->PSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1,
+			m_PointShadowmap.GetSRVAddressOf());
+		return;
 
 		SetVS("Shadow");
 		UnbindPS();
 		UnbindSRV(DEFAULT_BUFFER_SLOT_OFFSET + 2);
 
-		SetDSS("Default");
+		static GraphicsObject defOBJ(Preset::Default);
+		SetDSS(defOBJ.GetDSS());
 		for (auto& pass : m_drawCalls)
 		{
 			if (pass.second.size() != 0)
 			{
 				auto& settings = pass.second.begin()->second;
 				SetBS(settings);
-				SetRS(settings);
 				SetTP(settings);
 				for (auto& drawCall : pass.second)
 				{
 					m_ActiveDrawCall = &drawCall.second;
 
-					for (int i = 0; i < m_ActiveDrawCall->sbArray.size(); ++i)
-					{
-						m_ActiveDrawCall->sbArray[i].Update();
-						m_Context->VSSetShaderResources(m_SB.size() + 1 + i, 1, m_ActiveDrawCall->sbArray[i].GetSRVAddressOf());
-					}
+					SetSRV(m_ActiveDrawCall->sbArray, DEFAULT_RESOURCE_SLOT_OFFSET + 3);
 
 					static UINT offset = 0;
 					m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
@@ -726,15 +797,40 @@ namespace Duat::Graphics {
 
 					size_t restoreCameraIndex = m_ActiveDrawCall->cameraIndex;
 					m_ActiveDrawCall->cameraIndex = 0;
+					int lightIndex = 0;
 					for (auto& light : m_Lights)
 					{
 						m_CB["DrawCallBuffer"].Update();
-						m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+						m_Context->RSSetState(light.second->GetLightRS());
+						if (light.second->GetLightType() == Light::Type::Point)
+						{
+							PointLight* pointLight = (PointLight*)light.second;
 
-						m_Context->OMSetRenderTargets(1, light.second->GetShadowmap().GetTarget().GetRTVAddressOf(),
-							light.second->GetShadowmap().GetDepth().GetDSV());
-						m_Context->RSSetViewports(1, light.second->GetViewport());
-						m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
+							for (int i = 0; i < 6; ++i)
+							{
+								m_CB["DrawCallBuffer"]["ShadowmapIndex"] = i;
+								m_CB["DrawCallBuffer"].Update();
+								m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+
+								static ID3D11RenderTargetView* nullRTV = nullptr;
+								// m_Context->OMSetRenderTargets(1, &nullRTV, pointLight->GetShadowmap()->GetDSV(i));
+								m_Context->OMSetRenderTargets(1, &nullRTV,
+									m_PointShadowmap.GetDSV(lightIndex, i));
+								m_Context->RSSetViewports(1, light.second->GetViewport());
+								m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
+							}
+						}
+						else
+						{
+							m_CB["DrawCallBuffer"]["ShadowmapIndex"] = 0;
+							m_Context->VSSetConstantBuffers(0, 1, m_CB["DrawCallBuffer"].GetAddressOf());
+
+							static ID3D11RenderTargetView* nullRTV = nullptr;
+							m_Context->OMSetRenderTargets(1, &nullRTV, light.second->GetShadowmap()->GetDSV());
+							m_Context->RSSetViewports(1, light.second->GetViewport());
+							m_Context->DrawIndexedInstanced((UINT)settings.ib.GetIndexCount(), (UINT)settings.instances, 0, 0, 0);
+						}
+						++lightIndex;
 						++m_ActiveDrawCall->cameraIndex;
 					}
 					m_ActiveDrawCall->cameraIndex = restoreCameraIndex;
@@ -743,13 +839,25 @@ namespace Duat::Graphics {
 		}
 
 		m_Context->OMSetRenderTargets(0, nullptr, nullptr);
-		m_Context->VSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
-		m_Context->PSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1, m_Lights[0].second->GetShadowmap().GetDepth().GetSRVAddressOf());
+		//  m_Context->VSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1,
+		//  	m_Lights[0].second->GetShadowmap()->GetSRVAddressOf());
+		//  m_Context->PSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1,
+		//  	m_Lights[0].second->GetShadowmap()->GetSRVAddressOf());
+
+
+		m_Context->VSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1,
+			m_PointShadowmap.GetSRVAddressOf());
+		m_Context->PSSetShaderResources(DEFAULT_RESOURCE_SLOT_OFFSET + 2, 1,
+			m_PointShadowmap.GetSRVAddressOf());
 	}
 
 	void System::DrawSolid()
 	{
-		for (auto& rt : m_RT) m_Context.ClearRT(rt.second);
+		for (auto& rt : m_RT)
+		{
+			rt.second.m_targetTexture.ClearRTV(this);
+			rt.second.m_depthTexture.ClearDSV(this, true, 1.0f);
+		}
 
 		for (auto& pass : m_drawCalls)
 		{
@@ -782,10 +890,10 @@ namespace Duat::Graphics {
 					}
 					for (int i = 0; i < std::min<size_t>(m_ActiveDrawCall->textures.size(), 10); ++i)
 					{
-						m_Context->PSSetShaderResources(i, 1, 
-							m_textures.at(m_ActiveDrawCall->textures[i]).GetSRVAddressOf());
+						m_Context->PSSetShaderResources(i, 1,
+							m_textures.at(m_ActiveDrawCall->textures[i])->GetSRVAddressOf());
 					}
-					
+
 					static UINT offset = 0;
 					m_Context->IASetVertexBuffers(0, 1, settings.vb.GetAddressOf(), &settings.vb.GetStride(), &offset);
 					m_Context->IASetIndexBuffer(settings.ib.Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -829,7 +937,7 @@ namespace Duat::Graphics {
 					for (int i = 0; i < std::min<size_t>(m_ActiveDrawCall->textures.size(), 10); ++i)
 					{
 						m_Context->PSSetShaderResources(i, 1,
-							m_textures.at(m_ActiveDrawCall->textures[i]).GetSRVAddressOf());
+							m_textures.at(m_ActiveDrawCall->textures[i])->GetSRVAddressOf());
 					}
 
 					static UINT offset = 0;
@@ -857,8 +965,8 @@ namespace Duat::Graphics {
 
 	void System::SetRT(const std::string& name)
 	{
-		m_Context->OMSetRenderTargets(1, m_RT[name].GetTarget().GetRTVAddressOf(),
-			m_RT[name].GetDepth().GetDSV());
+		m_Context->OMSetRenderTargets(1, m_RT.at(name).m_targetTexture.GetRTVAddressOf(),
+			m_RT.at(name).m_depthTexture.GetDSV());
 	}
 
 	void System::SetRT(const DrawCall& settings)
@@ -868,8 +976,8 @@ namespace Duat::Graphics {
 
 	void System::SetVS(const std::string& name)
 	{
-		m_Context->VSSetShader(m_VS[name].Get(), 0, 0);
-		m_Context->IASetInputLayout(m_VS[name].GetInputLayout());
+		m_Context->VSSetShader(m_VS.at(name).Get(), 0, 0);
+		m_Context->IASetInputLayout(m_VS.at(name).GetInputLayout());
 	}
 
 	void System::SetVS(const DrawCall& settings)
@@ -879,7 +987,7 @@ namespace Duat::Graphics {
 
 	void System::SetPS(const std::string& name)
 	{
-		m_Context->PSSetShader(m_PS[name].Get(), 0, 0);
+		m_Context->PSSetShader(m_PS.at(name).Get(), 0, 0);
 	}
 
 	void System::SetPS(const DrawCall& settings)
@@ -889,7 +997,7 @@ namespace Duat::Graphics {
 
 	void System::SetCS(const std::string& name)
 	{
-		m_Context->CSSetShader(m_CS[name].Get(), 0, 0);
+		m_Context->CSSetShader(m_CS.at(name).Get(), 0, 0);
 	}
 
 	void System::SetCS(const DrawCall& settings)
@@ -899,7 +1007,7 @@ namespace Duat::Graphics {
 
 	void System::SetBS(const std::string& name)
 	{
-		m_Context->OMSetBlendState(m_BS[name].Get(), NULL, 0xFFFFFFFF);
+		m_Context->OMSetBlendState(m_BS.at(name).Get(), NULL, 0xFFFFFFFF);
 	}
 
 	void System::SetBS(const DrawCall& settings)
@@ -909,7 +1017,7 @@ namespace Duat::Graphics {
 
 	void System::SetRS(const std::string& name)
 	{
-		m_Context->RSSetState(m_RS[name].Get());
+		m_Context->RSSetState(m_RS.at(name).Get());
 	}
 
 	void System::SetRS(const DrawCall& settings)
@@ -929,7 +1037,7 @@ namespace Duat::Graphics {
 
 	void System::SetDSS(const std::string& name)
 	{
-		m_Context->OMSetDepthStencilState(m_DSS[name].Get(), 0);
+		m_Context->OMSetDepthStencilState(m_DSS.at(name).Get(), 0);
 	}
 
 	void System::SetDSS(const DrawCall& settings)

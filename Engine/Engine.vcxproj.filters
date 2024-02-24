@@ -204,9 +204,6 @@
     <ClInclude Include="src\Graphics\DeviceEx.h">
       <Filter>Graphics\h</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics\Texture2D.h">
-      <Filter>Graphics\h</Filter>
-    </ClInclude>
     <ClInclude Include="src\Windows\Window.h">
       <Filter>Windows\h</Filter>
     </ClInclude>
@@ -300,9 +297,6 @@
     <ClInclude Include="src\Graphics\Light.h">
       <Filter>Graphics\h</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics\Texture2DArray.h">
-      <Filter>Graphics\h</Filter>
-    </ClInclude>
     <ClInclude Include="src\Utility\Format\dxgi.h">
       <Filter>Utility\Format\h</Filter>
     </ClInclude>
@@ -372,13 +366,28 @@
     <ClInclude Include="src\Geometry\Quad.h">
       <Filter>Geometry\h</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics\TextureCube.h">
-      <Filter>Graphics\h</Filter>
-    </ClInclude>
     <ClInclude Include="src\Utility\Classes\Serialization.h">
       <Filter>Utility\Classes\h</Filter>
     </ClInclude>
     <ClInclude Include="src\Graphics\Texture.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Texture2D.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\TextureCube.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\DirectionalLight.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\SpotLight.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\PointLight.h">
+      <Filter>Graphics\h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\TextureCubeArray.h">
       <Filter>Graphics\h</Filter>
     </ClInclude>
   </ItemGroup>
@@ -453,9 +462,6 @@
     <ClCompile Include="src\Graphics\DeviceEx.cpp">
       <Filter>Graphics\cpp</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\Texture2D.cpp">
-      <Filter>Graphics\cpp</Filter>
-    </ClCompile>
     <ClCompile Include="src\HID\Keyboard.cpp">
       <Filter>HID\cpp</Filter>
     </ClCompile>
@@ -528,9 +534,6 @@
     <ClCompile Include="src\Graphics\Light.cpp">
       <Filter>Graphics\cpp</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\Texture2DArray.cpp">
-      <Filter>Graphics\cpp</Filter>
-    </ClCompile>
     <ClCompile Include="src\Utility\Format\dxgi.cpp">
       <Filter>Utility\Format\cpp</Filter>
     </ClCompile>
@@ -573,10 +576,25 @@
     <ClCompile Include="src\Graphics\GraphicsObject.cpp">
       <Filter>Graphics\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="src\Graphics\Texture.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Texture2D.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
     <ClCompile Include="src\Graphics\TextureCube.cpp">
       <Filter>Graphics\cpp</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\Texture.cpp">
+    <ClCompile Include="src\Graphics\DirectionalLight.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\SpotLight.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\PointLight.cpp">
+      <Filter>Graphics\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\TextureCubeArray.cpp">
       <Filter>Graphics\cpp</Filter>
     </ClCompile>
   </ItemGroup>
@@ -587,7 +605,7 @@
     <None Include="src\Shaders\BasicStructs.hlsli">
       <Filter>Shaders\hlsli</Filter>
     </None>
-    <None Include="src\Shaders\DefaultBuffer.hlsli">
+    <None Include="src\Shaders\DefaultRegisters.hlsli">
       <Filter>Shaders\hlsli</Filter>
     </None>
     <None Include="src\Shaders\PerlinNoise.hlsli">

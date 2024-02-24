@@ -13,8 +13,13 @@ struct Light
     float pad0;
     float3 color;
     float pad1;
-    matrix viewMatrix;
     matrix projectionMatrix;
+    matrix viewMatrix0;
+    matrix viewMatrix1;
+    matrix viewMatrix2;
+    matrix viewMatrix3;
+    matrix viewMatrix4;
+    matrix viewMatrix5;
 };
 
 struct Camera {

@@ -1,10 +1,15 @@
 #define PIXEL_SHADER
-#include "DefaultBuffer.hlsli"
+#include "DefaultRegisters.hlsli"
 #include "BasicFunctions.hlsli"
 
 
 float4 main(Input i) : SV_TARGET
 {
+    //SampleCmpLevelZero( sampler, uv, value, offsetUVInteger )
+        
+    
+    //m_shadowMaps.SampleCmpLevelZero(m_shadowSampler, i.position - m_lights[0].position)
+
     float3 final = i.color / 2;
     if (true)
     {

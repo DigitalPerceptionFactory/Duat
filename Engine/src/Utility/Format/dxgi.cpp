@@ -9,7 +9,7 @@ namespace Duat {
 	{
 		Utility::Result result;
 		result << "Function not implemented yet.";
-
+				
 		Utility::HResult hr;
 		PixelFormatInfo out;
 		return out;

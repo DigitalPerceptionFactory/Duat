@@ -33,11 +33,11 @@ namespace Duat::Graphics {
         D3D11_VIEWPORT vp;
         vp.TopLeftX = topLeftX;
         vp.TopLeftY = topLeftY;
-        vp.Width = width > 0 ? width : pGFX->m_RT[rtName].GetWidth();
-        vp.Height = height > 0 ? height : pGFX->m_RT[rtName].GetHeight();;
+        vp.Width = width > 0 ? width : pGFX->m_RT[rtName].m_targetTexture.GetWidth();
+        vp.Height = height > 0 ? height : pGFX->m_RT[rtName].m_targetTexture.GetHeight();;
         vp.MinDepth = 0.0f;
         vp.MaxDepth = 1.0f;
-        m_viewports.push_back(vp);
+        m_viewports.push_back(vp);  
 
         m_pojectionMatrix = XMMatrixPerspectiveFovLH(
             XMConvertToRadians(fovAngleY), (float)vp.Width / (float)vp.Height, nearZ, farZ

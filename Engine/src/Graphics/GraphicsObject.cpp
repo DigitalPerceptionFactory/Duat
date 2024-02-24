@@ -11,6 +11,11 @@ namespace Duat::Graphics {
 		Set(Preset::Default);
 	}
 
+	GraphicsObject::GraphicsObject(Preset preset, int index)
+	{
+		Set(preset, index);
+	}
+
 	void GraphicsObject::Set(Preset preset, int index)
 	{
 		switch (preset)

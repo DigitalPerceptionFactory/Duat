@@ -13,7 +13,7 @@ namespace Duat::Graphics {
 		m_swapChain.Present();
 	}
 
-	void ContextEx::ClearRT(RenderTarget& rt)
+	/*void ContextEx::ClearRT(RenderTarget& rt)
 	{
 		(*this)->ClearRenderTargetView(rt.GetTarget().GetRTV(), m_clearColor);
 		(*this)->ClearDepthStencilView(rt.GetDepth().GetDSV(), 
@@ -50,7 +50,7 @@ namespace Duat::Graphics {
 		m_clearColor[0] *= color.w;
 		m_clearColor[1] *= color.w;
 		m_clearColor[2] *= color.w;
-	}
+	}*/
 		
 	ID3D11Texture2D* ContextEx::GetBackBuffer()
 	{

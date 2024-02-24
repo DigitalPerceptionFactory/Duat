@@ -6,8 +6,6 @@
 #include "VertexShader.h"
 #include "PixelShader.h"
 #include "ComputeShader.h"
-#include "Texture.h"
-#include "Texture2D.h"
 #include "TextureCube.h"
 #include "BlendState.h"
 #include "SamplerState.h"
@@ -21,8 +19,11 @@
 #include <Geometry/Mesh.h>
 #include "CompositionEx.h"
 #include "Camera.h"
-#include "Light.h"
+#include "PointLight.h"
+#include "SpotLight.h"
+#include "DirectionalLight.h"
 #include "Object3D.h"
+#include "TextureCubeArray.h"
 
 #define DEFAULT_BUFFER_SLOT_OFFSET 10
 #define DEFAULT_RESOURCE_SLOT_OFFSET 10
@@ -37,6 +38,7 @@ namespace Duat::Graphics {
 		friend Texture;
 		friend Texture2D;
 		friend TextureCube;
+		friend TextureCubeArray;
 		friend VertexBuffer;
 		friend IndexBuffer;
 		friend ConstantBuffer;
@@ -49,11 +51,14 @@ namespace Duat::Graphics {
 		friend CompositionEx;
 		friend Camera;
 
-		void Init(HWND handle, UINT msaaCount = 1, UINT msaaQuality = 0);
+		void Init(HWND handle, UINT msaaCount = 1, UINT msaaQuality = 0, 
+			DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT);
 		void Update();
 		void Exit();
 
 		void SetMSAA(UINT count, UINT quality);
+
+		DXGI_FORMAT GetFormat() const;
 
 		size_t AddDrawCall(const Geometry::Mesh&  mesh, const GraphicsObject& object);
 		size_t AddDrawCall(const Object3D& object);
@@ -167,20 +172,21 @@ namespace Duat::Graphics {
 		std::vector<Request> m_requests;
 		//std::vector<RequestType> m_requestTypes;
 
-		std::unordered_map<std::string, VertexShader>         m_VS;
-		std::unordered_map<std::string, PixelShader>          m_PS;
-		std::unordered_map<std::string, ComputeShader>        m_CS;
-		std::unordered_map<std::string, Texture>              m_textures;
-		std::unordered_map<std::string, BlendState>           m_BS;
-		std::unordered_map<std::string, RasterizerState>      m_RS;
-		std::unordered_map<std::string, SamplerState>         m_SS;
-		std::unordered_map<std::string, DepthStencilState>    m_DSS;
-		std::unordered_map<std::string, RenderTarget>         m_RT;
-		std::unordered_map<std::string, ConstantBuffer>       m_CB;
-		std::unordered_map<std::string, StructuredBuffer>     m_SB;
-		std::vector<std::pair<std::string, Camera*>>          m_Cameras;
-		std::vector<std::pair<std::string, Light*>>           m_Lights;
-		Texture2D m_shadowMap;
+		std::unordered_map<std::string, VertexShader>              m_VS;
+		std::unordered_map<std::string, PixelShader>               m_PS;
+		std::unordered_map<std::string, ComputeShader>             m_CS;
+		std::unordered_map<std::string, std::unique_ptr<Texture>>  m_textures;
+		std::unordered_map<std::string, BlendState>                m_BS;
+		std::unordered_map<std::string, RasterizerState>           m_RS;
+		std::unordered_map<std::string, SamplerState>              m_SS;
+		std::unordered_map<std::string, DepthStencilState>         m_DSS;
+		std::unordered_map<std::string, RenderTarget>              m_RT;
+		std::unordered_map<std::string, ConstantBuffer>            m_CB;
+		std::unordered_map<std::string, StructuredBuffer>          m_SB;
+		std::vector<std::pair<std::string, Camera*>>               m_Cameras;
+		std::vector<std::pair<std::string, Light*>>                m_Lights;
+
+		TextureCubeArray m_PointShadowmap;
 	};
 
 }

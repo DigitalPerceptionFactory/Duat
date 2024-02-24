@@ -1,5 +1,5 @@
 #define VERTEX_SHADER
-#include "DefaultBuffer.hlsli"
+#include "DefaultRegisters.hlsli"
 #include "BasicFunctions.hlsli"
 
 Output main(Input i, uint id : SV_InstanceID)

@@ -1,0 +1,16 @@
+The Strongest Tank's Labyrinth Raids
+The Unwanted Undead Adventurer
+Chained Soldier
+My Instant Death Ability is Overpowered
+Delicious in Dungeon - to jest beka xd
+Sengoku Youko
+Ishura 
+The Seven Deadly Sins: Four Knights
+Zom 100: Bucket List of the Dead
+
+Load fills m_image
+other initialization methods suppose to fill m_desc
+Load should fill desc
+other should fill image (Capture)
+Update should use m_desc (safer)
+SysMemPitch should be from bpp*widh instead m_image

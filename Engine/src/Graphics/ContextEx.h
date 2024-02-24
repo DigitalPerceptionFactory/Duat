@@ -9,11 +9,11 @@ namespace Duat::Graphics {
 	{
 		void Init(HWND handle, DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT);
 		void Present();
-		void ClearRT(RenderTarget& rt);
-		void ClearRT(RenderTarget& rt, DirectX::XMFLOAT4& color, float depthValue = 1.0f, unsigned int stencilValue = 0);
-		void ClearRT(RenderTarget& rt, float depthValue, unsigned int stencilValue = 0);
-		void SetClearColor(float r, float g, float b, float a);
-		void SetClearColor(DirectX::XMFLOAT4& color);
+		// void ClearRT(RenderTarget& rt);
+		// void ClearRT(RenderTarget& rt, DirectX::XMFLOAT4& color, float depthValue = 1.0f, unsigned int stencilValue = 0);
+		// void ClearRT(RenderTarget& rt, float depthValue, unsigned int stencilValue = 0);
+		// void SetClearColor(float r, float g, float b, float a);
+		// void SetClearColor(DirectX::XMFLOAT4& color);
 
 		ID3D11Texture2D* GetBackBuffer();
 		IDXGISwapChain1* GetSwapChain();

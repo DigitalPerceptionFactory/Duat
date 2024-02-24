@@ -4,6 +4,11 @@
 
 namespace Duat::Graphics {
 
+    RasterizerState::RasterizerState()
+    {
+        ZeroMemory(&m_desc, sizeof(m_desc));
+    }
+
     HRESULT RasterizerState::Init(System& gfx, D3D11_RASTERIZER_DESC rsDesc, std::vector<D3D11_VIEWPORT> vpDesc)
     {
         return Init(&gfx, rsDesc, vpDesc);
@@ -159,6 +164,36 @@ namespace Duat::Graphics {
     {
         m_height[viewportIndex] = height;
         UpdateViewports();
+    }
+
+    void RasterizerState::SetDepthBias(int bias)
+    {
+        m_desc.DepthBias = bias;
+    }
+
+    void RasterizerState::SetDepthBiasClamp(float depthClamp)
+    {
+        m_desc.DepthBiasClamp = depthClamp;
+    }
+
+    void RasterizerState::SetSlopeScaledDepthBias(float slope)
+    {
+        m_desc.SlopeScaledDepthBias = slope;
+    }
+
+    void RasterizerState::SetScissorEnable(bool flag)
+    {
+        m_desc.ScissorEnable = flag;
+    }
+
+    void RasterizerState::SetAntialiasedLineEnable(bool flag)
+    {
+        m_desc.AntialiasedLineEnable = flag;
+    }
+
+    void RasterizerState::SetDepthClipEnable(bool flag)
+    {
+        m_desc.DepthClipEnable = flag;
     }
 
     void RasterizerState::UpdateViewports()
